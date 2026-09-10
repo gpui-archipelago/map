@@ -27,9 +27,15 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent  # web/ — the source tree, oracle for the data-driven assertions
 DIST_URL = "http://127.0.0.1:8767/"
 PORT = 8767
+# Prove a deployed origin instead of the local build:
+#   SMOKE_ORIGIN=https://gpui-archipelago.github.io/map python3 smoke.py
+# (the local server is skipped; the source tree stays the data oracle).
+ORIGIN = os.environ.get("SMOKE_ORIGIN", "").rstrip("/")
 # CI's Chrome may be named differently; override with CHROME_BIN (a missing
 # browser is a hard failure — this is the served-artifact proof).
 CHROME = os.environ.get("CHROME_BIN", "google-chrome-stable")
+# Per-invocation Chrome profile counter (see chrome_dom).
+_PROFILE_SEQ = 0
 
 
 def wait_port(port: int, timeout: float = 10.0) -> bool:
@@ -47,10 +53,12 @@ def chrome_dom(url: str) -> str:
     env = os.environ.copy()
     env["HOME"] = "/tmp/gocar-chrome-home"
     os.makedirs(env["HOME"], exist_ok=True)
-    # A unique profile per run: headless Chrome's HTTP cache would otherwise
-    # serve a stale bundle across runs (we saw exactly that while fixing the
-    # bundle fetch path).
-    profile = f"/tmp/gocar-chrome-profile-{os.getpid()}"
+    # A profile per *invocation*: a shared one would leave a stale bundle in its
+    # HTTP cache across runs, and rapid sequential launches contend on the same
+    # profile's lock (a partial dump). The counter keeps each launch isolated.
+    global _PROFILE_SEQ
+    _PROFILE_SEQ += 1
+    profile = f"/tmp/gocar-chrome-profile-{os.getpid()}-{_PROFILE_SEQ}"
     out = subprocess.run(
         [
             CHROME,
@@ -59,7 +67,12 @@ def chrome_dom(url: str) -> str:
             "--no-sandbox",
             "--disable-crash-reporter",
             f"--user-data-dir={profile}",
-            "--virtual-time-budget=30000",
+            # Virtual time is a budget, not a wait: the app burns it in its
+            # loading/backoff timers while real fetches are pending, so a tight
+            # budget dumps a still-booting DOM on a remote origin (the Alignment
+            # matrix makes more fetches than the other routes). Generous + cheap:
+            # the budget costs ~1s of wall time per page regardless.
+            "--virtual-time-budget=300000",
             "--dump-dom",
             url,
         ],
@@ -73,19 +86,52 @@ def chrome_dom(url: str) -> str:
     return out.stdout
 
 
+# A dumped DOM still showing one of these is a page that had not finished
+# booting — a slow runner or a cold CDN, not a content failure. Retrying it
+# keeps the smoke honest (the assertions still decide) without turning Chrome's
+# timing into a red build.
+BOOTING_MARKERS = ('id="view-booting"', '<div id="root"></div>')
+
+
+def chrome_dom_settled(url: str, *, expect: str | None = None, tries: int = 5) -> str:
+    """Render `url`, retrying while the page has not settled.
+
+    A DOM still showing a booting marker, or missing the route's own first
+    expectation, is a page that had not finished loading — a slow runner, a
+    cold CDN, a transient network stall — not a content failure. Retrying keeps
+    the smoke honest (the assertions still decide) without turning Chrome's
+    timing into a red build.
+    """
+    dom = ""
+    for attempt in range(tries):
+        dom = chrome_dom(url)
+        booting = any(marker in dom for marker in BOOTING_MARKERS)
+        if not booting and (expect is None or expect in dom):
+            return dom
+        if attempt + 1 < tries:
+            print(f"  … retry {attempt + 1}/{tries - 1}: {url} (not settled)")
+    return dom
+
+
 def main() -> int:
     sys.path.insert(0, str(HERE))
-    import serve_web  # noqa: PLC0415
 
-    server = ThreadingHTTPServer(("127.0.0.1", PORT), serve_web.QuietHandler)
-    thread = threading.Thread(target=server.serve_forever, daemon=True)
-    thread.start()
+    server = None
+    if ORIGIN:
+        base = ORIGIN + "/"
+    else:
+        import serve_web  # noqa: PLC0415
+
+        server = ThreadingHTTPServer(("127.0.0.1", PORT), serve_web.QuietHandler)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        base = DIST_URL
     try:
-        if not wait_port(PORT):
+        if server is not None and not wait_port(PORT):
             print("server did not start")
             return 1
 
-        dom = chrome_dom(DIST_URL + "#/")
+        dom = chrome_dom_settled(base + "#/", expect="The GPUI fork map")
         # The dump is the *rendered* DOM (React mounted): if the bundle fetch
         # failed the fatal box renders, if nothing mounted #root stays empty.
         if "<div id=\"root\"></div>" in dom and "gpui-archipelago" not in dom:
@@ -420,7 +466,7 @@ def main() -> int:
         ]
         failures = []
         for name, frag, wants, not_wants in checks:
-            page = chrome_dom(DIST_URL + frag) if frag != "#/" else dom
+            page = chrome_dom_settled(base + frag, expect=wants[0]) if frag != "#/" else dom
             for w in wants:
                 if w not in page:
                     failures.append(f"{name}: missing {w!r}")
@@ -443,7 +489,8 @@ def main() -> int:
         print("  ✓ headless render: Overview + all five routes show their content, metrics are bundle-driven")
         return 0
     finally:
-        server.shutdown()
+        if server is not None:
+            server.shutdown()
 
 
 if __name__ == "__main__":
