@@ -1,0 +1,30 @@
+{
+  "name": "forkmap-spa",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "T-39 — the fork-map rearchitecture: a React + Tailwind + Bun SPA over the committed gocar.forkmap.v1 bundle, sibling to the static web/forkmap/ site until the parity suite passes.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "bun test",
+    "typecheck": "tsc --noEmit",
+    "check": "bun test && tsc --noEmit",
+    "study:excerpts": "bun scripts/gen-study-excerpts.ts"
+  },
+  "dependencies": {
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@vitejs/plugin-react": "^6.1.1",
+    "bun-types": "^1.4.1",
+    "tailwindcss": "^4.3.0",
+    "typescript": "^5.9.0",
+    "vite": "^8.2.0"
+  }
+}

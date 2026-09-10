@@ -1,0 +1,648 @@
+/* T-39 — landing + cross-view content styles, ported from the static site's
+ * style.css structure (classes keep their names so recorded stories and the
+ * parity story stay meaningful across the swap). */
+
+@layer components {
+  /* ---------- view heads (all five views) ---------- */
+
+  .view {
+    padding-top: 22px;
+  }
+  .view-head {
+    margin-bottom: 14px;
+  }
+  .view-eyebrow {
+    margin: 0 0 2px;
+    font-size: 0.76rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--color-muted);
+  }
+  .view-head h1 {
+    margin: 0 0 6px;
+    font-size: 1.7rem;
+    color: var(--color-ink);
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .view-tag {
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: var(--color-muted);
+  }
+  .lede {
+    margin: 0 0 12px;
+    font-size: 0.95rem;
+    max-width: 860px;
+  }
+
+  /* ---------- hero (landing) ---------- */
+
+  .hero-eyebrow {
+    margin: 0 0 6px;
+    font-size: 0.76rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-coral);
+  }
+  .hero h1 {
+    margin: 0 0 8px;
+    font-size: 2.2rem;
+    line-height: 1.15;
+    color: var(--color-ink);
+  }
+  .hero-quote {
+    margin: 0 0 14px;
+    padding: 0 0 0 18px;
+    border-left: 3px solid var(--color-sand-200);
+    color: var(--color-muted);
+    font-style: italic;
+    font-size: 1.02rem;
+    max-width: 760px;
+  }
+  .hero-intro {
+    margin: 0 0 16px;
+    max-width: 860px;
+    font-size: 0.98rem;
+  }
+
+  /* ---------- workflow cards ---------- */
+
+  .card-grid.workflow {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 12px;
+    margin: 18px 0 20px;
+  }
+  .card-cta {
+    display: flex;
+    gap: 12px;
+    background: #fff;
+    border: 1px solid var(--color-arch);
+    border-top: 3px solid var(--color-arch);
+    border-radius: 12px;
+    padding: 14px 16px;
+    color: inherit;
+    transition:
+      border-color 0.12s ease,
+      box-shadow 0.12s ease;
+  }
+  .card-cta:hover {
+    text-decoration: none;
+    box-shadow: 0 3px 10px rgba(23, 77, 104, 0.1);
+  }
+  .card-cta.c-coral {
+    border-top-color: var(--color-coral);
+  }
+  .card-cta.c-ocean {
+    border-top-color: var(--color-ocean);
+  }
+  .card-cta.c-island {
+    border-top-color: var(--color-island);
+  }
+  .card-cta.c-amber {
+    border-top-color: var(--color-amber);
+  }
+  .card-num {
+    font-size: 0.82rem;
+    color: var(--color-muted);
+    flex: none;
+    line-height: 1.6;
+  }
+  .card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .card-title {
+    font-weight: 700;
+    color: var(--color-ink);
+    font-size: 1rem;
+  }
+  .card-sub {
+    font-size: 0.84rem;
+    color: var(--color-muted);
+    line-height: 1.45;
+  }
+
+  /* ---------- data strip ---------- */
+
+  .data-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 18px;
+    align-items: baseline;
+    background: var(--color-sand-100);
+    border-color: var(--color-sand-200);
+  }
+  .data-strip-when {
+    font-size: 0.78rem;
+    color: var(--color-ink);
+  }
+  .data-facts {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 0.82rem;
+  }
+  .data-facts-counts {
+    color: var(--color-ink);
+  }
+  .data-facts-claim {
+    color: var(--color-muted);
+    font-style: italic;
+  }
+
+  /* ---------- landing columns ---------- */
+
+  .landing-cols {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    gap: 16px;
+    align-items: start;
+  }
+  @media (max-width: 900px) {
+    .landing-cols {
+      grid-template-columns: 1fr;
+    }
+  }
+  .col-main {
+    min-width: 0;
+  }
+
+  /* ---------- truth layers table ---------- */
+
+  table.layers {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+  }
+  table.layers th {
+    text-align: left;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-muted);
+    border-bottom: 1px solid var(--color-arch);
+    padding: 6px 10px;
+  }
+  table.layers td {
+    padding: 10px;
+    border-bottom: 1px solid #e9ecee;
+    vertical-align: top;
+    line-height: 1.5;
+  }
+  table.layers td:first-child {
+    width: 150px;
+  }
+
+  .tag {
+    display: inline-block;
+    font-size: 0.74rem;
+    font-weight: 600;
+    border-radius: 999px;
+    padding: 2px 10px;
+    white-space: nowrap;
+  }
+  .tag-registry {
+    background: rgba(55, 143, 189, 0.12);
+    color: var(--color-ink);
+  }
+  .tag-measured {
+    background: rgba(125, 171, 89, 0.18);
+    color: var(--color-island-deep);
+  }
+  .tag-stub {
+    background: var(--color-sand-200);
+    color: var(--color-muted);
+  }
+
+  /* ---------- honest rules ---------- */
+
+  .rules {
+    margin: 10px 0;
+    padding-left: 22px;
+    font-size: 0.88rem;
+  }
+  .rules li {
+    margin-bottom: 6px;
+    line-height: 1.5;
+  }
+  .rules strong {
+    color: var(--color-ink);
+  }
+
+  .doc {
+    color: var(--color-ocean-deep);
+    font-size: 0.86rem;
+    text-decoration: underline;
+    text-decoration-color: rgba(30, 107, 152, 0.35);
+    text-underline-offset: 2px;
+  }
+
+  /* ---------- compile badges + kit probes ---------- */
+
+  .badge-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 6px 0 4px;
+  }
+  .badge {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    flex-wrap: wrap;
+    background: var(--color-sand-50);
+    border: 1px solid var(--color-arch);
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 0.84rem;
+  }
+  .badge-name {
+    font-weight: 700;
+    color: var(--color-ink);
+  }
+  .badge-vers {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--color-island-deep);
+  }
+  .badge-evidence {
+    color: var(--color-muted);
+    font-size: 0.8rem;
+  }
+
+  .kit-probe {
+    background: var(--color-sand-50);
+    border: 1px solid var(--color-arch);
+    border-left: 3px solid var(--color-island);
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin: 6px 0;
+    font-size: 0.84rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .kit-probe-head {
+    font-weight: 700;
+    color: var(--color-ink);
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+  }
+  .kit-probe-line {
+    line-height: 1.45;
+  }
+
+  /* ---------- kind chips (used by the delta/alignment rows) ---------- */
+
+  .kchip {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 6px;
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    background: rgba(23, 77, 104, 0.06);
+    border-radius: 6px;
+    padding: 1px 8px 1px 4px;
+    white-space: nowrap;
+  }
+  .kchip-kind {
+    color: var(--color-ocean-deep);
+    text-transform: uppercase;
+    font-size: 0.68rem;
+    letter-spacing: 0.03em;
+  }
+  .kchip-name {
+    color: var(--color-ink-deep);
+  }
+  .digests code {
+    background: rgba(23, 77, 104, 0.05);
+    margin-left: 2px;
+  }
+
+  /* ---------- controls / pickers (Changes; Alignment + Configure + Journal reuse) ---------- */
+
+  .controls {
+    display: flex;
+    gap: 22px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+  }
+  .picker {
+    background: var(--color-sand-100);
+    border-color: rgba(55, 143, 189, 0.32);
+  }
+  .picker .ctl-hint {
+    margin-top: 8px;
+  }
+  .pair {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .ctl {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    font-size: 0.82rem;
+    color: var(--color-muted);
+  }
+  .ctl > span {
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.72rem;
+  }
+  .ctl select,
+  .ctl input {
+    font: inherit;
+    font-size: 0.94rem;
+    padding: 7px 11px;
+    border: 1px solid var(--color-arch);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--color-ink-deep);
+    min-width: 210px;
+  }
+  .ctl select:focus,
+  .ctl input:focus {
+    outline: none;
+    border-color: var(--color-ocean);
+    box-shadow: 0 0 0 2px rgba(55, 143, 189, 0.18);
+  }
+  .ctl input[type="search"] {
+    min-width: min(560px, 80vw);
+  }
+  .controls button {
+    font: inherit;
+    font-size: 0.84rem;
+    border: 1px solid var(--color-arch);
+    background: #fff;
+    color: var(--color-ink);
+    border-radius: 999px;
+    padding: 6px 16px;
+    cursor: pointer;
+  }
+  .controls button:hover {
+    border-color: var(--color-ocean);
+    color: var(--color-ocean);
+  }
+  .swap-btn {
+    font-weight: 700;
+  }
+  .ctl-hint {
+    width: 100%;
+    margin-top: 4px;
+    font-size: 0.9em;
+  }
+  .quick {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: baseline;
+  }
+  .quick-link {
+    font-weight: 600;
+  }
+
+  /* ---------- provider lines (release detail) ---------- */
+
+  .provider-line {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    align-items: baseline;
+    font-size: 0.94em;
+  }
+  .provider-lines {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .provider-name {
+    font-weight: 700;
+    color: var(--color-ink);
+  }
+  .compile-badge {
+    background: rgba(125, 171, 89, 0.16);
+    color: var(--color-island-deep);
+    border: 1px solid rgba(125, 171, 89, 0.35);
+    border-radius: 999px;
+    padding: 1px 11px;
+    font-size: 0.85em;
+    font-weight: 600;
+  }
+
+  /* ---------- item lists + rule rows (Changes diff; Journal feed reuses) ---------- */
+
+  .item-kind-head {
+    margin: 12px 0 4px;
+    color: var(--color-muted);
+    font-size: 0.74rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-family: var(--font-mono);
+  }
+  .item-rows {
+    list-style: none;
+    margin: 0 0 4px;
+    padding: 0;
+    max-height: 320px;
+    overflow-y: auto;
+    border: 1px solid #ece2d2;
+    border-radius: 8px;
+    background: #fff;
+  }
+  .item-row {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 6px 12px;
+    border-bottom: 1px solid #ece2d2;
+    flex-wrap: wrap;
+  }
+  .item-row:last-child {
+    border-bottom: 0;
+  }
+  .item-row.removed-row {
+    background: #fffaf7;
+    border-left: 3px solid var(--color-coral);
+  }
+  .item-row.added-row {
+    background: #fbfdf7;
+    border-left: 3px solid var(--color-island);
+  }
+  .item-row.resigned-row {
+    background: #fdfaf2;
+    border-left: 3px solid var(--color-amber);
+  }
+  .align-link {
+    font-size: 0.78em;
+    white-space: nowrap;
+    margin-left: auto;
+    color: var(--color-ocean-deep);
+  }
+  .row-extra {
+    font-size: 0.9em;
+    width: 100%;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: baseline;
+  }
+
+  /* T-34: a re-signed fn row's measured before/after signature. */
+  .row-extra.sig-change {
+    gap: 6px;
+  }
+  .sig-change .sig-text {
+    font-family: var(--font-mono);
+    font-size: 0.86em;
+    background: #fff;
+    border: 1px solid #ece2d2;
+    border-radius: 4px;
+    padding: 1px 6px;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .sig-change .sig-arrow {
+    color: var(--color-muted);
+  }
+
+  /* T-47 decision 2b: a re-signed type row's measured pub-member delta —
+   * the segments that left/arrived, drawn from the analyzer's own digest
+   * segments (never a reconstruction). */
+  .row-extra.member-delta {
+    gap: 6px;
+  }
+  .member-delta .member-seg {
+    font-family: var(--font-mono);
+    font-size: 0.86em;
+    background: #fff;
+    border: 1px solid #ece2d2;
+    border-radius: 4px;
+    padding: 1px 6px;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .member-delta .member-removed {
+    color: var(--color-removed, #a33);
+    border-color: #e6cdcd;
+  }
+  .member-delta .member-added {
+    color: var(--color-added, #2a7);
+    border-color: #cbe6d5;
+  }
+
+  .rule-line {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    align-items: baseline;
+    font-size: 0.92em;
+  }
+  .rule-label {
+    color: var(--color-ocean);
+    font-weight: 700;
+    font-family: var(--font-mono);
+    font-size: 0.8em;
+  }
+  .rule-box {
+    margin: 10px 0;
+    padding: 10px 14px;
+    background: var(--color-sand-100);
+    border: 1px solid #ece2d2;
+    border-radius: 8px;
+    font-size: 0.93em;
+  }
+
+  /* ---------- shared copy control (T-40: the Configure code shells' T-31
+     inline copy-flash factored out for the Alignment rule rows; the polite
+     live region replaces a detached toast — see the T-39 task outcome) --- */
+
+  .copy-btn {
+    font: inherit;
+    font-size: 0.82rem;
+    border: 1px solid var(--color-arch);
+    background: var(--color-sand-50);
+    color: var(--color-ink);
+    border-radius: 999px;
+    padding: 1px 14px;
+    cursor: pointer;
+  }
+  .copy-btn:hover {
+    border-color: var(--color-ocean);
+    color: var(--color-ocean);
+  }
+  .copy-btn.copied {
+    background: rgba(125, 171, 89, 0.16);
+    border-color: rgba(125, 171, 89, 0.4);
+    color: var(--color-island-deep);
+  }
+  .rule-line .rule-copy {
+    margin-left: auto;
+  }
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .flag-note {
+    border: 1px dashed #7d8570;
+    border-radius: 8px;
+    padding: 9px 14px;
+    color: #4a5148;
+    font-size: 0.9em;
+    margin-top: 16px;
+  }
+  .empty-hint {
+    color: var(--color-muted);
+    font-style: italic;
+  }
+
+  /* ---------- about-note (honest rules disclosure on Changes/Alignment) ---------- */
+
+  .about-note {
+    margin: 28px 0 6px;
+  }
+  .about-note summary {
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--color-ocean);
+  }
+  .about-note details {
+    border-top: 1px solid #ece2d2;
+    padding-top: 8px;
+  }
+  .about-note .subnote {
+    margin: 8px 0;
+  }
+
+  /* ---------- phone width: long kind:name chips wrap instead of widening
+     the page (verified by the headless 390px pass, T-39 Outcome) ---------- */
+
+  @media (max-width: 640px) {
+    .kchip {
+      max-width: 100%;
+      min-width: 0;
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+    /* the truth-layers table is fixed-layout: cell tokens wrap inside the
+       viewport instead of widening the table past its container */
+    table.layers th,
+    table.layers td {
+      overflow-wrap: anywhere;
+    }
+  }
+}

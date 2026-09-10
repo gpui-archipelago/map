@@ -1,0 +1,100 @@
+/* T-39 — Configure view styles, ported from web/forkmap/style.css (the
+ * status boxes + flags, the binding-unit/facts lines, the code shells with
+ * their copy buttons, and the v2 scope notes the configure render emits).
+ * Class names survive so recorded stories and the parity story stay
+ * meaningful across the swap. The copy button keeps the T-31 inline flash
+ * (anchored to the point of action) and announces through a polite live
+ * region — a detached toast was rejected (see the T-39 task outcome). The
+ * shared `.copy-btn` + `.visually-hidden` rules moved to views.css when
+ * T-40 factored the copy control out for the Alignment rule rows. */
+
+@layer components {
+  /* ---------- status panel (RULE-5 badge / honest warn + RULE-6 flags) ---------- */
+
+  .status-ok {
+    background: rgba(125, 171, 89, 0.16);
+    border: 1px solid rgba(125, 171, 89, 0.4);
+    border-left: 4px solid var(--color-present);
+    border-radius: 8px;
+    padding: 10px 16px;
+    margin: 10px 0;
+  }
+  .status-warn {
+    background: rgba(168, 98, 20, 0.13);
+    border: 1px solid rgba(168, 98, 20, 0.35);
+    border-left: 4px solid var(--color-amber);
+    border-radius: 8px;
+    padding: 10px 16px;
+    margin: 10px 0;
+  }
+  .status-ok p,
+  .status-warn p {
+    margin: 4px 0;
+  }
+  .status-flag {
+    border: 1px dashed var(--color-changed);
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: #4a5148;
+    font-size: 0.9em;
+    margin: 8px 0;
+  }
+  .status-flag-inline {
+    color: var(--color-changed);
+    font-size: 0.9em;
+  }
+  .cfg-line {
+    margin: 6px 0;
+    font-size: 0.95em;
+  }
+
+  /* ---------- files: code shells with copy buttons ---------- */
+
+  .code-shell {
+    margin: 18px 0;
+  }
+  .code-shell:first-child {
+    margin-top: 10px;
+  }
+  .code-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .code-head h3 {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 0.92rem;
+    color: var(--color-ink);
+  }
+  .file-sub {
+    margin: 2px 0 8px;
+    color: var(--color-muted);
+    font-size: 0.9em;
+  }
+  .code-block {
+    background: #f7fafb;
+    border: 1px solid var(--color-arch);
+    border-left: 3px solid rgba(55, 143, 189, 0.32);
+    border-radius: 8px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    font-size: 0.83em;
+    line-height: 1.55;
+    margin: 0;
+    white-space: pre;
+    color: var(--color-ink-deep);
+  }
+
+  /* ---------- v2 scope notes (shown as notes, never as buttons) ---------- */
+
+  .scope-notes {
+    margin: 8px 0 6px;
+    padding-left: 22px;
+  }
+  .scope-notes li {
+    margin: 6px 0;
+  }
+}

@@ -1,0 +1,182 @@
+/* T-39 — Journal view styles, ported from web/forkmap/style.css (the
+ * stream blocks + per-release entries + expandable item rows + the
+ * deep-link flash the journal render generates). Class names survive so
+ * recorded stories and the parity story stay meaningful across the swap. */
+
+@layer components {
+  /* ---------- stream blocks ---------- */
+
+  .journal-stream {
+    margin: 24px 0 34px;
+  }
+  .journal-stream-head {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: baseline;
+    border-bottom: 2px solid var(--color-ink);
+    padding-bottom: 8px;
+    margin-bottom: 6px;
+    font-size: 1.05em;
+  }
+  .journal-stream-head .stream-name {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    color: var(--color-ink);
+  }
+
+  /* ---------- one release entry ---------- */
+
+  .journal-entry {
+    border: 1px solid var(--color-arch);
+    border-left: 4px solid var(--color-ocean);
+    padding: 10px 16px 10px 18px;
+    margin: 10px 0;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 1px 2px rgba(23, 77, 104, 0.03);
+  }
+  .journal-entry-flagged {
+    border-left-color: var(--color-amber);
+    background: var(--color-sand-50);
+  }
+  .je-head {
+    display: flex;
+    gap: 8px 14px;
+    align-items: baseline;
+    flex-wrap: wrap;
+  }
+  .je-vers {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 1em;
+    background: var(--color-ink);
+    color: #eef4f6;
+    border-radius: 999px;
+    padding: 2px 13px;
+  }
+  .je-vers:hover {
+    text-decoration: none;
+    background: var(--color-ocean);
+  }
+  .je-flag {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-amber);
+    background: rgba(168, 98, 20, 0.13);
+    border: 1px solid rgba(168, 98, 20, 0.3);
+    border-radius: 999px;
+    padding: 0 10px;
+    font-family: var(--font-mono);
+  }
+  .je-meta {
+    font-size: 0.85em;
+  }
+  .je-anchor {
+    font-size: 0.72rem;
+    color: var(--color-muted);
+    border: 1px solid var(--color-arch);
+    border-radius: 999px;
+    padding: 0 10px;
+    opacity: 0.85;
+  }
+  .je-anchor:hover {
+    color: var(--color-ocean);
+    border-color: var(--color-ocean);
+    opacity: 1;
+    text-decoration: none;
+  }
+
+  /* deep-link flash (T-38) */
+  @keyframes je-flash {
+    0%,
+    100% {
+      box-shadow: 0 0 0 0 rgba(55, 143, 189, 0);
+    }
+    30% {
+      box-shadow: 0 0 0 4px rgba(55, 143, 189, 0.35);
+    }
+  }
+  .journal-entry.je-flash {
+    animation: je-flash 1.8s ease-out;
+    border-left-color: var(--color-ocean);
+  }
+
+  .je-story {
+    margin: 7px 0 3px;
+    font-size: 0.94em;
+    display: flex;
+    gap: 12px;
+    align-items: baseline;
+    flex-wrap: wrap;
+  }
+  .je-first {
+    color: var(--color-muted);
+  }
+  .je-same {
+    color: var(--color-island-deep);
+    background: rgba(125, 171, 89, 0.16);
+    border: 1px solid rgba(125, 171, 89, 0.35);
+    border-radius: 999px;
+    padding: 2px 12px;
+  }
+  .je-unmeasured {
+    color: var(--color-changed);
+    background: rgba(168, 98, 20, 0.13);
+    border-radius: 6px;
+    padding: 2px 10px;
+  }
+
+  /* the plain tinted counts (no chip border — journal keeps the dot colors) */
+  .je-counts {
+    font-weight: 600;
+  }
+  .je-counts .count-removed {
+    color: var(--color-rust);
+    font-weight: 700;
+  }
+  .je-counts .count-added {
+    color: var(--color-island-deep);
+    font-weight: 700;
+  }
+  .je-counts .count-resigned {
+    color: var(--color-changed);
+    font-weight: 700;
+  }
+
+  .je-toggle {
+    font: inherit;
+    font-size: 0.84rem;
+    margin-top: 8px;
+    border: 1px solid var(--color-arch);
+    background: var(--color-sand-50);
+    color: var(--color-ink);
+    border-radius: 999px;
+    padding: 2px 14px;
+    cursor: pointer;
+  }
+  .je-toggle:hover {
+    border-color: var(--color-ocean);
+    color: var(--color-ocean);
+  }
+  .je-items {
+    margin-top: 8px;
+  }
+  .je-items .delta-sec {
+    margin: 10px 0;
+  }
+  .delta-sec h4 {
+    display: inline-block;
+    margin: 0;
+  }
+
+  /* ---------- journal honesty specifics ---------- */
+
+  .journal-honesty summary {
+    font-weight: 600;
+    color: var(--color-ocean);
+    cursor: pointer;
+  }
+}

@@ -1,0 +1,11 @@
+# Fetched at build/dev time (scripts/fetch-data.sh, scripts/fetch-docs.sh) —
+# never versioned here: `map-data` owns the data, `gpui-corpus` owns the docs.
+web/forkmap/data/
+docs/
+
+# Bun / Vite
+web/forkmap-spa/node_modules/
+web/forkmap-spa/dist/
+web/forkmap-spa/out/
+web/forkmap-spa/__pycache__/
+*.tsbuildinfo

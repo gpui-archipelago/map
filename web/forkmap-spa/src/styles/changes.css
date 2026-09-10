@@ -1,0 +1,245 @@
+/* T-39 — Changes view styles, ported from web/forkmap/style.css (the diff
+ * stage + filter + banner classes app.js generates). Class names survive so
+ * recorded stories and the parity story stay meaningful across the swap. */
+
+@layer components {
+  /* ---------- pair caption (T-38) + release panel ---------- */
+
+  .release-panel {
+    margin-bottom: 4px;
+    padding: 12px 22px;
+  }
+  .pair-caption {
+    margin: 4px 2px 14px;
+    font-size: 0.78rem;
+    color: var(--color-muted);
+    background: rgba(55, 143, 189, 0.1);
+    border: 1px solid rgba(55, 143, 189, 0.32);
+    border-radius: 999px;
+    padding: 3px 14px;
+    display: inline-block;
+    max-width: 100%;
+  }
+
+  /* ---------- T-38 delta filter bar ---------- */
+
+  .diff-filter {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    background: var(--color-sand-100);
+    border-color: rgba(55, 143, 189, 0.32);
+    padding: 10px 16px;
+    margin: 14px 0 2px;
+  }
+  .diff-filter[hidden] {
+    display: none;
+  }
+  .ff-label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--color-muted);
+    font-family: var(--font-mono);
+  }
+  .diff-filter input[type="search"] {
+    flex: 1 1 220px;
+    min-width: 180px;
+    font: inherit;
+    font-size: 0.88rem;
+    padding: 5px 11px;
+    border: 1px solid var(--color-arch);
+    border-radius: 999px;
+    background: #fff;
+    color: var(--color-ink-deep);
+  }
+  .diff-filter select {
+    font: inherit;
+    font-size: 0.88rem;
+    padding: 5px 10px;
+    border: 1px solid var(--color-arch);
+    border-radius: 999px;
+    background: #fff;
+    color: var(--color-ink-deep);
+  }
+  .diff-filter input:focus,
+  .diff-filter select:focus {
+    outline: none;
+    border-color: var(--color-ocean);
+    box-shadow: 0 0 0 2px rgba(55, 143, 189, 0.18);
+  }
+  .diff-filter button {
+    font: inherit;
+    font-size: 0.82rem;
+    border: 1px solid var(--color-arch);
+    background: #fff;
+    color: var(--color-ink);
+    border-radius: 999px;
+    padding: 3px 13px;
+    cursor: pointer;
+  }
+  .diff-filter button:hover {
+    border-color: var(--color-ocean);
+    color: var(--color-ocean);
+  }
+  .ff-note {
+    font-size: 0.76rem;
+    color: var(--color-muted);
+    margin-left: auto;
+  }
+
+  /* ---------- diff stage ---------- */
+
+  .diff-stage {
+    padding-top: 20px;
+  }
+  .diff-stage-body .empty-hint {
+    margin: 10px 0;
+  }
+
+  .diff-head {
+    font-weight: 700;
+    margin: 4px 0 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .release-chip {
+    display: inline-block;
+    background: var(--color-ink);
+    color: #f2f6f8;
+    border-radius: 999px;
+    padding: 3px 14px;
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+  }
+  .diff-head > span:not(.release-chip) {
+    color: var(--color-muted);
+  }
+
+  /* the two delta-nature banners: cross-fork = amber (snapshot, no lineage),
+     same-stream = ocean (changelog with a lineage edge) */
+  .diff-kind-note {
+    margin: 14px 0 10px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 0.93em;
+    border: 1px solid;
+    line-height: 1.5;
+  }
+  .diff-kind-note.snapshot {
+    background: rgba(168, 98, 20, 0.13);
+    border-color: rgba(168, 98, 20, 0.35);
+    color: #5c3405;
+  }
+  .diff-kind-note.snapshot strong {
+    color: var(--color-amber);
+  }
+  .diff-kind-note.changelog {
+    background: rgba(55, 143, 189, 0.1);
+    border-color: rgba(55, 143, 189, 0.32);
+    color: #1e4a63;
+  }
+  .diff-kind-note.changelog strong {
+    color: #1d5f85;
+  }
+
+  .diff-meta {
+    display: flex;
+    gap: 4px 20px;
+    flex-wrap: wrap;
+    font-size: 0.88em;
+    margin: 0 0 14px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #ece2d2;
+  }
+
+  .diff-summary {
+    font-weight: 600;
+    margin: 10px 0 14px;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .counts-bar {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-left: 4px;
+  }
+  .count-chip {
+    border-radius: 999px;
+    padding: 2px 13px;
+    font-size: 0.92em;
+    font-weight: 700;
+  }
+  .count-chip.count-removed {
+    color: var(--color-rust);
+    background: rgba(239, 78, 40, 0.1);
+    border: 1px solid rgba(239, 78, 40, 0.28);
+  }
+  .count-chip.count-added {
+    color: var(--color-island-deep);
+    background: rgba(125, 171, 89, 0.16);
+    border: 1px solid rgba(125, 171, 89, 0.4);
+  }
+  .count-chip.count-resigned {
+    color: var(--color-changed);
+    background: rgba(168, 98, 20, 0.13);
+    border: 1px solid rgba(168, 98, 20, 0.35);
+  }
+
+  .delta-identical {
+    background: rgba(125, 171, 89, 0.16);
+    border: 1px solid rgba(125, 171, 89, 0.4);
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin-top: 12px;
+  }
+  .delta-identical strong {
+    color: var(--color-island-deep);
+  }
+  .delta-unmeasured {
+    background: var(--color-sand-200);
+    border: 1px solid rgba(168, 98, 20, 0.4);
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin-top: 12px;
+  }
+  .delta-sec {
+    margin: 20px 0;
+  }
+  .delta-sec h3 {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 0.8rem;
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin: 0 0 8px;
+    color: var(--color-ink);
+    padding: 0;
+    background: transparent;
+  }
+  .delta-sec h3::before {
+    content: "";
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex: none;
+  }
+  .delta-sec.removed h3::before {
+    background: var(--color-coral);
+  }
+  .delta-sec.added h3::before {
+    background: var(--color-island);
+  }
+  .delta-sec.resigned h3::before {
+    background: var(--color-amber);
+  }
+}

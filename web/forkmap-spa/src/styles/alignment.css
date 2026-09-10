@@ -1,0 +1,1267 @@
+/* T-39 — Alignment view styles, ported from web/forkmap/style.css (the
+ * combobox suggestion list, preset chips, return chip, matrix legend +
+ * streams + cells + summary chips the alignment render generates). Class
+ * names survive so recorded stories and the parity story stay meaningful
+ * across the swap. */
+
+@layer components {
+  /* the dot cells size (also referenced inline by stream rows) */
+  :root {
+    --cell: 13px;
+    /* T-42 digest-variant palette (--dv0…--dv7, cycled past the 8th): the
+       swatch colors the matrix dots, legend chips and dock chips share. All
+       eight read against the paper background at the 13px dot size. */
+    --dv0: #1e6b98; /* ocean-deep */
+    --dv1: #ef4e28; /* coral */
+    --dv2: #a86214; /* amber */
+    --dv3: #527c2f; /* island-deep */
+    --dv4: #8a5aa8; /* violet */
+    --dv5: #17857b; /* teal */
+    --dv6: #a6372a; /* deep red */
+    --dv7: #c58f2a; /* dark gold */
+  }
+
+  /* ---------- item head ---------- */
+
+  .item-title {
+    display: flex;
+    align-items: baseline;
+  }
+  .item-head {
+    background: var(--color-sand-50);
+  }
+  .item-title .kchip-name {
+    font-size: 1.15em;
+  }
+  .item-head p.muted {
+    margin-top: 8px;
+  }
+
+  /* The selected item is the hero: kind:name reads large and the digest
+     deck sits directly beneath it; the search band recedes to the slim
+     input in the header band (.align-search), so the matrix answers own
+     the page. */
+  .view.has-item .item-title .kchip-name {
+    font-size: 2em;
+    letter-spacing: -0.015em;
+  }
+  .view.has-item .item-title .kchip-kind {
+    font-size: 1em;
+  }
+  .view.has-item .item-head {
+    background: transparent;
+    border-color: transparent;
+    box-shadow: none;
+    padding: 4px 2px 6px;
+    margin-bottom: 0;
+  }
+  .view.has-item .item-head .kchip {
+    background: transparent;
+    gap: 10px;
+    padding: 0 6px 0 0;
+  }
+  .view.has-item .preset-row {
+    margin-top: 6px;
+  }
+  .view.has-item .ctl-hint {
+    display: none;
+  }
+
+  /* ---------- header band: title left, slim search right ---------- */
+
+  .align-band {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 22px;
+    flex-wrap: wrap;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #ece2d2;
+    margin-bottom: 12px;
+  }
+  .align-band .view-head {
+    margin: 0;
+    min-width: 280px;
+  }
+  .align-band .view-head h1 {
+    font-size: 1.55rem;
+    margin: 0;
+  }
+  .align-band .view-head .view-eyebrow {
+    margin-bottom: 3px;
+  }
+  .picker.align-search {
+    width: min(430px, 100%);
+    margin: 0 0 2px;
+    padding: 10px 14px;
+    box-shadow: 0 1px 3px rgba(23, 77, 104, 0.08);
+  }
+  .search-ctl {
+    gap: 0;
+  }
+  .search-ctl > .visually-hidden {
+    position: absolute;
+  }
+  .search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  .search-box input[type="search"] {
+    width: 100%;
+    min-width: 0;
+    padding-left: 30px;
+    padding-right: 26px;
+  }
+  .search-ico {
+    position: absolute;
+    left: 9px;
+    width: 13px;
+    height: 13px;
+    color: var(--color-muted);
+    pointer-events: none;
+  }
+  .search-kbd {
+    position: absolute;
+    right: 8px;
+    font-size: 0.7rem;
+    color: var(--color-muted);
+    background: var(--color-sand-100);
+    border: 1px solid var(--color-arch);
+    border-radius: 4px;
+    padding: 0 5px;
+    pointer-events: none;
+  }
+  .align-search .preset-row {
+    margin-top: 8px;
+  }
+  .align-search .ctl-hint {
+    margin-top: 6px;
+    font-size: 0.82rem;
+  }
+
+  /* ---------- type-ahead combobox (T-38) ----------
+   * T-41: the bordered dropdown is the .suggest-panel — its header row is
+   * the kind quick-filter toolbar (visible only while the list is open),
+   * and the .suggest listbox below scrolls. */
+
+  .suggest-panel {
+    position: relative;
+    z-index: 20;
+    margin-top: 4px;
+    border: 1px solid var(--color-arch);
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: 0 8px 24px rgba(23, 77, 104, 0.16);
+    overflow: hidden;
+  }
+  .suggest-panel[hidden],
+  .suggest[hidden],
+  .preset-row[hidden],
+  .align-back-row[hidden] {
+    display: none;
+  }
+  .suggest {
+    max-height: 300px;
+    overflow-y: auto;
+  }
+  .suggest-panel .kind-row {
+    margin: 0;
+    padding: 8px 12px 7px;
+    border-bottom: 1px solid #ece2d2;
+  }
+  .suggest-panel .kind-pill-count {
+    margin-left: 2px;
+  }
+  .suggest-row {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    width: 100%;
+    text-align: left;
+    font: inherit;
+    border: 0;
+    border-bottom: 1px solid #ece2d2;
+    background: transparent;
+    padding: 8px 13px;
+    cursor: pointer;
+  }
+  .suggest-row:last-child {
+    border-bottom: 0;
+  }
+  .suggest-row:hover,
+  .suggest-row:focus {
+    background: rgba(55, 143, 189, 0.1);
+    outline: none;
+  }
+  .suggest-row.active {
+    background: rgba(55, 143, 189, 0.1);
+    box-shadow: inset 3px 0 0 var(--color-ocean);
+  }
+  .suggest-count {
+    margin-left: auto;
+    color: var(--color-muted);
+    font-size: 0.8em;
+    white-space: nowrap;
+  }
+  .suggest-none {
+    padding: 10px 13px;
+    color: var(--color-muted);
+  }
+  /* T-46: the honest window footer — always visible under the scrollable
+   * listbox while a broad query has matches beyond the rendered window, so
+   * the list never reads as complete (RULE-7: the count is derived). */
+  .suggest-more {
+    margin: 0;
+    padding: 7px 13px;
+    color: var(--color-muted);
+    font-size: 0.76rem;
+    border-top: 1px solid #ece2d2;
+  }
+
+  /* ---------- preset chips (T-38; RULE-7: only keys the index has) ---------- */
+
+  .preset-row {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+  }
+  .preset-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--color-muted);
+  }
+  .preset-chips {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 7px;
+  }
+  .preset-chip {
+    font: inherit;
+    font-size: 0.76rem;
+    color: var(--color-ink);
+    background: #fff;
+    border: 1px solid var(--color-arch);
+    border-radius: 999px;
+    padding: 2px 12px;
+    cursor: pointer;
+  }
+  .preset-chip:hover {
+    border-color: var(--color-ocean);
+    color: var(--color-ocean);
+    background: rgba(55, 143, 189, 0.1);
+  }
+
+  /* ---------- return chip (T-38 back round-trip) ---------- */
+
+  .align-back-row {
+    margin: 4px 0 12px;
+  }
+  .back-chip {
+    display: inline-block;
+    font-size: 0.82rem;
+    color: var(--color-ocean-deep);
+    background: rgba(55, 143, 189, 0.1);
+    border: 1px solid rgba(55, 143, 189, 0.32);
+    border-radius: 999px;
+    padding: 3px 14px;
+  }
+  .back-chip:hover {
+    text-decoration: none;
+    border-color: var(--color-ocean);
+    background: rgba(55, 143, 189, 0.18);
+  }
+
+  /* ---------- matrix legend + streams ---------- */
+
+  .legend {
+    display: flex;
+    gap: 8px 18px;
+    flex-wrap: wrap;
+    align-items: center;
+    margin: 16px 0 8px;
+    font-size: 0.84em;
+    color: #3b4853;
+  }
+  .legend-entry {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .legend-entry .cell {
+    flex: none;
+  }
+
+  /* T-42: a digest-variant chip — the dedesigned deck. The chip carries the
+     swatch + label + short digest (the counts + first-seen ride the title
+     tooltip); clicking isolates that digest (every other dot dims). */
+  .legend-chip {
+    font: inherit;
+    color: inherit;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    padding: 1px 7px;
+    cursor: pointer;
+  }
+  .legend-chip:hover {
+    background: rgba(55, 143, 189, 0.08);
+    border-color: rgba(55, 143, 189, 0.3);
+  }
+  .legend-chip.isolated {
+    background: rgba(23, 77, 104, 0.1);
+    border-color: rgba(23, 77, 104, 0.45);
+  }
+  .legend-var {
+    font-size: 0.76rem;
+    font-weight: 600;
+    color: var(--color-ink);
+  }
+  /* T-42: a variant chip that resolves its measured fn text shows the
+     signature instead of the bare digest — mono, wrapping, honest bytes
+     from the sidecar (never inferred). */
+  .legend-sig {
+    font-size: 0.76rem;
+    font-weight: 600;
+    color: var(--color-ink);
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-width: min(560px, 72vw);
+  }
+  .legend-chip:hover .legend-sig {
+    text-decoration: underline;
+    text-decoration-color: rgba(23, 77, 104, 0.25);
+    text-underline-offset: 2px;
+  }
+  .legend-count {
+    font-size: 0.68rem;
+  }
+  .legend-sep {
+    color: var(--color-arch);
+  }
+  .legend-info {
+    color: var(--color-ocean-deep);
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: help;
+    width: 18px;
+    height: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(55, 143, 189, 0.45);
+    border-radius: 50%;
+    background: rgba(55, 143, 189, 0.06);
+  }
+  .legend-info:hover {
+    background: rgba(55, 143, 189, 0.16);
+  }
+  .is-dimmed {
+    opacity: 0.2;
+  }
+
+  .stream {
+    margin: 14px 0;
+    padding: 12px 0;
+    border-top: 1px solid #ece2d2;
+  }
+  .stream:first-of-type {
+    border-top: 0;
+  }
+  .stream-head {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: baseline;
+    margin-bottom: 7px;
+  }
+  .stream-name {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    color: var(--color-ink);
+  }
+  .stream-summary {
+    display: flex;
+    gap: 7px;
+    flex-wrap: wrap;
+    margin: 2px 0 8px;
+  }
+
+  .arch-tag {
+    font-size: 0.7rem;
+    border-radius: 999px;
+    padding: 1px 11px;
+    white-space: nowrap;
+  }
+  .arch-tag.pre {
+    color: var(--color-muted);
+    background: #e9ecee;
+    border: 1px solid var(--color-arch);
+  }
+  .arch-tag.post {
+    color: #1d5f85;
+    background: rgba(55, 143, 189, 0.1);
+    border: 1px solid rgba(55, 143, 189, 0.32);
+  }
+
+  .sum-chip {
+    font-size: 0.76rem;
+    border-radius: 999px;
+    padding: 1px 12px;
+    border: 1px solid;
+    font-family: var(--font-mono);
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+  }
+  .sum-chip .cell {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    flex: none;
+  }
+  .sum-chip.variant {
+    color: var(--color-ink);
+    background: #fff;
+    border-color: var(--color-arch);
+  }
+  .sum-chip.present {
+    color: var(--color-island-deep);
+    background: rgba(125, 171, 89, 0.16);
+    border-color: rgba(125, 171, 89, 0.4);
+  }
+  .sum-chip.removed {
+    color: var(--color-rust);
+    background: rgba(239, 78, 40, 0.1);
+    border-color: rgba(239, 78, 40, 0.3);
+  }
+  .sum-chip.resigned {
+    color: var(--color-changed);
+    background: rgba(168, 98, 20, 0.13);
+    border-color: rgba(168, 98, 20, 0.35);
+  }
+  .sum-chip.absent {
+    color: var(--color-muted);
+    background: var(--color-sand-200);
+    border-color: var(--color-arch);
+  }
+
+  /* ---------- phone width: the stream arch tag wraps instead of pushing the
+     page sideways (verified by the headless 390px pass, T-39 Outcome) --- */
+
+  @media (max-width: 640px) {
+    .arch-tag {
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+  }
+
+  .stream-row {
+    display: grid;
+    gap: 3px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    min-width: 100%;
+  }
+
+  /* Pre-release previews render in their own distinct group below the stable
+     line, never as cells of it — so a preview's new variant can't make a later
+     backport read as a regression to legacy. */
+  .stream-previews {
+    margin-top: 8px;
+    padding: 6px 10px 2px;
+    border-top: 1px dashed var(--color-muted);
+    border-radius: 0 0 6px 6px;
+    background: rgba(168, 98, 20, 0.05);
+  }
+  .stream-previews-label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 0.7rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+  .stream-previews .stream-row {
+    min-width: 0;
+  }
+
+  /* ---------- matrix cells (RULE-1: the dots are the whole story) ---------- */
+
+  .cell {
+    display: inline-block;
+    width: var(--cell);
+    height: var(--cell);
+    border-radius: 3px;
+    flex: none;
+  }
+  .cell-same {
+    background: var(--color-present);
+  }
+  .cell-changed {
+    background: var(--color-amber);
+  }
+  .cell-added {
+    background: rgba(125, 171, 89, 0.16);
+    border: 1px solid var(--color-present);
+  }
+  .cell-removed {
+    background: rgba(203, 59, 27, 0.08);
+    border: 1px solid var(--color-removed);
+  }
+  .cell-absent {
+    background: var(--color-absent);
+  }
+  .cell-unknown {
+    background: repeating-linear-gradient(-45deg, #ece5d6 0 3px, #f7f1e5 3px 6px);
+    border: 1px solid var(--color-arch);
+  }
+
+  /* T-42: a present cell's dot is its measured digest-variant swatch
+     (cell-dv0…cell-dv7, the palette cycling past the 8th variant). The
+     status words — added/same/changed — no longer get their own dot color:
+     a color change within a stream IS the re-signature, and the word stays
+     in the tooltip/aria-label/dock. Rows measured under several digests at
+     once (cfg-variant artifacts) render a two-swatch split (.cell-dvm, the
+     gradient is inline). */
+  .cell-dv0 {
+    background: var(--dv0);
+  }
+  .cell-dv1 {
+    background: var(--dv1);
+  }
+  .cell-dv2 {
+    background: var(--dv2);
+  }
+  .cell-dv3 {
+    background: var(--dv3);
+  }
+  .cell-dv4 {
+    background: var(--dv4);
+  }
+  .cell-dv5 {
+    background: var(--dv5);
+  }
+  .cell-dv6 {
+    background: var(--dv6);
+  }
+  .cell-dv7 {
+    background: var(--dv7);
+  }
+  .cell.flag-pre {
+    box-shadow: inset 0 -3px 0 0 var(--color-amber);
+  }
+  .cell.flag-yanked {
+    outline: 1px dashed #7d8570;
+    outline-offset: 1px;
+  }
+
+  .doc-row {
+    margin: 5px 0;
+    font-size: 0.92em;
+  }
+
+  /* ---------- T-40: quick-filter kind pills over the suggestions ----------
+   * All / the two largest measured kinds / the ⚡ rule pill — labels are the
+   * kind tokens and every count is computed from the loaded bundle (RULE-7). */
+
+  .kind-row {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .kind-pills {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 7px;
+  }
+  .kind-pill {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 6px;
+    font: inherit;
+    font-family: var(--font-mono);
+    font-size: 0.76rem;
+    color: var(--color-ink);
+    background: #fff;
+    border: 1px solid var(--color-arch);
+    border-radius: 999px;
+    padding: 2px 12px;
+    cursor: pointer;
+  }
+  .kind-pill:hover {
+    border-color: var(--color-ocean);
+    color: var(--color-ocean);
+  }
+  .kind-pill.bolt {
+    background: rgba(168, 98, 20, 0.08);
+    border-color: rgba(168, 98, 20, 0.38);
+    color: var(--color-changed);
+  }
+  .kind-pill.bolt:hover {
+    border-color: var(--color-amber);
+  }
+  .kind-pill.active {
+    background: var(--color-ocean);
+    border-color: var(--color-ocean-deep);
+    color: #fff;
+  }
+  .kind-pill-count {
+    color: var(--color-muted);
+    font-size: 0.7em;
+  }
+  .kind-pill.active .kind-pill-count {
+    color: rgba(255, 255, 255, 0.85);
+  }
+
+  /* ---------- T-40: the matrix cells are focusable buttons, and the T-44
+     click-vs-hover FSM governs them. Activating one (click / Space / Enter)
+     docks it (.docked ring) and mounts the release popover; hover alone is
+     Layer-1 ambient scanning — a zero-layout-shift enlargement (transform
+     never reflows the grid) over the native `title` tooltip, no heavy UI. */
+
+  button.cell {
+    padding: 0;
+    border: 0;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+    border-radius: 3px;
+    position: relative;
+  }
+  button.cell:hover {
+    /* Layer 1: subtle enlargement while scanning — transform, so the dense
+       grid never reflows (hover must cost nothing). The raised cell paints
+       above its neighbours; the popover never mounts for hover. */
+    transform: scale(1.35);
+    z-index: 2;
+  }
+  button.cell:hover,
+  button.cell:focus-visible {
+    transition: transform 0.12s ease;
+  }
+  button.cell:focus-visible {
+    outline: 2px solid var(--color-ocean);
+    outline-offset: 1px;
+  }
+  /* Layer 2: the pinned (docked) ring — an outer focus ring naming the
+     release under inspection. var(--color-ink) is the deep ring; the wider
+     var(--color-sand-200) halo reads as a highlight on the white card behind
+     the dots (the design mock's #174d68 / #fae0b7 through the theme tokens). */
+  .cell.docked {
+    box-shadow: 0 0 0 2px var(--color-ink), 0 0 0 4px var(--color-sand-200);
+    z-index: 1;
+  }
+  /* Keep the pre-release/re-imprint bars legible while pinned — the pre flag
+     rides box-shadow too, so restate its inset line beside the dock ring. */
+  .cell.docked.flag-pre {
+    box-shadow:
+      inset 0 -3px 0 0 var(--color-amber),
+      0 0 0 2px var(--color-ink),
+      0 0 0 4px var(--color-sand-200);
+  }
+
+  /* ---------- T-44: the release popover (the dock column is gone — the
+     matrix owns the stage; a pinned cell floats this sheet over it). The
+     popover renders only while a cell is pinned (no inert placeholder) and
+     is positioned fixed by the component's measured rect (left/right clamps
+     + vertical flip near the bottom); before the first effect run it stays
+     invisible rather than flashing at the origin. */
+
+  .matrix-stage {
+    margin-top: 4px;
+  }
+  .release-popover {
+    position: fixed;
+    z-index: 40;
+    width: min(360px, calc(100vw - 24px));
+    background: var(--color-sand-50);
+    border: 1px solid #d9c9a8;
+    border-radius: 12px;
+    box-shadow: 0 10px 28px rgba(23, 77, 104, 0.16);
+    padding: 10px 12px 8px;
+    visibility: hidden;
+  }
+  .release-popover[style] {
+    visibility: visible;
+  }
+  .release-popover-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .release-chip {
+    font-size: 0.82rem;
+    font-weight: 700;
+    /* The deepest ink on a white fill — the channel is the popover's main
+       identity line, so it must not sit faintly against the sand body. */
+    color: var(--color-ink-deep);
+    background: #fff;
+    border: 1px solid #ded2bc;
+    border-radius: 6px;
+    padding: 1px 9px;
+    white-space: nowrap;
+  }
+  .release-flag {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-radius: 999px;
+    padding: 1px 8px;
+    white-space: nowrap;
+  }
+  .release-flag.flag-yanked {
+    color: #a6372a;
+    background: rgba(166, 55, 42, 0.1);
+    border: 1px solid rgba(166, 55, 42, 0.4);
+  }
+  .release-flag.flag-pre {
+    color: var(--color-amber);
+    background: rgba(168, 98, 20, 0.1);
+    border: 1px solid rgba(168, 98, 20, 0.4);
+  }
+  .release-dismiss {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    font: inherit;
+    color: var(--color-muted);
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  .release-dismiss:hover {
+    color: var(--color-ink-deep);
+    border-color: #ece2d2;
+    background: #fff;
+  }
+  .release-status {
+    margin: 7px 0 0;
+    font-size: 0.92rem;
+    line-height: 1.45;
+    color: var(--color-ink-deep);
+  }
+  .release-variants {
+    margin: 4px 0 0;
+    font-size: 0.72rem;
+    color: var(--color-muted);
+  }
+
+  /* T-47 decision 2b: the measured pub-member delta of a re-signed type
+   * cell, resolved from the lazy type-members sidecar. */
+  .release-members {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 6px;
+    margin: 6px 0 0;
+    font-size: 0.8rem;
+  }
+  .release-members .release-label {
+    color: var(--color-muted);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .release-members-delta {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+  .release-members-delta .member-seg {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    background: #fff;
+    border: 1px solid #ece2d2;
+    border-radius: 4px;
+    padding: 1px 6px;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .release-members-delta .member-removed {
+    color: var(--color-removed, #a33);
+    border-color: #e6cdcd;
+  }
+  .release-members-delta .member-added {
+    color: var(--color-added, #2a7);
+    border-color: #cbe6d5;
+  }
+  .release-members-note {
+    font-size: 0.72rem;
+  }
+  .release-source {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    margin-top: 9px;
+    padding-top: 8px;
+    border-top: 1px solid #ece2d2;
+    min-width: 0;
+  }
+  .release-label {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-muted);
+  }
+  .release-source-links {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    min-width: 0;
+  }
+  .release-source-link {
+    font-size: 0.82rem;
+    color: var(--color-ocean-deep);
+    word-break: break-all;
+  }
+  /* The github anchor (T-45) sits beside the docs.rs coordinate anchor of the
+     same measured location — visually secondary so the coordinate that both
+     reference stays the prominent token. */
+  .release-source-link-gh {
+    color: var(--color-ink-deep);
+  }
+  .release-source-link-gh::before {
+    content: "· ";
+    color: var(--color-muted);
+  }
+  .release-source-link:hover {
+    text-decoration: underline;
+  }
+  .release-source-empty {
+    font-size: 0.82rem;
+  }
+  .release-ramps {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 9px;
+    padding-top: 8px;
+    border-top: 1px solid #ece2d2;
+  }
+  .ramp-chip {
+    font-size: 0.74rem;
+    color: var(--color-ocean-deep);
+    background: #fff;
+    border: 1px solid #ece2d2;
+    border-radius: 999px;
+    padding: 2px 10px;
+    white-space: nowrap;
+  }
+  a.ramp-chip:hover {
+    border-color: rgba(55, 143, 189, 0.5);
+  }
+  .ramp-chip.ramp-off {
+    color: var(--color-muted);
+    cursor: default;
+  }
+
+  /* the shared number pill (deck cards, hero stats — T-42) */
+  .stat-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: #fff;
+    border: 1px solid #ece2d2;
+    border-radius: 999px;
+    padding: 1px 10px 1px 7px;
+    font-size: 0.72rem;
+    color: var(--color-ink);
+    white-space: nowrap;
+    cursor: help;
+  }
+  .stat-pill svg {
+    width: 11px;
+    height: 11px;
+    color: var(--color-ocean-deep);
+    flex: none;
+  }
+
+  /* ---------- T-41: the absent-stream collapse (never-measured streams
+     fold into one honest summary row; expand renders every dot) ---------- */
+
+  .absent-streams {
+    margin: 14px 0 4px;
+    border: 1px dashed #d9c9a8;
+    border-radius: 10px;
+    background: rgba(255, 253, 250, 0.75);
+  }
+  .absent-toggle {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    width: 100%;
+    text-align: left;
+    font: inherit;
+    background: transparent;
+    border: 0;
+    padding: 10px 14px;
+    cursor: pointer;
+    color: var(--color-ink-deep);
+  }
+  .absent-toggle:hover {
+    background: rgba(55, 143, 189, 0.06);
+  }
+  .absent-caret {
+    color: var(--color-ocean);
+    flex: none;
+  }
+  .absent-text {
+    font-size: 0.9em;
+  }
+  .absent-action {
+    margin-left: auto;
+    font-size: 0.7rem;
+    color: var(--color-ocean-deep);
+    white-space: nowrap;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .absent-note {
+    margin: 0;
+    padding: 0 14px 10px;
+    font-size: 0.82rem;
+  }
+  .absent-streams .stream {
+    margin: 0;
+    padding: 10px 14px 2px;
+    border-top: 1px solid #ece2d2;
+  }
+  .absent-streams .stream:last-of-type {
+    padding-bottom: 10px;
+  }
+
+  /* ---------- T-42 hero: digest-variant deck cards + item stats ---------- */
+
+  .deck {
+    margin: 10px 0 0;
+  }
+  .deck-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+  }
+  .deck-head h3 {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--color-ink);
+  }
+  .deck-sub {
+    font-size: 0.72rem;
+    color: var(--color-muted);
+  }
+  .deck-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 10px;
+    align-items: start;
+  }
+  .var-card {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    text-align: left;
+    font: inherit;
+    color: inherit;
+    background: #fff;
+    border: 1px solid #ece2d2;
+    border-radius: 12px;
+    padding: 10px 12px;
+    cursor: pointer;
+    box-shadow: 0 1px 2px rgba(23, 77, 104, 0.05);
+  }
+  .var-card:hover {
+    border-color: rgba(55, 143, 189, 0.45);
+  }
+  .var-card.isolated {
+    border-color: var(--color-ocean);
+    box-shadow: 0 0 0 2px rgba(55, 143, 189, 0.35);
+  }
+  .var-card-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+  }
+  .var-card-head .cell {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex: none;
+  }
+  .var-card-head strong {
+    font-family: var(--font-mono);
+    font-size: 0.84rem;
+    color: var(--color-ink);
+    white-space: nowrap;
+  }
+  .var-digest {
+    margin-left: auto;
+    font-size: 0.72rem;
+    color: var(--color-ink);
+    background: var(--color-sand-100);
+    border: 1px solid #ece2d2;
+    border-radius: 5px;
+    padding: 0 6px;
+    cursor: help;
+  }
+  .var-sig {
+    display: block;
+    font-size: 0.84rem;
+    line-height: 1.45;
+    color: var(--color-ink-deep);
+    background: var(--color-sand-50);
+    border: 1px solid #ece2d2;
+    border-radius: 8px;
+    padding: 7px 10px;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .var-card-stats {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: auto;
+  }
+  .var-forks {
+    flex-basis: 100%;
+    font-size: 0.72rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  /* ---------- T-49: the member contract on the variant deck ----------
+   * A member-bearing type's variants get a member count (and the shift vs the
+   * previous variant in first-measured order) on their card, plus a
+   * comparative panel that diffs each variant against one chosen base and
+   * expands to the actual measured segments. The segments reuse the Changes
+   * rows' chip vocabulary (`.member-seg` + removed/added) — one vocabulary,
+   * two surfaces — so the panel and the row never drift. */
+  .var-members {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    color: #5b5346;
+  }
+  .member-shift {
+    color: #7a7266;
+  }
+  .member-shift.up {
+    color: var(--color-added, #2a7);
+  }
+  .member-shift.down {
+    color: var(--color-removed, #a33);
+  }
+  .member-base-tag {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #8a8172;
+  }
+  .member-panel {
+    margin-top: 14px;
+    border-top: 1px solid #ece2d2;
+    padding-top: 10px;
+  }
+  .member-panel .subnote {
+    margin: 6px 2px 0;
+  }
+  .member-base-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin: 8px 2px;
+  }
+  .member-base-chip {
+    font-family: var(--font-mono);
+    font-size: 0.76rem;
+    background: #fff;
+    border: 1px solid #e3dac9;
+    border-radius: 999px;
+    padding: 2px 9px;
+    cursor: pointer;
+  }
+  .member-base-chip.selected {
+    border-color: #b99b6b;
+    background: #fdf6e9;
+    font-weight: 600;
+  }
+  .member-deltas {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .member-delta-row {
+    border: 1px solid #f0e8da;
+    border-radius: 8px;
+    padding: 6px 9px;
+    background: #fffdf8;
+  }
+  .member-delta-head {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    flex-wrap: wrap;
+    font-size: 0.82rem;
+  }
+  .member-toggle {
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    background: none;
+    border: 1px solid #e3dac9;
+    border-radius: 4px;
+    padding: 1px 6px;
+    cursor: pointer;
+  }
+  .member-delta-segs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 6px;
+  }
+  .member-delta-segs .member-seg {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    background: #fff;
+    border: 1px solid #ece2d2;
+    border-radius: 4px;
+    padding: 1px 6px;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .member-delta-segs .member-removed {
+    color: var(--color-removed, #a33);
+    border-color: #e6cdcd;
+  }
+  .member-delta-segs .member-added {
+    color: var(--color-added, #2a7);
+    border-color: #cbe6d5;
+  }
+
+  .hero-stats {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin: 12px 0 4px;
+  }
+
+  /* ---------- T-43: the item docstring under the title ----------
+   * The promoted Title of the doc pipeline: an fn item's measured docstring
+   * renders once under the kind:name hero (never repeated on the variant
+   * cards — those stay signature-only), with a mono caption of the measured
+   * counts behind it. The doc is a release-resolved byte string from the
+   * doc-texts sidecar (rule 7); it never rides the boot path. */
+
+  .item-doc {
+    margin: 8px 2px 0;
+    max-width: 76ch;
+  }
+  .item-doc-text {
+    margin: 0;
+    font-size: 1.05rem;
+    line-height: 1.5;
+    color: var(--color-ink-deep);
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    background: var(--color-sand-50);
+    border: 1px solid #ece2d2;
+    border-left: 3px solid var(--color-ocean);
+    border-radius: 8px;
+    padding: 9px 12px;
+  }
+  .view.has-item .item-doc-text {
+    font-size: 1.08rem;
+  }
+  .item-doc-cap {
+    margin: 5px 3px 0;
+    font-size: 0.72rem;
+    color: var(--color-muted);
+    cursor: help;
+  }
+
+  /* the per-variant measured doc delta (T-43): a compact chip on a variant
+     card whose releases read their own docstring — the tooltip carries the
+     variant doc + the baseline → variant line diff, the face only the line
+     counts, so the baseline text is never duplicated on the deck */
+  .doc-delta {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    align-self: flex-start;
+    font-size: 0.72rem;
+    color: var(--color-amber);
+    background: rgba(168, 98, 20, 0.08);
+    border: 1px solid rgba(168, 98, 20, 0.34);
+    border-radius: 999px;
+    padding: 1px 10px;
+    cursor: help;
+    white-space: nowrap;
+  }
+  .doc-delta-count {
+    font-weight: 700;
+  }
+
+  /* the fork matrix is a grid of fork cards; the never-measured collapse
+     spans the full width below them */
+  .matrix-stage .matrix {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 12px;
+    align-items: start;
+    min-width: 0;
+    grid-column: 1;
+  }
+  .matrix > .stream {
+    margin: 0;
+    padding: 11px 13px;
+    border: 1px solid #ece2d2;
+    border-radius: 12px;
+    background: #fff;
+  }
+  .matrix > .stream:first-of-type {
+    border-top: 1px solid #ece2d2;
+  }
+  .matrix > .absent-streams {
+    grid-column: 1 / -1;
+  }
+  .matrix .stream-row {
+    min-width: 0;
+  }
+
+  @media (max-width: 560px) {
+    .align-band {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .picker.align-search {
+      width: 100%;
+    }
+    .deck-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+}

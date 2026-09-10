@@ -1,0 +1,86 @@
+name: pages
+
+# Build the fork-map viewer and publish it to GitHub Pages.
+#
+# The repo holds the viewer source only. The data comes from `map-data` and
+# the study docs from `gpui-corpus/curation/research` (both public); the
+# scripts fetch them into the places the SPA expects before the build, so the
+# published artifact carries its own `forkmap/data` + `docs` mirrors.
+#
+# The scheduled run keeps the site fresh behind map-data's weekly export
+# (Mondays 07:00 UTC).
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "0 9 * * 1"
+  workflow_dispatch:
+  # Future: repository_dispatch from map-data when its export lands. A
+  # cross-repo dispatch needs a PAT, so v1 relies on push/schedule/dispatch.
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Check out the viewer
+        uses: actions/checkout@v4
+
+      - name: Fetch the data bundle
+        run: ./scripts/fetch-data.sh
+
+      - name: Fetch the study docs
+        run: ./scripts/fetch-docs.sh
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        working-directory: web/forkmap-spa
+        run: bun install --frozen-lockfile
+
+      - name: Typecheck
+        working-directory: web/forkmap-spa
+        run: bunx tsc --noEmit
+
+      - name: Unit tests (data-agnostic)
+        working-directory: web/forkmap-spa
+        run: bun test
+
+      - name: Build the site
+        working-directory: web/forkmap-spa
+        run: bun run build
+
+      - name: Smoke the served artifact (headless Chrome)
+        working-directory: web/forkmap-spa
+        run: python3 smoke.py
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload the artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: web/forkmap-spa/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
