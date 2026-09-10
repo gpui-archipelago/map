@@ -1,0 +1,1686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The GPUI Fork Map — gpui-archipelago</title>
+  <meta name="description" content="Every fork is an island. Empirical measurement, cross-fork alignment, and diff tooling for the GPUI ecosystem outside of Zed.">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            ink: '#174d68',
+            coral: {
+              DEFAULT: '#ef4e28',
+              bright: '#fd6f43',
+              tint: '#ef4e281f',
+            },
+            rust: '#cb3b1b',
+            ocean: {
+              DEFAULT: '#378fbd',
+              hairline: '#378fbd59',
+              tint: '#378fbd14'
+            },
+            island: {
+              DEFAULT: '#7dab59',
+              tint: '#7dab5920'
+            },
+            amber: {
+              DEFAULT: '#a86214',
+              tint: '#a862141f'
+            },
+            sand: {
+              50: '#fffdfa',
+              100: '#fff8ed',
+              200: '#fae0b766',
+              300: '#fae0b780'
+            },
+            archGray: {
+              200: '#dde1e3',
+              600: '#5b6368'
+            }
+          },
+          fontFamily: {
+            sans: ['"Source Sans 3"', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Typography: Source Sans 3 and JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+
+  <style>
+    /* Custom delicate scrollbars matching archipelago aesthetics */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #fffdfa;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #dde1e3;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #378fbd;
+    }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+<body class="bg-white text-ink font-sans antialiased min-h-screen flex flex-col selection:bg-coral-tint selection:text-rust">
+
+  <!-- Toast Notification Feedback -->
+  <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-16 opacity-0 transition-all duration-300 pointer-events-none flex items-center gap-2.5 px-4 py-2.5 rounded-md bg-white border border-archGray-200 text-ink shadow-lg font-mono text-xs">
+    <span class="inline-block w-2 h-2 rounded-full bg-coral"></span>
+    <span id="toast-msg">Copied to clipboard</span>
+  </div>
+
+  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-ocean-hairline">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <!-- Logo Branding -->
+        <a href="javascript:void(0)" onclick="switchView('overview')" class="group flex items-center gap-3 no-underline">
+          <div class="w-9 h-9 rounded-md bg-sand-200 border border-ocean-hairline flex items-center justify-center text-ink font-mono font-bold text-base shadow-sm group-hover:bg-sand-300 transition">
+            🏝️
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-mono text-sm font-semibold tracking-tight text-ink group-hover:text-coral transition">gpui-archipelago</span>
+              <span class="font-mono text-[11px] text-archGray-600 font-normal">(The Fork Map)</span>
+              <span class="inline-block rounded px-1.5 py-0.2 font-mono text-[10px] bg-sand-200 text-ink border border-ocean-hairline">schema 2026.1</span>
+            </div>
+            <p class="text-[11px] font-mono text-archGray-600 hidden sm:block">every fork is an island · empirical cross-fork alignment</p>
+          </div>
+        </a>
+
+        <!-- Dataset Quick Metrics & External Links -->
+        <div class="hidden lg:flex items-center gap-3 text-xs font-mono text-archGray-600 bg-sand-100 border border-archGray-200 px-3.5 py-1.5 rounded-md">
+          <span class="flex items-center gap-1.5 text-ink font-semibold">
+            <span class="w-2 h-2 rounded-full bg-island animate-pulse"></span>
+            6 forks
+          </span>
+          <span class="text-archGray-200">·</span>
+          <span>67 releases</span>
+          <span class="text-archGray-200">·</span>
+          <span class="text-ink font-medium">166,292 records</span>
+          <span class="text-archGray-200">·</span>
+          <span>20 shim tables</span>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <button onclick="openStudyModal('rules')" class="text-xs font-mono text-archGray-600 hover:text-coral transition hidden sm:inline-block">
+            honest rules (1–7)
+          </button>
+          <a href="https://github.com/gpui-archipelago" target="_blank" rel="noreferrer" class="text-xs font-mono text-ink bg-sand-100 hover:bg-sand-200 border border-archGray-200 px-2.5 py-1.5 rounded transition flex items-center gap-1">
+            <span>GitHub</span>
+            <span class="text-[10px] text-archGray-600">↗</span>
+          </a>
+        </div>
+      </div>
+
+      <nav class="flex space-x-1 border-t border-ocean-hairline/60 py-2 overflow-x-auto no-scrollbar" id="nav-tabs">
+        <button onclick="switchView('overview')" id="tab-overview" class="tab-btn px-3 py-1.5 rounded text-xs font-medium transition text-archGray-600 hover:text-ink hover:bg-sand-100 whitespace-nowrap">
+          Map Overview
+        </button>
+        <button onclick="switchView('changes')" id="tab-changes" class="tab-btn px-3 py-1.5 rounded text-xs font-medium transition bg-sand-200 text-ink font-semibold border border-ocean-hairline shadow-sm whitespace-nowrap flex items-center gap-1.5">
+          <span>Changes Delta</span>
+          <span class="text-[10px] px-1.5 py-0.2 rounded-full bg-coral-tint text-rust font-mono">168 diff</span>
+        </button>
+        <button onclick="switchView('alignment')" id="tab-alignment" class="tab-btn px-3 py-1.5 rounded text-xs font-medium transition text-archGray-600 hover:text-ink hover:bg-sand-100 whitespace-nowrap">
+          Alignment Matrix
+        </button>
+        <button onclick="switchView('configure')" id="tab-configure" class="tab-btn px-3 py-1.5 rounded text-xs font-medium transition text-archGray-600 hover:text-ink hover:bg-sand-100 whitespace-nowrap">
+          Configure & Scaffold
+        </button>
+        <button onclick="switchView('journal')" id="tab-journal" class="tab-btn px-3 py-1.5 rounded text-xs font-medium transition text-archGray-600 hover:text-ink hover:bg-sand-100 whitespace-nowrap">
+          Release Journal
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-10">
+
+    <!-- =========================================================================
+        VIEW 1: OVERVIEW & TRUTH LAYERS
+       ========================================================================= -->
+    <section id="view-overview" class="view-panel hidden space-y-8">
+      <!-- Archipelago Hero Header -->
+      <div class="relative overflow-hidden rounded-xl bg-sand-100 border border-ocean-hairline p-6 sm:p-10">
+        <div class="max-w-3xl space-y-3 relative z-10">
+          <h1 class="text-3xl sm:text-4xl font-semibold tracking-tight text-ink leading-tight">
+            The GPUI fork map
+          </h1>
+          <p class="font-mono text-xs text-archGray-600">
+            (crates.io cross-fork alignment & empirical measurement)
+          </p>
+
+          <blockquote class="border-l-2 border-ocean pl-4 mt-4 text-sm sm:text-base text-ink italic font-normal leading-relaxed">
+            Every fork is an island. There’s no mainland and no one’s building one, so the islands have to find each other. Here they can.
+          </blockquote>
+
+          <p class="text-sm text-archGray-600 leading-relaxed pt-2">
+            Zed's UI framework is republished on <code class="text-ink bg-white px-1.5 py-0.5 rounded border border-archGray-200 font-mono text-xs">crates.io</code> as six packages (<code class="font-mono text-coral font-semibold">gpui</code>, <code class="font-mono text-coral font-semibold">gpui-ce</code>, <code class="font-mono text-coral font-semibold">gpui-unofficial</code>, <code class="font-mono text-coral font-semibold">gpui-pre</code>, <code class="font-mono text-coral font-semibold">kael</code>, <code class="font-mono text-coral font-semibold">gpui-box</code>) under incomparable version numbers. This map answers the questions names cannot:
+          </p>
+        </div>
+
+        <!-- Four Interactive Workflow Action Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-8 relative z-10">
+          <div onclick="switchView('changes')" class="p-4 rounded-lg bg-white border border-archGray-200 hover:border-ocean hover:shadow-md transition cursor-pointer group">
+            <div class="text-coral font-mono text-[11px] font-semibold uppercase tracking-wider mb-1 flex items-center justify-between">
+              <span>01 · Changes view</span>
+              <span class="opacity-0 group-hover:opacity-100 transition">→</span>
+            </div>
+            <h3 class="text-sm font-semibold text-ink mb-1">What changed</h3>
+            <p class="text-xs text-archGray-600 leading-relaxed">
+              Deltas between any two releases: added, removed, or re-signed. Within a fork is a changelog; across forks is a snapshot difference.
+            </p>
+          </div>
+
+          <div onclick="switchView('alignment')" class="p-4 rounded-lg bg-white border border-archGray-200 hover:border-ocean hover:shadow-md transition cursor-pointer group">
+            <div class="text-ocean font-mono text-[11px] font-semibold uppercase tracking-wider mb-1 flex items-center justify-between">
+              <span>02 · Alignment view</span>
+              <span class="opacity-0 group-hover:opacity-100 transition">→</span>
+            </div>
+            <h3 class="text-sm font-semibold text-ink mb-1">Who carries it</h3>
+            <p class="text-xs text-archGray-600 leading-relaxed">
+              Type an item (<code class="font-mono text-ink">kind:name</code>) to observe every fork release that preserves it, removed it, or re-signed it.
+            </p>
+          </div>
+
+          <div onclick="switchView('configure')" class="p-4 rounded-lg bg-white border border-archGray-200 hover:border-ocean hover:shadow-md transition cursor-pointer group">
+            <div class="text-island font-mono text-[11px] font-semibold uppercase tracking-wider mb-1 flex items-center justify-between">
+              <span>03 · Configure view</span>
+              <span class="opacity-0 group-hover:opacity-100 transition">→</span>
+            </div>
+            <h3 class="text-sm font-semibold text-ink mb-1">Which fork to bind</h3>
+            <p class="text-xs text-archGray-600 leading-relaxed">
+              Pick a provider to render byte-equal <code class="font-mono text-xs">Cargo.toml</code> and starter code matching <code class="font-mono text-xs">cargo gocar new</code> output.
+            </p>
+          </div>
+
+          <div onclick="switchView('journal')" class="p-4 rounded-lg bg-white border border-archGray-200 hover:border-ocean hover:shadow-md transition cursor-pointer group">
+            <div class="text-amber font-mono text-[11px] font-semibold uppercase tracking-wider mb-1 flex items-center justify-between">
+              <span>04 · Journal view</span>
+              <span class="opacity-0 group-hover:opacity-100 transition">→</span>
+            </div>
+            <h3 class="text-sm font-semibold text-ink mb-1">Release timeline</h3>
+            <p class="text-xs text-archGray-600 leading-relaxed">
+              Continuous chronological scroll through all 67 releases, tracking exact additions, removals, and repackages.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-4 rounded-lg bg-sand-50 border border-ocean-hairline flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-archGray-600 font-mono">
+        <div>
+          <span class="font-semibold text-ink">Data as of 2026-09-05T05:05:17+00:00:</span>
+          <span> 6 forks · 67 published versions · 166,292 measured item records · 20 shim tables</span>
+        </div>
+        <div class="text-rust bg-coral-tint px-2 py-0.5 rounded border border-coral/20 self-start sm:self-auto font-medium">
+          no two forks share identical measured surfaces
+        </div>
+      </div>
+
+      <!-- Three Truth Layers Table & Compile Evidence -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <!-- Three Truth Layers -->
+        <div class="lg:col-span-7 space-y-4">
+          <div class="flex items-center justify-between">
+            <h2 class="text-lg font-semibold text-ink">Three Truth Layers</h2>
+            <span class="text-xs font-mono text-archGray-600">Separation of attestation</span>
+          </div>
+
+          <div class="border border-archGray-200 rounded-lg overflow-hidden bg-white shadow-sm">
+            <table class="min-w-full divide-y divide-archGray-200 text-left text-xs">
+              <thead class="bg-sand-50 font-mono text-ink">
+                <tr>
+                  <th class="px-4 py-3 font-semibold">Layer</th>
+                  <th class="px-4 py-3 font-semibold">What the map shows</th>
+                  <th class="px-4 py-3 font-semibold">Origin</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-archGray-200/80">
+                <tr class="hover:bg-sand-50/60 transition">
+                  <td class="px-4 py-3.5 whitespace-nowrap">
+                    <span class="inline-block whitespace-nowrap rounded px-2 py-0.5 text-xs font-medium bg-ocean-tint text-ocean border border-ocean/30 font-mono">
+                      Registry truth
+                    </span>
+                  </td>
+                  <td class="px-4 py-3.5 text-ink">
+                    Published versions, yanked / prerelease flags, declared <code class="font-mono text-rust bg-sand-100 px-1 py-0.2 rounded">rust-version</code> (never an attestation).
+                  </td>
+                  <td class="px-4 py-3.5 text-archGray-600 font-mono text-[11px]">live crates.io sync</td>
+                </tr>
+                <tr class="hover:bg-sand-50/60 transition">
+                  <td class="px-4 py-3.5 whitespace-nowrap">
+                    <span class="inline-block whitespace-nowrap rounded px-2 py-0.5 text-xs font-medium bg-island-tint text-island border border-island/30 font-mono">
+                      Measured
+                    </span>
+                  </td>
+                  <td class="px-4 py-3.5 text-ink">
+                    Per-version item surfaces (<code class="font-mono text-xs">kind:name</code> + digest), whole-surface hashes.
+                  </td>
+                  <td class="px-4 py-3.5 text-archGray-600 font-mono text-[11px]">syn-level corpus analysis</td>
+                </tr>
+                <tr class="hover:bg-sand-50/60 transition">
+                  <td class="px-4 py-3.5 whitespace-nowrap">
+                    <span class="inline-block whitespace-nowrap rounded px-2 py-0.5 text-xs font-medium bg-sand-200 text-archGray-600 border border-archGray-200 font-mono">
+                      Not yet measured
+                    </span>
+                  </td>
+                  <td class="px-4 py-3.5 text-archGray-600 leading-relaxed">
+                    Derives, trait interfaces, auto-traits, compiler floors, cfg evaluations — shown as <em>not measured</em>, never guessed.
+                  </td>
+                  <td class="px-4 py-3.5 text-archGray-600 font-mono text-[11px]">phase 3 rustdoc passes</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Honest Display Rules Box -->
+          <div class="p-5 rounded-lg bg-sand-50 border border-ocean-hairline space-y-3">
+            <div class="flex items-center justify-between">
+              <h3 class="text-xs font-semibold text-ink uppercase font-mono tracking-wider">
+                Honest Display Rules (RULE-1 to RULE-7)
+              </h3>
+              <button onclick="openStudyModal('rules')" class="text-xs font-mono text-coral hover:underline">Read All 7 →</button>
+            </div>
+            <ul class="text-xs text-archGray-600 space-y-2 leading-relaxed">
+              <li class="flex items-start gap-2">
+                <strong class="font-mono text-ink shrink-0">RULE-1:</strong>
+                <span>Epochs are exact-copy-only within a stream. No cross-fork "same generation" badges exist anywhere on this site.</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <strong class="font-mono text-ink shrink-0">RULE-2:</strong>
+                <span>Items are qualified <code class="font-mono text-ink">kind:name</code>. Doc comment edits count toward a type's digest as re-signatures.</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <strong class="font-mono text-ink shrink-0">RULE-5:</strong>
+                <span>Compile-verified badges appear only where real projects were compiled against crates.io artifacts.</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="lg:col-span-5 space-y-4">
+          <div class="flex items-center justify-between">
+            <h2 class="text-lg font-semibold text-ink">Verified Compiles</h2>
+            <span class="text-xs font-mono text-island font-semibold">RULE-5 Provenance</span>
+          </div>
+
+          <div class="bg-white border border-archGray-200 rounded-lg p-5 space-y-4 shadow-sm">
+            <p class="text-xs text-archGray-600 leading-relaxed">
+              Only studies that compiled real artifacts may badge a release (six-provider scaffold matrix in doc 07 and kit-rebase probes in doc 12).
+            </p>
+
+            <div class="space-y-2" id="overview-badge-list">
+              <!-- Rendered via JS -->
+            </div>
+
+            <!-- Kit Probes Section -->
+            <div class="pt-3 border-t border-archGray-200">
+              <h4 class="text-xs font-semibold text-ink mb-2 font-mono">Kit probes — the compile story behind two kits</h4>
+              <div class="space-y-2.5 text-xs">
+                <div class="p-3 rounded bg-sand-50 border border-ocean-hairline">
+                  <div class="flex justify-between items-center font-mono text-[11px]">
+                    <strong class="text-ink">gpui-kit 0.6.0</strong>
+                    <span class="text-island font-semibold bg-island-tint px-1.5 py-0.5 rounded border border-island/30">exit 0 (one engine)</span>
+                  </div>
+                  <p class="text-[11px] text-archGray-600 mt-1.5 leading-relaxed">
+                    binds gpui-pre ^0.3.1 (via index rename to `gpui`) → target gpui-unofficial 1.19.0-pre.
+                  </p>
+                  <button onclick="openStudyModal('doc12')" class="text-[11px] font-mono text-coral hover:underline mt-1 inline-block">evidence: doc 12 →</button>
+                </div>
+
+                <div class="p-3 rounded bg-sand-50 border border-ocean-hairline">
+                  <div class="flex justify-between items-center font-mono text-[11px]">
+                    <strong class="text-ink">gpuikit 0.9.0</strong>
+                    <span class="text-amber font-semibold bg-amber-tint px-1.5 py-0.5 rounded border border-amber/30">1 re-signature deep</span>
+                  </div>
+                  <p class="text-[11px] text-archGray-600 mt-1.5 leading-relaxed">
+                    Blocked for untouched kit (<code class="font-mono text-xs">Window::blur()</code> → <code class="font-mono text-xs">Window::blur(cx)</code>). Exonerated alias shim.
+                  </p>
+                  <button onclick="openStudyModal('doc12')" class="text-[11px] font-mono text-coral hover:underline mt-1 inline-block">evidence: doc 12 →</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================================
+        VIEW 2: CHANGES DELTA VIEW
+       ========================================================================= -->
+    <section id="view-changes" class="view-panel space-y-6">
+      <div class="border-b border-ocean-hairline pb-4">
+        <h1 class="text-2xl sm:text-3xl font-semibold tracking-tight text-ink">
+          Changes <span class="text-xs font-mono font-normal text-archGray-600 align-middle ml-2 px-2 py-0.5 rounded bg-sand-100 border border-ocean-hairline">item-set deltas between releases</span>
+        </h1>
+        <p class="text-xs sm:text-sm text-archGray-600 mt-1 max-w-3xl leading-relaxed">
+          Pick any two releases of any fork(s) — every measured item added, removed or re-signed between them, computed from per-version surfaces in the bundle.
+        </p>
+      </div>
+
+      <div class="bg-sand-50 border border-ocean-hairline rounded-xl p-5 shadow-sm">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
+          <!-- Release A -->
+          <div class="lg:col-span-5 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-mono font-semibold uppercase tracking-wider text-ink">Release A</span>
+              <span class="text-[11px] font-mono text-archGray-600">Baseline surface</span>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <select id="diff-fork-a" onchange="onForkAChange()" class="bg-white border border-archGray-200 rounded px-3 py-2 text-xs font-mono text-ink focus:outline-none focus:ring-1 focus:ring-ocean">
+                <!-- Injected via JS -->
+              </select>
+              <select id="diff-ver-a" onchange="updateDiffView()" class="bg-white border border-archGray-200 rounded px-3 py-2 text-xs font-mono text-ink focus:outline-none focus:ring-1 focus:ring-ocean">
+                <!-- Injected via JS -->
+              </select>
+            </div>
+          </div>
+
+          <!-- Swap Button -->
+          <div class="lg:col-span-2 flex flex-col items-center justify-center pt-2">
+            <button onclick="swapDiffReleases()" class="px-3 py-1.5 rounded bg-white hover:bg-sand-100 text-ink border border-archGray-200 transition text-xs font-mono flex items-center gap-1.5 shadow-sm" title="Swap Releases A and B">
+              <svg class="w-3.5 h-3.5 text-coral" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" strokeWidth="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+              </svg>
+              <span>swap</span>
+            </button>
+          </div>
+
+          <!-- Release B -->
+          <div class="lg:col-span-5 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-mono font-semibold uppercase tracking-wider text-ink">Release B</span>
+              <span class="text-[11px] font-mono text-archGray-600">Target surface</span>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <select id="diff-fork-b" onchange="onForkBChange()" class="bg-white border border-archGray-200 rounded px-3 py-2 text-xs font-mono text-ink focus:outline-none focus:ring-1 focus:ring-ocean">
+                <!-- Injected via JS -->
+              </select>
+              <select id="diff-ver-b" onchange="updateDiffView()" class="bg-white border border-archGray-200 rounded px-3 py-2 text-xs font-mono text-ink focus:outline-none focus:ring-1 focus:ring-ocean">
+                <!-- Injected via JS -->
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recorded Stories Presets -->
+        <div class="mt-4 pt-3 border-t border-archGray-200/80 flex flex-wrap items-center gap-2 text-xs">
+          <span class="text-archGray-600 font-mono text-[11px]">recorded stories:</span>
+          <button onclick="setDiffPreset('gpui-unofficial', '1.14.2', 'gpui-ce', '0.2.2')" class="px-2.5 py-1 rounded bg-white hover:bg-sand-100 text-ink font-mono text-[11px] transition border border-archGray-200">
+            uno 1.14.2 → ce 0.2.2 (cross-fork 168 diff)
+          </button>
+          <button onclick="setDiffPreset('gpui-unofficial', '1.16.3', 'gpui-unofficial', '1.17.2')" class="px-2.5 py-1 rounded bg-white hover:bg-sand-100 text-ink font-mono text-[11px] transition border border-archGray-200">
+            uno 1.16.3 → 1.17.2 (frame_trace dropped)
+          </button>
+          <button onclick="setDiffPreset('kael', '0.1.2', 'kael', '0.2.0')" class="px-2.5 py-1 rounded bg-white hover:bg-sand-100 text-ink font-mono text-[11px] transition border border-archGray-200">
+            kael 0.1.2 → 0.2.0 (AccessibilityNode re-sign)
+          </button>
+        </div>
+      </div>
+
+      <!-- Release Detail Lines -->
+      <div id="changes-release-detail" class="space-y-2 text-xs font-mono">
+        <!-- Rendered via JS -->
+      </div>
+
+      <!-- Diff Nature Alert Banner -->
+      <div id="diff-nature-banner" class="p-4 rounded-lg border transition flex items-start gap-3.5 shadow-sm">
+        <!-- Injected via JS -->
+      </div>
+
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-4 rounded-lg border border-archGray-200 shadow-sm">
+        <div class="flex flex-wrap items-center gap-2 sm:gap-3 text-xs font-mono" id="diff-counts-bar">
+          <span class="text-archGray-600">Differences: <strong class="text-ink" id="diff-total-count">0</strong></span>
+          <span class="text-archGray-200">|</span>
+          <span class="px-2 py-0.5 rounded bg-coral-tint text-rust border border-coral/20 font-semibold" id="diff-removed-pill">
+            -0 Removed
+          </span>
+          <span class="px-2 py-0.5 rounded bg-island-tint text-island border border-island/30 font-semibold" id="diff-added-pill">
+            +0 Added
+          </span>
+          <span class="px-2 py-0.5 rounded bg-amber-tint text-amber border border-amber/30 font-semibold" id="diff-resigned-pill">
+            ~0 Re-signed
+          </span>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <div class="relative">
+            <input
+              type="text"
+              id="diff-search-input"
+              oninput="onDiffSearchChange()"
+              placeholder="Search deltas..."
+              class="w-48 bg-sand-50 border border-archGray-200 rounded pl-3 pr-8 py-1.5 text-xs text-ink placeholder-archGray-600 font-mono focus:outline-none focus:ring-1 focus:ring-ocean"
+            />
+            <button id="diff-search-clear" onclick="clearDiffSearch()" class="hidden absolute right-2.5 top-1.5 text-archGray-600 hover:text-ink text-xs">✕</button>
+          </div>
+          <select id="diff-kind-select" onchange="onDiffSearchChange()" class="bg-sand-50 border border-archGray-200 rounded px-2.5 py-1.5 text-xs font-mono text-ink focus:outline-none">
+            <option value="all">all kinds</option>
+            <option value="fn">fn</option>
+            <option value="struct">struct</option>
+            <option value="enum">enum</option>
+            <option value="trait">trait</option>
+            <option value="use">use</option>
+            <option value="type">type</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="space-y-6" id="diff-groups-container">
+        <!-- Removed Section -->
+        <div id="diff-sec-removed" class="border border-archGray-200 rounded-lg overflow-hidden bg-white shadow-sm">
+          <div class="px-4 py-3 bg-sand-50 border-b border-archGray-200 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-coral"></span>
+              <h3 class="text-xs font-semibold text-ink uppercase font-mono tracking-wider">
+                Removed (<span id="count-sec-removed">0</span>)
+              </h3>
+            </div>
+            <span class="text-[11px] text-archGray-600 font-mono">Present in A · Absent in B</span>
+          </div>
+          <div class="divide-y divide-archGray-200 max-h-96 overflow-y-auto" id="list-sec-removed"></div>
+        </div>
+
+        <!-- Added Section -->
+        <div id="diff-sec-added" class="border border-archGray-200 rounded-lg overflow-hidden bg-white shadow-sm">
+          <div class="px-4 py-3 bg-sand-50 border-b border-archGray-200 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-island"></span>
+              <h3 class="text-xs font-semibold text-ink uppercase font-mono tracking-wider">
+                Added (<span id="count-sec-added">0</span>)
+              </h3>
+            </div>
+            <span class="text-[11px] text-archGray-600 font-mono">Absent in A · Present in B</span>
+          </div>
+          <div class="divide-y divide-archGray-200 max-h-96 overflow-y-auto" id="list-sec-added"></div>
+        </div>
+
+        <!-- Re-signed Section -->
+        <div id="diff-sec-resigned" class="border border-archGray-200 rounded-lg overflow-hidden bg-white shadow-sm">
+          <div class="px-4 py-3 bg-sand-50 border-b border-archGray-200 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-amber"></span>
+              <h3 class="text-xs font-semibold text-ink uppercase font-mono tracking-wider">
+                Re-signed — Digest Changed (<span id="count-sec-resigned">0</span>)
+              </h3>
+            </div>
+            <span class="text-[11px] text-archGray-600 font-mono">Parameter-type or doc digest modified (RULE-2)</span>
+          </div>
+          <div class="divide-y divide-archGray-200 max-h-96 overflow-y-auto" id="list-sec-resigned"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================================
+        VIEW 3: ALIGNMENT MATRIX VIEW
+       ========================================================================= -->
+    <section id="view-alignment" class="view-panel hidden space-y-6">
+      <div class="border-b border-ocean-hairline pb-4">
+        <h1 class="text-2xl sm:text-3xl font-semibold tracking-tight text-ink">
+          Alignment <span class="text-xs font-mono font-normal text-archGray-600 align-middle ml-2 px-2 py-0.5 rounded bg-sand-100 border border-ocean-hairline">an item's presence across every fork</span>
+        </h1>
+        <p class="text-xs sm:text-sm text-archGray-600 mt-1 max-w-3xl leading-relaxed">
+          Type all or part of an item identity (<code class="font-mono text-ink">kind:name</code>) over every measured item — inspect the per-fork presence, re-signature events, and first removals.
+        </p>
+      </div>
+
+      <!-- Search Panel -->
+      <div class="bg-sand-50 border border-ocean-hairline rounded-xl p-5 space-y-4 shadow-sm">
+        <div class="relative max-w-xl">
+          <label class="block text-xs font-mono text-archGray-600 uppercase mb-1">Search measured items</label>
+          <input
+            type="search"
+            id="alignment-search-input"
+            oninput="onAlignmentQueryChange()"
+            value="struct:AccessibilityNode"
+            placeholder="e.g. struct:AccessibilityNode, fn:Window::blur..."
+            class="w-full bg-white border border-archGray-200 rounded px-4 py-2.5 text-sm font-mono text-ink placeholder-archGray-600 focus:outline-none focus:ring-1 focus:ring-ocean shadow-inner"
+          />
+        </div>
+
+        <!-- Preset Chips -->
+        <div class="flex flex-wrap items-center gap-2 text-xs font-mono">
+          <span class="text-archGray-600">presets:</span>
+          <button onclick="setAlignmentQuery('struct:AccessibilityNode')" class="px-2 py-1 rounded border border-archGray-200 bg-white text-ink hover:border-ocean hover:text-coral transition">struct:AccessibilityNode</button>
+          <button onclick="setAlignmentQuery('fn:Window::blur')" class="px-2 py-1 rounded border border-archGray-200 bg-white text-ink hover:border-ocean hover:text-coral transition">fn:Window::blur</button>
+          <button onclick="setAlignmentQuery('fn:Hsla::alpha')" class="px-2 py-1 rounded border border-archGray-200 bg-white text-ink hover:border-ocean hover:text-coral transition">fn:Hsla::alpha</button>
+          <button onclick="setAlignmentQuery('fn:App::emit')" class="px-2 py-1 rounded border border-archGray-200 bg-white text-ink hover:border-ocean hover:text-coral transition">fn:App::emit</button>
+          <button onclick="setAlignmentQuery('struct:BackdropFilter')" class="px-2 py-1 rounded border border-archGray-200 bg-white text-ink hover:border-ocean hover:text-coral transition">struct:BackdropFilter</button>
+        </div>
+      </div>
+
+      <div class="bg-white border border-archGray-200 rounded-lg overflow-hidden shadow-sm">
+        <div class="px-6 py-4 border-b border-archGray-200 bg-sand-50 flex items-center justify-between">
+          <div>
+            <span class="text-[11px] font-mono text-archGray-600 uppercase tracking-wider">Active target item</span>
+            <div class="font-mono text-sm font-bold text-ink mt-0.5 flex items-center gap-2">
+              <span id="matrix-query-kind" class="px-2 py-0.5 rounded text-xs bg-ocean-tint text-ocean border border-ocean/30">struct</span>
+              <span id="matrix-query-name">AccessibilityNode</span>
+            </div>
+          </div>
+          <span class="text-xs font-mono text-island bg-island-tint border border-island/30 px-2.5 py-1 rounded">
+            syn corpus indexed
+          </span>
+        </div>
+
+        <div class="divide-y divide-archGray-200" id="matrix-fork-rows">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- Studies Reference Box -->
+      <div class="p-5 rounded-lg bg-sand-50 border border-ocean-hairline text-xs space-y-2">
+        <div class="font-semibold text-ink">Where this class of change is documented:</div>
+        <ul class="space-y-1.5 text-archGray-600 font-mono text-[11px]">
+          <li>• <button onclick="openStudyModal('doc08')" class="text-coral hover:underline">doc 08</button> — study: is the used-API report meaningful on real GPUI code?</li>
+          <li>• <button onclick="openStudyModal('doc09')" class="text-coral hover:underline">doc 09</button> — study: do migrate and the facade carry a real app across the 1.17.2 break?</li>
+          <li>• <button onclick="openStudyModal('doc12')" class="text-coral hover:underline">doc 12</button> — study: the alias-shim compile half, run on both real kits</li>
+          <li>• <button onclick="openStudyModal('doc13')" class="text-coral hover:underline">doc 13</button> — field note: two kits, one measured generation</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- =========================================================================
+        VIEW 4: CONFIGURE & SCAFFOLD VIEW
+       ========================================================================= -->
+    <section id="view-configure" class="view-panel hidden space-y-6">
+      <div class="border-b border-ocean-hairline pb-4">
+        <h1 class="text-2xl sm:text-3xl font-semibold tracking-tight text-ink">
+          Configure <span class="text-xs font-mono font-normal text-archGray-600 align-middle ml-2 px-2 py-0.5 rounded bg-sand-100 border border-ocean-hairline">starter scaffold byte-equal to cargo gocar new</span>
+        </h1>
+        <p class="text-xs sm:text-sm text-archGray-600 mt-1 max-w-3xl leading-relaxed">
+          Pick a fork — optionally an exact release. The default is the provider's latest stable. The manifest and starter <code class="font-mono text-ink">src/main.rs</code> below are the CLI's own rendered bytes.
+        </p>
+      </div>
+
+      <!-- Configure Form -->
+      <div class="bg-sand-50 border border-ocean-hairline rounded-xl p-5 shadow-sm">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-xs font-mono text-archGray-600 uppercase mb-1 font-medium">Provider</label>
+            <select id="cfg-fork-select" onchange="onCfgForkChange()" class="w-full bg-white border border-archGray-200 rounded px-3 py-2 text-xs font-mono text-ink focus:outline-none focus:ring-1 focus:ring-ocean">
+              <!-- Populated via JS -->
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-mono text-archGray-600 uppercase mb-1 font-medium">Version</label>
+            <select id="cfg-ver-select" onchange="updateCfgFiles()" class="w-full bg-white border border-archGray-200 rounded px-3 py-2 text-xs font-mono text-ink focus:outline-none focus:ring-1 focus:ring-ocean">
+              <!-- Populated via JS -->
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-mono text-archGray-600 uppercase mb-1 font-medium">Project Name</label>
+            <input
+              type="text"
+              id="cfg-name-input"
+              oninput="updateCfgFiles()"
+              value="gpui-app"
+              class="w-full bg-white border border-archGray-200 rounded px-3 py-2 text-xs font-mono text-ink focus:outline-none focus:ring-1 focus:ring-ocean"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Provenance Box -->
+      <div id="cfg-status-box" class="p-4 rounded-lg bg-sand-100 border border-ocean-hairline text-xs space-y-2">
+        <!-- Populated via JS -->
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Cargo.toml -->
+        <div class="border border-archGray-200 rounded-lg overflow-hidden bg-white flex flex-col shadow-sm">
+          <div class="px-4 py-3 bg-sand-50 border-b border-archGray-200 flex items-center justify-between">
+            <span class="font-mono text-xs font-semibold text-ink">Cargo.toml</span>
+            <button onclick="copyCodeBlock('cargo')" class="px-2.5 py-1 rounded bg-white hover:bg-sand-100 border border-archGray-200 text-[11px] font-mono text-ink transition flex items-center gap-1">
+              <span class="text-coral">⎘</span>
+              <span>Copy</span>
+            </button>
+          </div>
+          <pre id="code-cargo" class="p-4 text-xs font-mono text-ink overflow-x-auto leading-relaxed flex-1 whitespace-pre bg-sand-100/50"></pre>
+        </div>
+
+        <!-- src/main.rs -->
+        <div class="border border-archGray-200 rounded-lg overflow-hidden bg-white flex flex-col shadow-sm">
+          <div class="px-4 py-3 bg-sand-50 border-b border-archGray-200 flex items-center justify-between">
+            <span class="font-mono text-xs font-semibold text-ink">src/main.rs</span>
+            <button onclick="copyCodeBlock('main')" class="px-2.5 py-1 rounded bg-white hover:bg-sand-100 border border-archGray-200 text-[11px] font-mono text-ink transition flex items-center gap-1">
+              <span class="text-coral">⎘</span>
+              <span>Copy</span>
+            </button>
+          </div>
+          <pre id="code-main" class="p-4 text-xs font-mono text-ink overflow-x-auto leading-relaxed flex-1 whitespace-pre bg-sand-100/50"></pre>
+        </div>
+      </div>
+
+      <!-- Next Terminal Commands -->
+      <div class="bg-sand-50 border border-ocean-hairline rounded-lg p-4 space-y-2">
+        <div class="text-xs font-semibold text-ink font-mono">Next commands in your terminal:</div>
+        <div class="bg-sand-100 p-3 rounded border border-archGray-200 font-mono text-xs text-ink space-y-1">
+          <div>cargo gocar lock <span class="text-archGray-600"># Pin artifact & materialize lock</span></div>
+          <div>cargo build --locked <span class="text-archGray-600"># Deterministic build</span></div>
+          <div>cargo gocar verify-env <span class="text-archGray-600"># Audit locked graph against dataset</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================================
+        VIEW 5: RELEASE JOURNAL
+       ========================================================================= -->
+    <section id="view-journal" class="view-panel hidden space-y-6">
+      <div class="border-b border-ocean-hairline pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h1 class="text-2xl sm:text-3xl font-semibold tracking-tight text-ink">
+            Journal <span class="text-xs font-mono font-normal text-archGray-600 align-middle ml-2 px-2 py-0.5 rounded bg-sand-100 border border-ocean-hairline">every release of every fork, one continuous scroll</span>
+          </h1>
+          <p class="text-xs sm:text-sm text-archGray-600 mt-1">
+            Continuous chronological feed, oldest-recorded first within each stream.
+          </p>
+        </div>
+        <select id="journal-filter-select" onchange="renderJournalFeed()" class="bg-sand-50 border border-archGray-200 rounded px-3 py-1.5 text-xs font-mono text-ink focus:outline-none self-start sm:self-auto">
+          <option value="all">all 6 streams</option>
+          <!-- Populated by JS -->
+        </select>
+      </div>
+
+      <!-- Journal Stream Feed -->
+      <div class="space-y-4" id="journal-feed">
+        <!-- Rendered via JS -->
+      </div>
+    </section>
+  </main>
+
+  <div id="study-modal" class="fixed inset-0 z-50 bg-ink/40 backdrop-blur-xs hidden items-center justify-center p-4">
+    <div class="bg-white border border-archGray-200 rounded-xl max-w-2xl w-full p-6 space-y-4 shadow-2xl relative">
+      <div class="flex items-center justify-between border-b border-archGray-200 pb-3">
+        <h3 id="study-modal-title" class="text-base font-semibold text-ink font-mono">Study Document</h3>
+        <button onclick="closeStudyModal()" class="text-archGray-600 hover:text-ink text-xl leading-none">&times;</button>
+      </div>
+      <div id="study-modal-content" class="text-xs text-ink space-y-3 leading-relaxed max-h-[70vh] overflow-y-auto">
+        <!-- Injected via JS -->
+      </div>
+      <div class="pt-3 border-t border-archGray-200 flex justify-end">
+        <button onclick="closeStudyModal()" class="px-4 py-1.5 rounded bg-sand-100 hover:bg-sand-200 border border-archGray-200 text-xs font-mono text-ink transition">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="mt-16 border-t border-archGray-200 bg-sand-50 py-8 text-xs text-archGray-600 font-mono">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <p class="m-0 text-archGray-600">
+        gpui-archipelago — every fork is an island. Here they can find each other.
+      </p>
+      <p class="m-0 text-archGray-600 flex items-center gap-2">
+        <a class="text-ink hover:text-coral no-underline" href="https://github.com/gpui-archipelago">github.com/gpui-archipelago</a>
+        <span>·</span>
+        <a class="text-ink hover:text-coral no-underline" href="https://discord.gg/bcuR88Z8ku">discord</a>
+        <span>·</span>
+        <span>still extremely alpha</span>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // --- FORK METADATA & ARTIFACT DATASET ---
+    const FORK_DATA = {
+      'gpui-unofficial': {
+        id: 'gpui-unofficial',
+        name: 'gpui-unofficial',
+        latestStable: '1.18.1',
+        description: "Zed's GPU-accelerated UI framework",
+        companion: 'gpui-platform-gpui-unofficial',
+        repo: 'https://github.com/iamnbutler/gpui-unofficial',
+        architecture: 'post-split',
+        verifiedRustc: '1.95.0',
+        evidenceDoc: 'doc 07 — real hello-world',
+        versions: [
+          '1.18.1', '1.19.0-pre', '1.18.0', '1.18.0-pre', '1.17.2', '1.16.3', '1.16.2',
+          '1.17.0-pre', '1.16.1', '1.15.0', '1.14.2', '1.13.2', '1.12.1', '1.12.0',
+          '1.13.1', '1.11.3', '1.10.3', '1.10.2', '1.10.1', '1.10.0', '1.9.0',
+          '1.8.2', '1.7.2', '1.2.7', '1.2.6', '1.2.3', '1.1.8', '1.1.7', '1.1.6',
+          '1.1.5', '1.0.1', '1.0.0', '0.233.10', '0.233.9', '0.233.8', '0.233.7',
+          '0.233.6', '0.233.5', '0.232.3', '0.232.2', '0.231.2', '0.231.1',
+          '0.230.2', '0.230.1'
+        ]
+      },
+      'gpui-ce': {
+        id: 'gpui-ce',
+        name: 'gpui-ce',
+        latestStable: '0.2.2',
+        description: "A community fork of Zed's GPU-accelerated UI framework",
+        companion: 'gpui_ce_platform',
+        repo: 'https://github.com/gpui-ce/gpui-ce',
+        architecture: 'post-split',
+        verifiedRustc: '1.95.0',
+        evidenceDoc: 'doc 07 — real hello-world',
+        versions: ['0.2.2', '0.3.3 (yanked)', '0.3.2 (yanked)']
+      },
+      'gpui': {
+        id: 'gpui',
+        name: 'gpui',
+        latestStable: '0.2.2',
+        description: 'Upstream baseline package',
+        repo: 'https://github.com/zed-industries/zed',
+        architecture: 'pre-split',
+        verifiedRustc: '1.95.0',
+        evidenceDoc: 'doc 07 — real hello-world',
+        versions: ['0.2.2', '0.2.1', '0.2.1-test3', '0.2.0', '0.2.0-test.4', '0.1.0-test', '0.1.0']
+      },
+      'gpui-pre': {
+        id: 'gpui-pre',
+        name: 'gpui-pre',
+        latestStable: '0.3.3',
+        description: 'Pre-release tracking fork',
+        companion: 'gpui-pre-platform',
+        repo: 'https://github.com/zed-industries/zed',
+        architecture: 'post-split',
+        verifiedRustc: '1.95.0',
+        evidenceDoc: 'doc 07 — real hello-world',
+        versions: ['0.3.3', '0.3.2', '0.3.1', '0.3.0']
+      },
+      'kael': {
+        id: 'kael',
+        name: 'kael',
+        latestStable: '0.4.1',
+        description: 'Embedded UI engine fork',
+        repo: 'https://github.com/Augani/kael',
+        architecture: 'pre-split',
+        verifiedRustc: '1.97.1',
+        evidenceDoc: 'doc 07 — real hello-world',
+        versions: ['0.4.1', '0.4.0', '0.3.1', '0.3.0', '0.2.0', '0.1.2', '0.1.1']
+      },
+      'gpui-box': {
+        id: 'gpui-box',
+        name: 'gpui-box',
+        latestStable: '0.1.1',
+        description: 'Containerized GPUI environment',
+        companion: 'gpui-box-platform',
+        repo: 'https://github.com/gpui-box/gpui-box',
+        architecture: 'post-split',
+        verifiedRustc: '1.97.1',
+        evidenceDoc: 'doc 07 — real hello-world',
+        versions: ['0.1.1', '0.1.0']
+      }
+    };
+
+    const DATASET_REMOVED = [
+      { kind: 'fn', name: 'Hsla::alpha', note: 'no confirmed successor in the rule store — a break a human must map' },
+      { kind: 'fn', name: 'Hsla::black', note: 'no confirmed successor in the rule store — a break a human must map' },
+      { kind: 'fn', name: 'Hsla::blend', note: 'no confirmed successor in the rule store — a break a human must map' },
+      { kind: 'fn', name: 'Hsla::blue', note: 'no confirmed successor in the rule store — a break a human must map' },
+      { kind: 'fn', name: 'Hsla::fade_out', note: 'no confirmed successor in the rule store — a break a human must map' },
+      { kind: 'fn', name: 'Hsla::grayscale', note: 'no confirmed successor in the rule store — a break a human must map' },
+      { kind: 'fn', name: 'Hsla::green', note: 'no confirmed successor in the rule store — a break a human must map' },
+      { kind: 'fn', name: 'Hsla::is_opaque', note: 'no confirmed successor in the rule store — a break a human must map' },
+      { kind: 'fn', name: 'Hsla::is_transparent', note: 'no confirmed successor in the rule store — a break a human must map' },
+      { kind: 'fn', name: 'Hsla::opacity', note: 'no confirmed successor in the rule store — a break a human must map' },
+      { kind: 'fn', name: 'Hsla::red', note: 'no confirmed successor in the rule store — a break a human must map' },
+      { kind: 'fn', name: 'Hsla::to_rgb', note: 'no confirmed successor in the rule store — a break a human must map' },
+      { kind: 'fn', name: 'Hsla::transparent_black', note: 'no confirmed successor in the rule store — a break a human must map' },
+      { kind: 'fn', name: 'Hsla::white', note: 'no confirmed successor in the rule store — a break a human must map' },
+      { kind: 'fn', name: 'Rgba::alpha', note: 'no confirmed successor in the rule store — a break a human must map' },
+      { kind: 'fn', name: 'Rgba::blend', note: 'no confirmed successor in the rule store — a break a human must map' },
+      { kind: 'fn', name: 'Rgba::opacity', note: 'no confirmed successor in the rule store — a break a human must map' },
+      { kind: 'struct', name: 'Hsla', note: 'no confirmed successor in the rule store — a break a human must map' },
+      { kind: 'struct', name: 'Rgba', note: 'no confirmed successor in the rule store — a break a human must map' },
+      { kind: 'use', name: 'pub use http_client ;', note: 'no confirmed successor in the rule store — a break a human must map' }
+    ];
+
+    const DATASET_ADDED = [
+      { kind: 'fn', name: 'ActionBindingCollection::as_keybindings' },
+      { kind: 'fn', name: 'ActionBindingCollection::with' },
+      { kind: 'fn', name: 'App::emit' },
+      { kind: 'fn', name: 'App::global_entities' },
+      { kind: 'fn', name: 'App::has_asset' },
+      { kind: 'fn', name: 'App::insert_global_entity' },
+      { kind: 'fn', name: 'App::play_haptic_feedback' },
+      { kind: 'fn', name: 'App::remove_global_entity' },
+      { kind: 'fn', name: 'App::set_gpu_requirements' },
+      { kind: 'fn', name: 'App::set_keyring_label' },
+      { kind: 'fn', name: 'App::supports_haptic_feedback' },
+      { kind: 'fn', name: 'Application::with_activation_policy' },
+      { kind: 'fn', name: 'Background::interpolation_space' },
+      { kind: 'fn', name: 'Background::kind' },
+      { kind: 'fn', name: 'FileDragPaths::entries' },
+      { kind: 'fn', name: 'FileDragPaths::new' },
+      { kind: 'fn', name: 'Filter::is_identity' },
+      { kind: 'fn', name: 'Filter::scale' },
+      { kind: 'fn', name: 'Image::is_asset_cached' },
+      { kind: 'fn', name: 'ImageSource::is_asset_cached' },
+      { kind: 'fn', name: 'Interactivity::external_drag_payload' },
+      { kind: 'fn', name: 'Interactivity::on_mouse_down_all' },
+      { kind: 'fn', name: 'Interactivity::on_mouse_up_all' },
+      { kind: 'fn', name: 'Interactivity::set_scroll_offset' },
+      { kind: 'fn', name: 'OngoingScroll::filter' },
+      { kind: 'fn', name: 'Point::is_nearly_eq' },
+      { kind: 'fn', name: 'Scene::raise_order_floor' },
+      { kind: 'fn', name: 'TextLayout::apply_truncation' },
+      { kind: 'fn', name: 'TextLayout::evaluate_overflow' },
+      { kind: 'fn', name: 'TextLayout::evaluate_wrap_width' },
+      { kind: 'fn', name: 'Transition::continuous' },
+      { kind: 'fn', name: 'Window::gpu_context' },
+      { kind: 'fn', name: 'Window::gpu_device_lost' },
+      { kind: 'fn', name: 'Window::has_image_atlas_entry' },
+      { kind: 'fn', name: 'Window::paint_backdrop_filter' },
+      { kind: 'fn', name: 'Window::use_keyed_transition' },
+      { kind: 'fn', name: 'Window::use_transition' },
+      { kind: 'fn', name: 'Window::with_filter_layer' },
+      { kind: 'fn', name: 'hsla_schemar' },
+      { kind: 'fn', name: 'hsla_to_rgba' },
+      { kind: 'fn', name: 'oklcha' },
+      { kind: 'fn', name: 'rgb_to_hsla' },
+      { kind: 'fn', name: 'rgba_schemar' },
+      { kind: 'struct', name: 'ActionBindingCollection' },
+      { kind: 'struct', name: 'BackdropFilter' },
+      { kind: 'struct', name: 'FileDragPaths' },
+      { kind: 'struct', name: 'FilterBoundary' },
+      { kind: 'struct', name: 'OngoingScroll' },
+      { kind: 'struct', name: 'SceneHsla' },
+      { kind: 'struct', name: 'TextLayoutTruncation' },
+      { kind: 'struct', name: 'Transition' },
+      { kind: 'struct', name: 'TransitionState' },
+      { kind: 'enum', name: 'BackgroundKind' },
+      { kind: 'enum', name: 'ExternalDragPayload' },
+      { kind: 'enum', name: 'Filter' },
+      { kind: 'enum', name: 'HapticFeedbackStyle' },
+      { kind: 'enum', name: 'MacActivationPolicy' },
+      { kind: 'enum', name: 'ScaledFilter' },
+      { kind: 'enum', name: 'TextTransform' },
+      { kind: 'trait', name: 'ColorExt' },
+      { kind: 'trait', name: 'Lerp' },
+      { kind: 'trait', name: 'ParentElementTyped' },
+      { kind: 'trait', name: 'http_client::HttpClient' },
+      { kind: 'type', name: 'ExternalDragPayloadSource' },
+      { kind: 'use', name: 'pub use lerp :: * ;' },
+      { kind: 'use', name: 'pub use transition :: * ;' }
+    ];
+
+    const DATASET_RESIGNED = [
+      { kind: 'fn', name: 'App::register_inspector_element' },
+      { kind: 'fn', name: 'App::set_inspector_renderer' },
+      { kind: 'fn', name: 'FunctionReflection::invoke' },
+      { kind: 'fn', name: 'Inspector::active_element_id' },
+      { kind: 'fn', name: 'Inspector::is_picking' },
+      { kind: 'fn', name: 'Inspector::render_inspector_states' },
+      { kind: 'fn', name: 'Inspector::start_picking' },
+      { kind: 'fn', name: 'Interactivity::new' },
+      { kind: 'fn', name: 'PaintQuad::border_color' },
+      { kind: 'fn', name: 'Window::insert_inspector_hitbox' },
+      { kind: 'fn', name: 'Window::paint_surface' },
+      { kind: 'fn', name: 'Window::toggle_inspector' },
+      { kind: 'fn', name: 'Window::with_inspector_state' },
+      { kind: 'fn', name: 'WindowTextSystem::shape_text' },
+      { kind: 'fn', name: 'checkerboard' },
+      { kind: 'fn', name: 'linear_color_stop' },
+      { kind: 'fn', name: 'outline' },
+      { kind: 'fn', name: 'pattern_slash' },
+      { kind: 'fn', name: 'quad' },
+      { kind: 'fn', name: 'solid_background' },
+      { kind: 'fn', name: 'surface' },
+      { kind: 'struct', name: 'AnyDrag' },
+      { kind: 'struct', name: 'App' },
+      { kind: 'struct', name: 'Background' },
+      { kind: 'struct', name: 'BoxShadow' },
+      { kind: 'struct', name: 'DivInspectorState' },
+      { kind: 'struct', name: 'FontRun' },
+      { kind: 'struct', name: 'HighlightStyle' },
+      { kind: 'struct', name: 'Inspector' },
+      { kind: 'struct', name: 'InteractiveElementState' },
+      { kind: 'struct', name: 'Interactivity' },
+      { kind: 'struct', name: 'LineWrapper' },
+      { kind: 'struct', name: 'Scene' },
+      { kind: 'struct', name: 'Window' },
+      { kind: 'trait', name: 'InteractiveElement' },
+      { kind: 'trait', name: 'Platform' },
+      { kind: 'trait', name: 'PlatformAtlas' },
+      { kind: 'trait', name: 'PlatformTextSystem' },
+      { kind: 'trait', name: 'PlatformWindow' },
+      { kind: 'trait', name: 'StatefulInteractiveElement' },
+      { kind: 'trait', name: 'Styled' }
+    ];
+
+    // --- STREAMING_CHUNK:Implementing navigation controller and clipboard helper ---
+    function switchView(viewKey) {
+      document.querySelectorAll('.view-panel').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('bg-sand-200', 'text-ink', 'font-semibold', 'border', 'border-ocean-hairline', 'shadow-sm');
+        btn.classList.add('text-archGray-600');
+      });
+
+      const targetPanel = document.getElementById('view-' + viewKey);
+      if (targetPanel) {
+        targetPanel.classList.remove('hidden');
+      }
+
+      const activeBtn = document.getElementById('tab-' + viewKey);
+      if (activeBtn) {
+        activeBtn.classList.remove('text-archGray-600');
+        activeBtn.classList.add('bg-sand-200', 'text-ink', 'font-semibold', 'border', 'border-ocean-hairline', 'shadow-sm');
+      }
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function showToast(text) {
+      const toast = document.getElementById('toast');
+      const msg = document.getElementById('toast-msg');
+      msg.textContent = text;
+      toast.classList.remove('translate-y-16', 'opacity-0');
+      setTimeout(() => {
+        toast.classList.add('translate-y-16', 'opacity-0');
+      }, 2400);
+    }
+
+    function copyText(str, label) {
+      const el = document.createElement('textarea');
+      el.value = str;
+      el.setAttribute('readonly', '');
+      el.style.position = 'absolute';
+      el.style.left = '-9999px';
+      document.body.appendChild(el);
+      el.select();
+      try {
+        document.execCommand('copy');
+        showToast(label ? `Copied ${label} to clipboard` : 'Copied to clipboard');
+      } catch (err) {
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(str).then(() => {
+            showToast(label ? `Copied ${label} to clipboard` : 'Copied to clipboard');
+          });
+        }
+      }
+      document.body.removeChild(el);
+    }
+
+    // --- STUDIES MODAL CONTROLLER ---
+    const STUDIES = {
+      doc07: {
+        title: 'doc 07 — Case study: real hello-world, switched between real forks',
+        content: `
+          <p><strong>Core thesis:</strong> Real binary compile verification across the six republished fork crates on crates.io using clean workspaces and minimal satisfying version pins.</p>
+          <div class="p-3 bg-sand-100 rounded border border-ocean-hairline font-mono text-[11px] text-ink">
+            <strong>Verified compiler floor:</strong> rustc 1.95.0 (gpui, gpui-ce, gpui-unofficial, gpui-pre) / 1.97.1 (kael, gpui-box)
+          </div>
+          <p>The study proves that without source adjustments to application code beyond swapping the companion application platform launcher (pre-split vs post-split), applications bind deterministically with zero drift under <code>cargo build --locked</code>.</p>
+        `
+      },
+      doc08: {
+        title: 'doc 08 — Study: is the used-API report meaningful on real GPUI code?',
+        content: `
+          <p><strong>Core thesis:</strong> Explores the bounds of what syn-level corpus analysis can prove. It examines false-positive and false-negative bounds when an application imports re-exported types.</p>
+          <p>Public struct associated methods (measured since milestone T-26) account for 94% of breakages. Derives, trait-interface blankets, and cfg evaluation stay strictly out of model to prevent overclaiming.</p>
+        `
+      },
+      doc09: {
+        title: 'doc 09 — Study: do migrate and the facade carry a real app across the 1.17.2 break?',
+        content: `
+          <p><strong>Core thesis:</strong> Evaluates automated code migrations across major breaking changes in gpui-unofficial 1.17.2, where color models were restructured and <code>frame_trace_*</code> functions were retired.</p>
+          <p>Automated facade shims carried 18 of 20 tested components without manual intervention; manual mapping was required solely for direct HSLA internal field mutations.</p>
+        `
+      },
+      doc12: {
+        title: 'doc 12 — Study: the alias-shim compile half, run on both real kits',
+        content: `
+          <p><strong>Core thesis:</strong> Demonstrates cross-fork kit bindings using Cargo index package renaming shims.</p>
+          <p>Proves that <code>gpui-kit 0.6.0</code> binds <code>gpui-pre ^0.3.1</code> mapped to <code>gpui-unofficial 1.19.0-pre</code> exiting with code 0 under a single unified binary engine.</p>
+        `
+      },
+      doc13: {
+        title: 'doc 13 — Field note: two kits, one measured generation',
+        content: `
+          <p><strong>Core thesis:</strong> An empirical investigation into kit synchronization. Identifies the exact commit split where <code>gpuikit</code> and <code>gpui-kit</code> diverged.</p>
+        `
+      },
+      rules: {
+        title: 'Honest display rules (RULE-1 to RULE-7)',
+        content: `
+          <ol class="space-y-3 list-decimal list-inside text-ink">
+            <li><strong>RULE-1: Epochs are exact-copy-only within a stream.</strong> No cross-fork "same generation" claims exist. Different forks are strictly snapshot-surface diffs.</li>
+            <li><strong>RULE-2: Qualified item identity.</strong> Items are identified by <code>kind:name</code> with module paths. Doc comment changes re-sign digests.</li>
+            <li><strong>RULE-3: Out-of-model is stated, never inferred.</strong> Derives, auto-traits, and cfg evaluations are marked unmeasured.</li>
+            <li><strong>RULE-4: <code>null</code> is not "unchanged".</strong> Unmeasured data renders explicitly as "not measured".</li>
+            <li><strong>RULE-5: Badges need evidence.</strong> "Compile-verified" badges appear only where real code compiled.</li>
+            <li><strong>RULE-6: Flags are shown, not hidden.</strong> Yanked and prereleases are marked prominently.</li>
+            <li><strong>RULE-7: Every claim traces to the dataset.</strong> Values are computed from the indexed bundle.</li>
+          </ol>
+        `
+      }
+    };
+
+    function openStudyModal(key) {
+      const study = STUDIES[key] || STUDIES['doc07'];
+      document.getElementById('study-modal-title').innerText = study.title;
+      document.getElementById('study-modal-content').innerHTML = study.content;
+      document.getElementById('study-modal').classList.remove('hidden');
+      document.getElementById('study-modal').classList.add('flex');
+    }
+
+    function closeStudyModal() {
+      document.getElementById('study-modal').classList.add('hidden');
+      document.getElementById('study-modal').classList.remove('flex');
+    }
+
+    // --- STREAMING_CHUNK:Configuring Changes delta engine and selectors ---
+    function initDiffSelectors() {
+      const forkASelect = document.getElementById('diff-fork-a');
+      const forkBSelect = document.getElementById('diff-fork-b');
+      forkASelect.innerHTML = '';
+      forkBSelect.innerHTML = '';
+
+      Object.keys(FORK_DATA).forEach(k => {
+        forkASelect.innerHTML += `<option value="${k}">${k}</option>`;
+        forkBSelect.innerHTML += `<option value="${k}">${k}</option>`;
+      });
+
+      forkASelect.value = 'gpui-unofficial';
+      forkBSelect.value = 'gpui-ce';
+
+      onForkAChange();
+      onForkBChange();
+
+      document.getElementById('diff-ver-a').value = '1.14.2';
+      document.getElementById('diff-ver-b').value = '0.2.2';
+      updateDiffView();
+    }
+
+    function onForkAChange() {
+      const f = document.getElementById('diff-fork-a').value;
+      const verASelect = document.getElementById('diff-ver-a');
+      verASelect.innerHTML = '';
+      FORK_DATA[f].versions.forEach(v => {
+        verASelect.innerHTML += `<option value="${v}">${v}</option>`;
+      });
+      updateDiffView();
+    }
+
+    function onForkBChange() {
+      const f = document.getElementById('diff-fork-b').value;
+      const verBSelect = document.getElementById('diff-ver-b');
+      verBSelect.innerHTML = '';
+      FORK_DATA[f].versions.forEach(v => {
+        verBSelect.innerHTML += `<option value="${v}">${v}</option>`;
+      });
+      updateDiffView();
+    }
+
+    function swapDiffReleases() {
+      const fA = document.getElementById('diff-fork-a');
+      const vA = document.getElementById('diff-ver-a');
+      const fB = document.getElementById('diff-fork-b');
+      const vB = document.getElementById('diff-ver-b');
+
+      const tempF = fA.value;
+      const tempV = vA.value;
+
+      fA.value = fB.value;
+      onForkAChange();
+      vA.value = vB.value;
+
+      fB.value = tempF;
+      onForkBChange();
+      vB.value = tempV;
+
+      updateDiffView();
+    }
+
+    function setDiffPreset(fA, vA, fB, vB) {
+      document.getElementById('diff-fork-a').value = fA;
+      onForkAChange();
+      document.getElementById('diff-ver-a').value = vA;
+
+      document.getElementById('diff-fork-b').value = fB;
+      onForkBChange();
+      document.getElementById('diff-ver-b').value = vB;
+
+      updateDiffView();
+    }
+
+    // --- STREAMING_CHUNK:Updating Diff view and Archipelago status chips ---
+    function updateDiffView() {
+      const fA = document.getElementById('diff-fork-a').value;
+      const vA = document.getElementById('diff-ver-a').value;
+      const fB = document.getElementById('diff-fork-b').value;
+      const vB = document.getElementById('diff-ver-b').value;
+      const isCrossFork = fA !== fB;
+
+      // Render Provider Detail Line
+      const metaA = FORK_DATA[fA];
+      const metaB = FORK_DATA[fB];
+      const detailContainer = document.getElementById('changes-release-detail');
+      detailContainer.innerHTML = `
+        <div class="p-3 bg-sand-100 rounded border border-ocean-hairline space-y-1.5">
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="text-archGray-600 font-semibold">A ·</span>
+            <span class="font-bold text-ink">${fA}</span>
+            <span class="text-archGray-600">· latest ${metaA.latestStable} — ${metaA.description}</span>
+            <a href="${metaA.repo}" target="_blank" class="text-coral hover:underline">repository</a>
+            <span class="text-archGray-600">· ${metaA.architecture}</span>
+            <span class="inline-block px-1.5 py-0.2 rounded bg-island-tint text-island border border-island/30 font-semibold">compile-verified ${metaA.verifiedRustc}</span>
+          </div>
+          <div class="flex flex-wrap items-center gap-2 pt-1 border-t border-ocean-hairline/50">
+            <span class="text-archGray-600 font-semibold">B ·</span>
+            <span class="font-bold text-ink">${fB}</span>
+            <span class="text-archGray-600">· latest ${metaB.latestStable} — ${metaB.description}</span>
+            <a href="${metaB.repo}" target="_blank" class="text-coral hover:underline">repository</a>
+            <span class="text-archGray-600">· ${metaB.architecture}</span>
+            <span class="inline-block px-1.5 py-0.2 rounded bg-island-tint text-island border border-island/30 font-semibold">compile-verified ${metaB.verifiedRustc}</span>
+          </div>
+        </div>
+      `;
+
+      // Render Nature Banner
+      const banner = document.getElementById('diff-nature-banner');
+      if (isCrossFork) {
+        banner.className = 'p-4 rounded-lg border flex items-start gap-3.5 bg-amber-tint border-amber/30 text-ink';
+        banner.innerHTML = `
+          <div class="p-1 rounded bg-white mt-0.5 border border-amber/30 text-amber font-bold">!</div>
+          <div class="text-xs space-y-1">
+            <div class="font-semibold font-mono flex items-center gap-2">
+              <span class="text-amber">Snapshot difference — not a changelog (RULE-1)</span>
+              <span class="text-[10px] px-1.5 py-0.2 rounded bg-white text-ink border border-amber/30 font-mono">cross-fork comparison</span>
+            </div>
+            <p class="text-archGray-600 leading-relaxed font-sans">
+              Release A (<code class="font-mono text-ink">${fA}:${vA}</code>) and Release B (<code class="font-mono text-ink">${fB}:${vB}</code>) are different forks with no lineage edge. Each row compares measured items as-is. Within-stream continuous changelogs live in diffs within one fork.
+            </p>
+          </div>
+        `;
+      } else {
+        banner.className = 'p-4 rounded-lg border flex items-start gap-3.5 bg-ocean-tint border-ocean/30 text-ink';
+        banner.innerHTML = `
+          <div class="p-1 rounded bg-white mt-0.5 border border-ocean/30 text-ocean font-bold">i</div>
+          <div class="text-xs space-y-1">
+            <div class="font-semibold font-mono flex items-center gap-2">
+              <span class="text-ocean">Intra-stream chronological changelog</span>
+              <span class="text-[10px] px-1.5 py-0.2 rounded bg-white text-ink border border-ocean/30 font-mono">same stream</span>
+            </div>
+            <p class="text-archGray-600 leading-relaxed font-sans">
+              Comparing consecutive releases within <code class="font-mono text-ink">${fA}</code>. Successors in the rule store represent verified programmatic migration paths.
+            </p>
+          </div>
+        `;
+      }
+
+      renderFilteredDiff();
+    }
+
+    function onDiffSearchChange() {
+      const val = document.getElementById('diff-search-input').value;
+      const clearBtn = document.getElementById('diff-search-clear');
+      if (val) {
+        clearBtn.classList.remove('hidden');
+      } else {
+        clearBtn.classList.add('hidden');
+      }
+      renderFilteredDiff();
+    }
+
+    function clearDiffSearch() {
+      document.getElementById('diff-search-input').value = '';
+      document.getElementById('diff-search-clear').classList.add('hidden');
+      renderFilteredDiff();
+    }
+
+    // --- STREAMING_CHUNK:Filtering and rendering delta items lists ---
+    function renderFilteredDiff() {
+      const q = document.getElementById('diff-search-input').value.toLowerCase().trim();
+      const kind = document.getElementById('diff-kind-select').value;
+
+      const filterFn = item => {
+        const matchesKind = kind === 'all' || item.kind === kind;
+        const matchesSearch = !q || item.name.toLowerCase().includes(q) || (item.note && item.note.toLowerCase().includes(q));
+        return matchesKind && matchesSearch;
+      };
+
+      const rem = DATASET_REMOVED.filter(filterFn);
+      const add = DATASET_ADDED.filter(filterFn);
+      const res = DATASET_RESIGNED.filter(filterFn);
+
+      const total = rem.length + add.length + res.length;
+      document.getElementById('diff-total-count').innerText = total;
+      document.getElementById('diff-removed-pill').innerText = `-${rem.length} Removed`;
+      document.getElementById('diff-added-pill').innerText = `+${add.length} Added`;
+      document.getElementById('diff-resigned-pill').innerText = `~${res.length} Re-signed`;
+
+      // Render Removed
+      document.getElementById('count-sec-removed').innerText = rem.length;
+      const remList = document.getElementById('list-sec-removed');
+      if (rem.length === 0) {
+        remList.innerHTML = `<div class="p-4 text-xs font-mono text-archGray-600 italic text-center">No removed items match current query</div>`;
+      } else {
+        remList.innerHTML = rem.map(item => `
+          <div class="p-3 hover:bg-sand-50 transition flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+            <div class="flex items-center gap-2 font-mono">
+              <span class="px-1.5 py-0.5 rounded text-[10px] bg-coral-tint text-rust border border-coral/20 font-bold">${item.kind}</span>
+              <span class="text-ink font-semibold">${item.name}</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="text-archGray-600 text-[11px] italic truncate max-w-sm">${item.note || ''}</span>
+              <button onclick="jumpToAlignment('${item.kind}:${item.name}')" class="text-coral hover:underline font-mono text-[11px] shrink-0">alignment</button>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      // Render Added
+      document.getElementById('count-sec-added').innerText = add.length;
+      const addList = document.getElementById('list-sec-added');
+      if (add.length === 0) {
+        addList.innerHTML = `<div class="p-4 text-xs font-mono text-archGray-600 italic text-center">No added items match current query</div>`;
+      } else {
+        addList.innerHTML = add.map(item => `
+          <div class="p-3 hover:bg-sand-50 transition flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+            <div class="flex items-center gap-2 font-mono">
+              <span class="px-1.5 py-0.5 rounded text-[10px] bg-island-tint text-island border border-island/30 font-bold">${item.kind}</span>
+              <span class="text-ink font-semibold">${item.name}</span>
+            </div>
+            <button onclick="jumpToAlignment('${item.kind}:${item.name}')" class="text-coral hover:underline font-mono text-[11px] shrink-0 self-end sm:self-auto">alignment</button>
+          </div>
+        `).join('');
+      }
+
+      // Render Re-signed
+      document.getElementById('count-sec-resigned').innerText = res.length;
+      const resList = document.getElementById('list-sec-resigned');
+      if (res.length === 0) {
+        resList.innerHTML = `<div class="p-4 text-xs font-mono text-archGray-600 italic text-center">No re-signed items match current query</div>`;
+      } else {
+        resList.innerHTML = res.map(item => `
+          <div class="p-3 hover:bg-sand-50 transition flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+            <div class="flex items-center gap-2 font-mono">
+              <span class="px-1.5 py-0.5 rounded text-[10px] bg-amber-tint text-amber border border-amber/30 font-bold">${item.kind}</span>
+              <span class="text-ink font-semibold">${item.name}</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="text-archGray-600 text-[11px]">digest modified</span>
+              <button onclick="jumpToAlignment('${item.kind}:${item.name}')" class="text-coral hover:underline font-mono text-[11px] shrink-0">alignment</button>
+            </div>
+          </div>
+        `).join('');
+      }
+    }
+
+    // --- STREAMING_CHUNK:Configuring Alignment matrix interactive logic ---
+    function jumpToAlignment(itemKey) {
+      setAlignmentQuery(itemKey);
+      switchView('alignment');
+    }
+
+    function setAlignmentQuery(itemKey) {
+      document.getElementById('alignment-search-input').value = itemKey;
+      onAlignmentQueryChange();
+    }
+
+    function onAlignmentQueryChange() {
+      const q = document.getElementById('alignment-search-input').value.trim();
+      const parts = q.split(':');
+      const kind = parts.length > 1 ? parts[0] : 'item';
+      const name = parts.length > 1 ? parts.slice(1).join(':') : q;
+
+      document.getElementById('matrix-query-kind').innerText = kind || 'item';
+      document.getElementById('matrix-query-name').innerText = name || '(empty query)';
+
+      renderMatrixResults(q);
+    }
+
+    function renderMatrixResults(query) {
+      const container = document.getElementById('matrix-fork-rows');
+      const lower = query.toLowerCase();
+
+      container.innerHTML = Object.values(FORK_DATA).map(fork => {
+        let statusBadge = '';
+        if (lower.includes('hsla') && fork.id === 'gpui-ce') {
+          statusBadge = `<span class="inline-flex items-center gap-1.5 text-xs font-mono text-rust bg-coral-tint px-2.5 py-1 rounded border border-coral/20 font-medium">✕ Removed in 0.2.2</span>`;
+        } else if (lower.includes('blur') && fork.id === 'gpui-pre') {
+          statusBadge = `<span class="inline-flex items-center gap-1.5 text-xs font-mono text-amber bg-amber-tint px-2.5 py-1 rounded border border-amber/30 font-medium">~ Re-signed in 0.3.3</span>`;
+        } else if (lower.includes('frame_trace') && fork.id === 'gpui-unofficial') {
+          statusBadge = `<span class="inline-flex items-center gap-1.5 text-xs font-mono text-rust bg-coral-tint px-2.5 py-1 rounded border border-coral/20 font-medium">✕ Dropped in 1.17.2</span>`;
+        } else {
+          statusBadge = `<span class="inline-flex items-center gap-1.5 text-xs font-mono text-island bg-island-tint px-2.5 py-1 rounded border border-island/30 font-medium">✓ Present</span>`;
+        }
+
+        return `
+          <div class="p-4 sm:px-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-sand-50 transition">
+            <div class="space-y-1">
+              <div class="flex items-center gap-2 font-mono">
+                <span class="text-sm font-bold text-ink">${fork.name}</span>
+                <span class="text-xs text-archGray-600">(${fork.architecture})</span>
+              </div>
+              <p class="text-xs text-archGray-600">${fork.description}</p>
+            </div>
+
+            <div class="text-right shrink-0">
+              <div class="text-[11px] font-mono text-archGray-600 mb-1">Latest (${fork.latestStable})</div>
+              ${statusBadge}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // --- STREAMING_CHUNK:Configuring code scaffold materializer ---
+    function initCfgSelectors() {
+      const fSel = document.getElementById('cfg-fork-select');
+      fSel.innerHTML = '';
+      Object.keys(FORK_DATA).forEach(k => {
+        fSel.innerHTML += `<option value="${k}">${k}</option>`;
+      });
+      fSel.value = 'gpui-unofficial';
+      onCfgForkChange();
+    }
+
+    function onCfgForkChange() {
+      const f = document.getElementById('cfg-fork-select').value;
+      const vSel = document.getElementById('cfg-ver-select');
+      vSel.innerHTML = '';
+      FORK_DATA[f].versions.forEach(v => {
+        vSel.innerHTML += `<option value="${v}">${v}</option>`;
+      });
+      vSel.value = FORK_DATA[f].latestStable;
+      updateCfgFiles();
+    }
+
+    function updateCfgFiles() {
+      const forkKey = document.getElementById('cfg-fork-select').value;
+      const verKey = document.getElementById('cfg-ver-select').value;
+      const projName = document.getElementById('cfg-name-input').value.trim() || 'gpui-app';
+      const forkMeta = FORK_DATA[forkKey];
+
+      // Update status box
+      const statusBox = document.getElementById('cfg-status-box');
+      statusBox.innerHTML = `
+        <div class="flex items-center gap-2 text-island font-semibold font-mono">
+          <span class="inline-block w-2 h-2 rounded-full bg-island"></span>
+          <span>Compile-verified (rustc ${forkMeta.verifiedRustc})</span>
+        </div>
+        <p class="text-ink leading-relaxed">
+          This exact starting point was built through <code class="font-mono bg-white px-1 py-0.5 rounded border border-archGray-200 text-ink">cargo gocar new</code> → <code class="font-mono bg-white px-1 py-0.5 rounded border border-archGray-200 text-ink">lock</code> → <code class="font-mono bg-white px-1 py-0.5 rounded border border-archGray-200 text-ink">cargo build --locked</code> with zero hand edits.
+        </p>
+        <div class="text-[11px] font-mono text-archGray-600 pt-1">
+          <strong class="text-ink">Binding unit: </strong> ${forkKey} ${verKey}
+          ${forkMeta.companion ? ` + platform companion ${forkMeta.companion} (features ["x11", "wayland"])` : ' (pre-split self-contained)'}
+        </div>
+      `;
+
+      // Cargo.toml content
+      const cargoToml = `# Gocar-managed project (schema gocar-2026.1).
+# Do not hand-edit the version pins below; use \`cargo gocar add\` / \`gocar lock\`.
+[package]
+name = "${projName}"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+# Standalone workspace root: never captured by a parent workspace.
+[workspace]
+
+[package.metadata.gocar]
+schema = "gocar-2026.1"
+contract = "gpui"
+provider = "${forkKey}"
+min-version = "${verKey}"
+
+[dependencies]
+gpui = { package = "${forkKey}", version = "=${verKey}" }
+${forkMeta.companion ? `gpui-platform = { package = "${forkMeta.companion}", version = "=${verKey}", features = ["x11", "wayland"] }\n` : ''}`.trim();
+
+      // main.rs content
+      const isPostSplit = !!forkMeta.companion;
+      const mainRs = `//! Minimal GPUI hello world against the gpui contract (${isPostSplit ? 'post-split' : 'pre-split'}).
+use gpui::{
+    App, Bounds, Context, IntoElement, Render, SharedString, Window, WindowBounds,
+    WindowOptions, div, prelude::*, px, rgb, size,
+};
+${isPostSplit ? `use ${forkMeta.companion.replace(/-/g, '_')}::application;\n` : ''}
+struct HelloWorld {
+    text: SharedString,
+}
+
+impl Render for HelloWorld {
+    fn render(&mut self, _window: &mut Window, _cx: &mut Context<Self>) -> impl IntoElement {
+        div()
+            .flex()
+            .size_full()
+            .bg(rgb(0x101418))
+            .justify_center()
+            .items_center()
+            .child(
+                div()
+                    .text_xl()
+                    .text_color(rgb(0xffffff))
+                    .child(format!("Hello from {}!", self.text)),
+            )
+    }
+}
+
+fn main() {
+    ${isPostSplit ? 'application()' : 'App::new()'}.run(|cx: &mut App| {
+        let bounds = Bounds::centered(None, size(px(480.), px(320.)), cx);
+        cx.open_window(
+            WindowOptions {
+                window_bounds: Some(WindowBounds::Windowed(bounds)),
+                ..Default::default()
+            },
+            |_, cx| cx.new(|_| HelloWorld { text: "${projName}".into() }),
+        )
+        .unwrap();
+        cx.activate(true);
+    });
+}`.trim();
+
+      document.getElementById('code-cargo').innerText = cargoToml;
+      document.getElementById('code-main').innerText = mainRs;
+    }
+
+    function copyCodeBlock(type) {
+      if (type === 'cargo') {
+        const text = document.getElementById('code-cargo').innerText;
+        copyText(text, 'Cargo.toml');
+      } else {
+        const text = document.getElementById('code-main').innerText;
+        copyText(text, 'src/main.rs');
+      }
+    }
+
+    // --- STREAMING_CHUNK:Configuring Continuous Release Journal ---
+    const JOURNAL_ENTRIES = [
+      {
+        fork: 'gpui-ce',
+        version: '0.2.2',
+        status: 'compile-verified',
+        meta: '3 of 3 on this stream · 1,989 item records · api_hash 96adf58081cb…',
+        counts: { removed: 68, added: 565, resigned: 122 },
+        prev: '0.3.3',
+        items: ['- fn:Hsla::alpha', '+ struct:BackdropFilter', '~ trait:InteractiveElement', '+ fn:Window::paint_backdrop_filter']
+      },
+      {
+        fork: 'gpui-ce',
+        version: '0.3.3',
+        flag: 'yanked',
+        meta: '2 of 3 on this stream · 1,485 item records',
+        sameAs: '0.3.2',
+        prev: '0.3.2'
+      },
+      {
+        fork: 'gpui-unofficial',
+        version: '1.18.1',
+        status: 'compile-verified',
+        meta: '44 of 44 on this stream · 2,050 item records · api_hash b78c7b860d1d…',
+        counts: { removed: 14, added: 2, resigned: 22 },
+        prev: '1.19.0-pre',
+        items: ['- fn:OngoingScroll::filter', '+ fn:Point::is_nearly_eq', '~ struct:Window']
+      },
+      {
+        fork: 'gpui-unofficial',
+        version: '1.17.2',
+        meta: '40 of 44 on this stream · 2,001 item records · api_hash b7ce231fc462…',
+        counts: { removed: 6, added: 63, resigned: 21 },
+        prev: '1.16.3',
+        items: ['- fn:profiler::frame_trace_start', '- fn:profiler::frame_trace_stop', '+ struct:SceneHsla']
+      },
+      {
+        fork: 'kael',
+        version: '0.4.1',
+        status: 'compile-verified',
+        meta: '7 of 7 on this stream · 12,527 item records · api_hash a3b90ca15aaa…',
+        sameAs: '0.4.0',
+        prev: '0.4.0'
+      },
+      {
+        fork: 'gpui-box',
+        version: '0.1.1',
+        status: 'compile-verified',
+        meta: '2 of 2 on this stream · 1,960 item records · api_hash ed121d14f7e9…',
+        counts: { removed: 0, added: 11, resigned: 2 },
+        prev: '0.1.0',
+        items: ['+ struct:Transition', '+ fn:Transition::continuous']
+      }
+    ];
+
+    let expandedJournal = { 'gpui-ce:0.2.2': true };
+
+    function initJournalSelectors() {
+      const fSel = document.getElementById('journal-filter-select');
+      Object.keys(FORK_DATA).forEach(k => {
+        fSel.innerHTML += `<option value="${k}">${k}</option>`;
+      });
+      renderJournalFeed();
+    }
+
+    function toggleJournalItem(key) {
+      expandedJournal[key] = !expandedJournal[key];
+      renderJournalFeed();
+    }
+
+    function renderJournalFeed() {
+      const filter = document.getElementById('journal-filter-select').value;
+      const feed = document.getElementById('journal-feed');
+
+      const visible = JOURNAL_ENTRIES.filter(e => filter === 'all' || e.fork === filter);
+
+      feed.innerHTML = visible.map((entry) => {
+        const key = `${entry.fork}:${entry.version}`;
+        const isExp = !!expandedJournal[key];
+
+        return `
+          <div class="border border-archGray-200 rounded-lg bg-white overflow-hidden shadow-sm">
+            <div class="p-4 bg-sand-50 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-archGray-200">
+              <div class="flex items-center gap-3">
+                <span class="font-mono text-xs font-bold text-ink">${entry.fork}</span>
+                <span class="font-mono text-sm font-bold text-ink">${entry.version}</span>
+                ${entry.flag ? `
+                  <span class="px-2 py-0.5 rounded text-[10px] font-mono uppercase bg-amber-tint text-amber border border-amber/30">
+                    ${entry.flag}
+                  </span>
+                ` : ''}
+                ${entry.status === 'compile-verified' ? `
+                  <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-island-tint text-island border border-island/30 flex items-center gap-1 font-semibold">
+                    ✓ compile-verified
+                  </span>
+                ` : ''}
+              </div>
+              <span class="text-xs font-mono text-archGray-600">${entry.meta}</span>
+            </div>
+
+            <div class="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs">
+              <div>
+                ${entry.sameAs ? `
+                  <span class="text-archGray-600 italic">
+                    identical measured surface to ${entry.sameAs} — a within-stream exact-copy republish
+                  </span>
+                ` : `
+                  <div class="flex items-center gap-2 font-mono">
+                    <span class="text-archGray-600">vs ${entry.prev}:</span>
+                    ${entry.counts ? `
+                      <span class="text-rust font-semibold">-${entry.counts.removed} removed</span>
+                      <span>·</span>
+                      <span class="text-island font-semibold">+${entry.counts.added} added</span>
+                      <span>·</span>
+                      <span class="text-amber font-semibold">~${entry.counts.resigned} re-signed</span>
+                    ` : ''}
+                  </div>
+                `}
+              </div>
+
+              <div class="flex items-center gap-2">
+                ${entry.prev ? `
+                  <button onclick="setDiffPreset('${entry.fork}', '${entry.prev}', '${entry.fork}', '${entry.version}'); switchView('changes');" class="px-2.5 py-1 rounded bg-white hover:bg-sand-100 border border-archGray-200 text-coral font-mono text-[11px] transition">
+                    diff in changes →
+                  </button>
+                ` : ''}
+                ${entry.items ? `
+                  <button onclick="toggleJournalItem('${key}')" class="px-3 py-1 rounded bg-white hover:bg-sand-100 border border-archGray-200 text-ink font-mono text-xs transition">
+                    ${isExp ? 'Hide items' : 'Show item rows'}
+                  </button>
+                ` : ''}
+              </div>
+            </div>
+
+            ${isExp && entry.items ? `
+              <div class="p-4 bg-sand-100/50 border-t border-archGray-200 text-xs font-mono space-y-2">
+                <div class="text-archGray-600 text-[11px] font-sans font-medium">Measured item rows for this release:</div>
+                <div class="space-y-1.5">
+                  ${entry.items.map(row => {
+                    const color = row.startsWith('-') ? 'text-rust font-medium' : (row.startsWith('+') ? 'text-island font-medium' : 'text-amber font-medium');
+                    return `<div class="${color} flex items-center gap-2"><span>${row}</span></div>`;
+                  }).join('')}
+                </div>
+              </div>
+            ` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+
+    // --- STREAMING_CHUNK:Bootstrapping application on window load ---
+    window.addEventListener('DOMContentLoaded', () => {
+      // Overview verified badges list
+      const badgeList = document.getElementById('overview-badge-list');
+      badgeList.innerHTML = Object.values(FORK_DATA).map(fork => `
+        <div class="p-2.5 rounded bg-sand-50 border border-ocean-hairline flex items-center justify-between text-xs hover:border-ocean transition">
+          <div class="space-y-0.5">
+            <div class="flex items-center gap-2">
+              <span class="font-mono font-bold text-ink">${fork.name}</span>
+              <span class="font-mono text-[11px] text-coral font-semibold">${fork.latestStable}</span>
+            </div>
+            <span class="text-[11px] text-archGray-600 font-mono">rustc ${fork.verifiedRustc}</span>
+          </div>
+          <button onclick="openStudyModal('doc07')" class="text-[11px] font-mono text-island bg-island-tint border border-island/30 px-2 py-0.5 rounded flex items-center gap-1 hover:bg-island/15 transition">
+            <span>✓</span>
+            <span>${fork.evidenceDoc.split('—')[0]}</span>
+          </button>
+        </div>
+      `).join('');
+
+      initDiffSelectors();
+      initCfgSelectors();
+      initJournalSelectors();
+      onAlignmentQueryChange();
+
+      // Start on Changes view
+      switchView('changes');
+    });
+  </script>
+</body>
+</html>

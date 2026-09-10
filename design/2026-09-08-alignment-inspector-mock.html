@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alignment View Redesign — gpui-archipelago</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            ink: '#174d68',
+            coral: {
+              DEFAULT: '#ef4e28',
+              bright: '#fd6f43',
+              tint: '#ef4e2814',
+            },
+            rust: '#cb3b1b',
+            ocean: {
+              DEFAULT: '#378fbd',
+              hairline: '#378fbd33',
+              tint: '#378fbd14'
+            },
+            island: {
+              DEFAULT: '#7dab59',
+              dark: '#5f8a3c',
+              tint: '#7dab591a'
+            },
+            amber: {
+              DEFAULT: '#a86214',
+              tint: '#a862141a'
+            },
+            sand: {
+              50: '#fffdfa',
+              100: '#fff8ed',
+              200: '#fae0b740',
+              300: '#fae0b780'
+            },
+            archGray: {
+              100: '#f1f3f4',
+              200: '#dde1e3',
+              600: '#5b6368'
+            }
+          },
+          fontFamily: {
+            sans: ['"Source Sans 3"', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Typography: Source Sans 3 & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+
+  <style>
+    /* Custom delicate scrollbars */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: #fffdfa; }
+    ::-webkit-scrollbar-thumb { background: #dde1e3; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #378fbd; }
+
+    /* Timeline cell micro-styles */
+    .cell-dot {
+      transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .cell-dot:hover {
+      transform: scale(1.35);
+      z-index: 20;
+    }
+
+    /* Suppress browser native search cancel/decoration buttons to eliminate duplicate clear icons */
+    input[type="search"]::-webkit-search-cancel-button,
+    input[type="search"]::-webkit-search-decoration,
+    input[type="search"]::-webkit-search-results-button,
+    input[type="search"]::-webkit-search-results-decoration {
+      -webkit-appearance: none;
+      appearance: none;
+      display: none;
+    }
+  </style>
+</head>
+<body class="bg-sand-50 text-ink font-sans antialiased min-h-screen selection:bg-coral-tint selection:text-rust p-4 sm:p-8 lg:p-12">
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-16 opacity-0 transition-all duration-300 pointer-events-none flex items-center gap-2.5 px-4 py-2.5 rounded-lg bg-white border border-archGray-200 text-ink shadow-xl font-mono text-xs">
+    <span class="w-2 h-2 rounded-full bg-coral"></span>
+    <span id="toast-msg">Copied migration recipe</span>
+  </div>
+
+  <div class="max-w-6xl mx-auto space-y-8">
+
+    <!-- Top Bar Navigation & Query Selector -->
+    <header class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-ocean-hairline">
+      <div class="space-y-1">
+        <div class="flex items-center gap-2 font-mono text-xs text-archGray-600">
+          <a href="#" class="hover:text-coral transition">The GPUI Fork Map</a>
+          <span>/</span>
+          <span class="text-ink font-semibold">Alignment Inspector</span>
+        </div>
+        <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-ink">
+          API Alignment & Lifespan
+        </h1>
+      </div>
+
+      <!-- Live Search & Omnisearch Command Palette -->
+      <div class="relative w-full md:w-96">
+        <div class="relative flex items-center">
+          <div class="absolute left-3 text-archGray-600 pointer-events-none flex items-center">
+            <svg class="w-3.5 h-3.5 text-archGray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+          <input
+            type="search"
+            id="search-input"
+            oninput="handleSearchInput(this.value)"
+            onsearch="handleSearchInput(this.value)"
+            onfocus="openSearchSuggestions()"
+            placeholder="Search 13,344 items (e.g. record_frame, blur, Hsla)..."
+            autocomplete="off"
+            spellcheck="false"
+            class="w-full bg-white border border-ocean-hairline rounded-xl pl-9 pr-9 py-2 text-xs font-mono text-ink placeholder:text-archGray-600 focus:outline-none focus:ring-2 focus:ring-ocean/40 focus:border-ocean shadow-xs transition"
+          />
+          <div class="absolute right-2.5 flex items-center">
+            <kbd id="search-kbd" class="hidden sm:inline-block px-1.5 py-0.5 rounded text-[10px] font-mono bg-sand-100 border border-archGray-200 text-archGray-600 shadow-2xs pointer-events-none transition-opacity">
+              /
+            </kbd>
+            <button
+              id="search-clear-btn"
+              onclick="clearSearch()"
+              type="button"
+              class="hidden w-5 h-5 rounded-full hover:bg-sand-200 text-archGray-600 hover:text-ink items-center justify-center transition"
+              title="Clear search (Esc)"
+              aria-label="Clear search"
+            >
+              <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Floating Autosuggest Results Dropdown -->
+        <div
+          id="search-dropdown"
+          class="hidden absolute left-0 right-0 top-full mt-1.5 bg-white border border-archGray-200 rounded-xl shadow-xl z-50 overflow-hidden divide-y divide-archGray-100 max-h-80 overflow-y-auto"
+        >
+          <!-- Suggestions injected dynamically via JS -->
+        </div>
+      </div>
+    </header>
+
+    <!-- Filter Presets & Quick Query Pills -->
+    <div class="flex flex-wrap items-center justify-between gap-3 text-xs font-mono">
+      <div class="flex flex-wrap items-center gap-1.5">
+        <span class="text-archGray-600 text-[11px] mr-1">Quick filter:</span>
+        <button onclick="filterByKind('all')" id="filter-all" class="px-2.5 py-1 rounded-full text-[11px] border border-coral/40 bg-coral-tint text-rust font-semibold">
+          All
+        </button>
+        <button onclick="filterByKind('fn')" id="filter-fn" class="px-2.5 py-1 rounded-full text-[11px] border border-archGray-200 bg-white text-archGray-600 hover:text-ink hover:border-ocean transition">
+          fn (functions)
+        </button>
+        <button onclick="filterByKind('struct')" id="filter-struct" class="px-2.5 py-1 rounded-full text-[11px] border border-archGray-200 bg-white text-archGray-600 hover:text-ink hover:border-ocean transition">
+          structs
+        </button>
+        <button onclick="filterByKind('rule')" id="filter-rule" class="px-2.5 py-1 rounded-full text-[11px] border border-amber/40 bg-amber-tint text-amber font-semibold hover:border-amber transition flex items-center gap-1">
+          <span>⚡</span>
+          <span>Has Migration Recipe</span>
+        </button>
+      </div>
+
+      <!-- Selection breadcrumb indicator -->
+      <div class="text-[11px] text-archGray-600 hidden lg:flex items-center gap-1.5">
+        <span>Active item:</span>
+        <code class="font-mono text-ink bg-white px-1.5 py-0.5 rounded border border-archGray-200" id="active-item-crumb">
+          fn:profiler::record_frame_timing
+        </code>
+      </div>
+    </div>
+
+    <!-- =========================================================================
+        HERO SECTION: THE ITEM IDENTITY & FAST VERDICT
+       ========================================================================= -->
+    <div class="bg-white rounded-2xl border border-ocean-hairline shadow-xs overflow-hidden">
+      
+      <!-- Item Header Banner -->
+      <div class="p-6 sm:p-8 bg-sand-100/70 border-b border-ocean-hairline space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div class="flex items-center gap-2.5">
+            <span id="item-kind-badge" class="px-2.5 py-1 rounded bg-ocean text-white font-mono text-xs font-bold uppercase tracking-wide shadow-xs">
+              Function
+            </span>
+            <h2 id="item-qualified-name" class="font-mono text-xl sm:text-2xl font-bold text-ink tracking-tight">
+              profiler::record_frame_timing
+            </h2>
+          </div>
+
+          <!-- Prevalence Summary Badge -->
+          <div id="item-prevalence-badge" class="flex items-center gap-2 text-xs font-mono bg-white px-3 py-1.5 rounded-full border border-archGray-200 shadow-2xs self-start sm:self-auto">
+            <span class="w-2 h-2 rounded-full bg-amber animate-pulse"></span>
+            <span class="text-archGray-600">Prevalence:</span>
+            <strong class="text-ink">20 of 67 releases</strong>
+            <span class="text-archGray-200">·</span>
+            <span class="text-rust font-medium">3 of 6 forks</span>
+          </div>
+        </div>
+
+        <p id="item-description" class="text-xs sm:text-sm text-archGray-600 leading-relaxed max-w-4xl">
+          Tracks frame render milestones. Qualified as <code class="font-mono text-ink bg-white px-1.5 py-0.5 rounded border border-archGray-200 text-xs">fn:profiler::record_frame_timing</code> walking public module chains. Replaced in Zed upstream by fine-grained frame event profilers.
+        </p>
+      </div>
+
+      <!-- DYNAMIC MIGRATION RECIPE / VERDICT CARD -->
+      <div id="item-recipe-container" class="p-6 sm:p-8 space-y-4 bg-white">
+        <!-- Injected dynamically by selectItem() -->
+      </div>
+    </div>
+
+    <!-- =========================================================================
+        CROSS-FORK PRESENCE MATRIX & SEGMENTED TIMELINE
+       ========================================================================= -->
+    <div class="space-y-4">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h3 class="text-lg font-bold text-ink tracking-tight">Fork Availability Matrix</h3>
+          <p class="text-xs text-archGray-600 font-mono">6 streams · 67 recorded releases in crates.io chronological order</p>
+        </div>
+
+        <!-- Clean Interactive Legend -->
+        <div class="flex flex-wrap items-center gap-3 text-xs font-mono bg-white px-3.5 py-2 rounded-xl border border-ocean-hairline shadow-2xs">
+          <span class="flex items-center gap-1.5">
+            <span class="w-2.5 h-2.5 rounded-sm bg-island border border-island-dark/30"></span>
+            <span class="text-archGray-600">Present</span>
+          </span>
+          <span class="flex items-center gap-1.5">
+            <span class="w-2.5 h-2.5 rounded-sm bg-coral border border-rust/30"></span>
+            <span class="text-archGray-600">Removed</span>
+          </span>
+          <span class="flex items-center gap-1.5">
+            <span class="w-2.5 h-2.5 rounded-sm bg-amber border border-amber/40"></span>
+            <span class="text-archGray-600">Re-signed</span>
+          </span>
+          <span class="flex items-center gap-1.5">
+            <span class="w-2.5 h-2.5 rounded-sm bg-archGray-200"></span>
+            <span class="text-archGray-600">Absent</span>
+          </span>
+        </div>
+      </div>
+
+      <!-- STREAM MATRIX LIST (Populated by active item) -->
+      <div class="space-y-3" id="matrix-streams-container">
+        <!-- Rendered via JS based on selected item -->
+      </div>
+    </div>
+
+    <!-- =========================================================================
+        TELEMETRY INSPECTION DOCK: PROVENANCE AND SHA-256 DIGESTS
+       ========================================================================= -->
+    <div class="bg-white rounded-2xl border border-ocean-hairline p-6 shadow-xs space-y-4">
+      <div class="flex items-center justify-between border-b border-archGray-100 pb-3">
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-mono font-bold uppercase tracking-wider text-ink">AST Surface Digest Inspector</span>
+          <span class="text-[11px] font-mono text-archGray-600">(Hover any timeline cell above)</span>
+        </div>
+        <span id="inspect-channel" class="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-sand-200 text-ink font-semibold">
+          gpui-unofficial 1.16.2
+        </span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+        <!-- Status Tag -->
+        <div class="md:col-span-4 space-y-1 font-mono">
+          <div class="text-[11px] text-archGray-600">Observed Status:</div>
+          <div id="inspect-status" class="text-sm font-bold text-island-dark flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-island"></span>
+            <span>Present (Unchanged AST)</span>
+          </div>
+        </div>
+
+        <!-- Digest Hash -->
+        <div class="md:col-span-8 space-y-1 font-mono">
+          <div class="flex justify-between text-[11px] text-archGray-600">
+            <span>Canonical SHA-256 Parameter-Type Digest (RULE-2):</span>
+            <span id="inspect-digest-match" class="text-island-dark font-semibold">Exact 3-Fork Match</span>
+          </div>
+          <div class="p-2.5 rounded bg-sand-100 border border-archGray-200 text-xs font-mono text-ink select-all break-all" id="inspect-digest">
+            e78172448c961219cc5b81be617f864f71dcec9e8b29604ba0fcd6ddc3896bb8
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- =========================================================================
+        COLLAPSIBLE HONEST PROVENANCE DRAWER (RULE-1 TO RULE-7)
+       ========================================================================= -->
+    <details class="group bg-white rounded-xl border border-archGray-200 p-4 transition">
+      <summary class="cursor-pointer font-mono text-xs font-semibold text-ink flex items-center justify-between list-none">
+        <span class="flex items-center gap-2">
+          <span class="text-ocean">ℹ</span>
+          <span>Display Honesty & Provenance Guarantees (RULE-1 to RULE-7)</span>
+        </span>
+        <span class="text-archGray-600 group-open:rotate-180 transition transform">▼</span>
+      </summary>
+
+      <div class="pt-4 mt-3 border-t border-archGray-100 text-xs text-archGray-600 space-y-2 leading-relaxed">
+        <p>
+          <strong class="text-ink font-mono">RULE-1:</strong> No cross-fork "same generation" badges. Different forks are independent snapshot comparisons.
+        </p>
+        <p>
+          <strong class="text-ink font-mono">RULE-2:</strong> Items are qualified <code class="font-mono text-ink">kind:name</code>. Parameter renames do not re-sign; doc-comment edits modify the canonical digest.
+        </p>
+        <p>
+          <strong class="text-ink font-mono">RULE-4:</strong> <code class="font-mono text-ink">null</code> is not unchanged. Unmeasured rows render explicitly as "not measured".
+        </p>
+        <p>
+          <strong class="text-ink font-mono">RULE-5:</strong> Compile badges only exist where real workspace projects compiled cleanly against crates.io artifacts (<a href="#" class="text-coral hover:underline">doc 07</a>, <a href="#" class="text-coral hover:underline">doc 12</a>).
+        </p>
+      </div>
+    </details>
+
+  </div>
+
+  <!-- Interactive Alignment Engine & Omnisearch Script -->
+  <script>
+    // In-memory indexed dataset of measured API items
+    const API_REGISTRY = [
+      {
+        id: 'record_frame_timing',
+        kind: 'fn',
+        name: 'profiler::record_frame_timing',
+        prevalence: '20 of 67 releases · 3 of 6 forks',
+        prevalenceTone: 'amber',
+        description: 'Tracks frame render milestones. Qualified as fn:profiler::record_frame_timing walking public module chains. Replaced in Zed upstream by fine-grained frame event profilers.',
+        canonicalDigest: 'e78172448c961219cc5b81be617f864f71dcec9e8b29604ba0fcd6ddc3896bb8',
+        recipe: {
+          id: 'gpui-unofficial-1.17.2-01',
+          transition: 'gpui-unofficial 1.16.1 → 1.17.2',
+          before: 'profiler::record_frame_timing(duration);',
+          beforeVersion: '≤ 1.16.3',
+          after: 'profiler::record_frame_event("frame", duration);',
+          afterVersion: '≥ 1.17.2',
+          ruleNote: 'Replaced in Zed upstream by fine-grained frame event profilers.'
+        },
+        streams: {
+          unofficial: { added: '1.7.2', dropped: '1.17.2', activeEra: '1.7.2 → 1.16.3', backport: '1.16.2' },
+          ce: { introduced: '0.2.2' },
+          box: { introduced: '0.1.0' },
+          absent: ['gpui', 'gpui-pre', 'kael']
+        }
+      },
+      {
+        id: 'record_frame_event',
+        kind: 'fn',
+        name: 'profiler::record_frame_event',
+        prevalence: '12 of 67 releases · 3 of 6 forks',
+        prevalenceTone: 'island',
+        description: 'Successor event profiler accepting categorical event tag keys and durations. Introduced in upstream Zed 0.170 and gpui-unofficial 1.17.2.',
+        canonicalDigest: '8a12bc90fae1136b8c4d29184ee4129bcae918349102bcad0192e10a2839e102',
+        recipe: null,
+        streams: {
+          unofficial: { added: '1.17.2', dropped: null, activeEra: '1.17.2 → 1.18.1', backport: null },
+          ce: { introduced: '0.2.2' },
+          box: { introduced: '0.1.0' },
+          absent: ['gpui', 'gpui-pre', 'kael']
+        }
+      },
+      {
+        id: 'AccessibilityNode',
+        kind: 'struct',
+        name: 'accessibility::AccessibilityNode',
+        prevalence: '65 of 67 releases · 6 of 6 forks',
+        prevalenceTone: 'island',
+        description: 'Core semantic accessibility tree descriptor. Present across all known forks, but parameter signature re-signed in kael 0.2.0.',
+        canonicalDigest: '31f90a21bc9842a10cd29481fe91048b29c8e9014294029410ea09214bdca891',
+        recipe: {
+          id: 'kael-0.2.0-resign',
+          transition: 'kael 0.1.2 → 0.2.0',
+          before: 'AccessibilityNode::new(role, id);',
+          beforeVersion: 'kael 0.1.x',
+          after: 'AccessibilityNode::new(role, id, bounds);',
+          afterVersion: 'kael ≥ 0.2.0',
+          ruleNote: 'Bounds parameter made mandatory in kael UI layer.'
+        },
+        streams: {
+          unofficial: { added: '0.230.1', dropped: null, activeEra: 'all releases', backport: null },
+          ce: { introduced: '0.3.2' },
+          box: { introduced: '0.1.0' },
+          absent: []
+        }
+      },
+      {
+        id: 'Window_blur',
+        kind: 'fn',
+        name: 'Window::blur',
+        prevalence: '58 of 67 releases · 5 of 6 forks',
+        prevalenceTone: 'amber',
+        description: 'Triggers programmatic window unfocus. Signature re-signed in modern releases requiring explicit execution context references.',
+        canonicalDigest: 'c4e908129038ba92019482bfaced9102485901239048aebdf891029482938102',
+        recipe: {
+          id: 'gpui-window-blur-cx',
+          transition: 'gpui-unofficial 1.14.2 → gpui-pre 0.3.3',
+          before: 'window.blur();',
+          beforeVersion: '≤ 1.14.2',
+          after: 'window.blur(cx);',
+          afterVersion: '≥ 1.18.1 / gpui-pre 0.3.3',
+          ruleNote: 'Single line re-signature that blocked gpuikit 0.9.0 kit probes.'
+        },
+        streams: {
+          unofficial: { added: '0.230.1', dropped: null, activeEra: '0.230.1 → 1.18.1', backport: null },
+          ce: { introduced: '0.2.2' },
+          box: { introduced: '0.1.0' },
+          absent: []
+        }
+      },
+      {
+        id: 'Hsla_alpha',
+        kind: 'fn',
+        name: 'Hsla::alpha',
+        prevalence: '20 of 67 releases · 2 of 6 forks',
+        prevalenceTone: 'coral',
+        description: 'Direct HSLA color transparency accessor. Dropped in gpui-unofficial 1.17.2 and gpui-ce 0.2.2 during color modernization.',
+        canonicalDigest: '14f09a82bdcf9023485091238491023849012384910238490123849102384901',
+        recipe: null,
+        manualBreakNote: 'No confirmed successor rule in dataset — direct field accesses require manual mapping to the new ColorExt trait or SceneHsla model (see doc 09).',
+        streams: {
+          unofficial: { added: '0.230.1', dropped: '1.17.2', activeEra: '0.230.1 → 1.16.3', backport: null },
+          ce: { introduced: '0.3.2', dropped: '0.2.2' },
+          box: { introduced: '0.1.0' },
+          absent: ['gpui', 'gpui-pre', 'kael']
+        }
+      },
+      {
+        id: 'BackdropFilter',
+        kind: 'struct',
+        name: 'BackdropFilter',
+        prevalence: '14 of 67 releases · 3 of 6 forks',
+        prevalenceTone: 'island',
+        description: 'Hardware-accelerated blurred backdrop widget element. Introduced in post-split companion platforms.',
+        canonicalDigest: '908234abcf891023489102348910234891023489102348910234891023489102',
+        recipe: null,
+        streams: {
+          unofficial: { added: '1.17.2', dropped: null, activeEra: '1.17.2 → 1.18.1', backport: null },
+          ce: { introduced: '0.2.2' },
+          box: { introduced: '0.1.0' },
+          absent: ['gpui', 'gpui-pre', 'kael']
+        }
+      }
+    ];
+
+    let currentItem = API_REGISTRY[0];
+    let activeKindFilter = 'all';
+    let selectedDropdownIndex = -1;
+
+    // Global Keyboard Shortcuts
+    document.addEventListener('keydown', (e) => {
+      // '/' or 'Cmd+K' focuses search input
+      if ((e.key === '/' && document.activeElement.tagName !== 'INPUT') || ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k')) {
+        e.preventDefault();
+        const searchInput = document.getElementById('search-input');
+        searchInput.focus();
+        searchInput.select();
+        openSearchSuggestions();
+      }
+
+      // Escape closes dropdown
+      if (e.key === 'Escape') {
+        closeSearchSuggestions();
+        document.getElementById('search-input').blur();
+      }
+
+      // Arrow navigation in dropdown
+      const dropdown = document.getElementById('search-dropdown');
+      if (!dropdown.classList.contains('hidden')) {
+        const rows = dropdown.querySelectorAll('.suggest-item');
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          selectedDropdownIndex = (selectedDropdownIndex + 1) % rows.length;
+          updateDropdownHighlight(rows);
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          selectedDropdownIndex = (selectedDropdownIndex - 1 + rows.length) % rows.length;
+          updateDropdownHighlight(rows);
+        } else if (e.key === 'Enter' && selectedDropdownIndex >= 0 && rows[selectedDropdownIndex]) {
+          e.preventDefault();
+          rows[selectedDropdownIndex].click();
+        }
+      }
+    });
+
+    // Close dropdown on outside click
+    document.addEventListener('click', (e) => {
+      const searchBox = document.getElementById('search-input');
+      const dropdown = document.getElementById('search-dropdown');
+      if (!searchBox.contains(e.target) && !dropdown.contains(e.target)) {
+        closeSearchSuggestions();
+      }
+    });
+
+    function updateDropdownHighlight(rows) {
+      rows.forEach((row, i) => {
+        if (i === selectedDropdownIndex) {
+          row.classList.add('bg-sand-100', 'border-l-2', 'border-coral');
+        } else {
+          row.classList.remove('bg-sand-100', 'border-l-2', 'border-coral');
+        }
+      });
+    }
+
+    function toggleSearchControls(hasQuery) {
+      const clearBtn = document.getElementById('search-clear-btn');
+      const kbd = document.getElementById('search-kbd');
+      if (hasQuery) {
+        clearBtn.classList.remove('hidden');
+        clearBtn.classList.add('flex');
+        if (kbd) kbd.classList.add('hidden');
+      } else {
+        clearBtn.classList.add('hidden');
+        clearBtn.classList.remove('flex');
+        if (kbd) kbd.classList.remove('hidden');
+      }
+    }
+
+    function openSearchSuggestions() {
+      renderSearchSuggestions(document.getElementById('search-input').value);
+      document.getElementById('search-dropdown').classList.remove('hidden');
+    }
+
+    function closeSearchSuggestions() {
+      document.getElementById('search-dropdown').classList.add('hidden');
+      selectedDropdownIndex = -1;
+    }
+
+    function clearSearch() {
+      const input = document.getElementById('search-input');
+      input.value = '';
+      toggleSearchControls(false);
+      openSearchSuggestions();
+      input.focus();
+    }
+
+    function handleSearchInput(query) {
+      toggleSearchControls(query.length > 0);
+      renderSearchSuggestions(query);
+    }
+
+    function filterByKind(kind) {
+      activeKindFilter = kind;
+      ['all', 'fn', 'struct', 'rule'].forEach(k => {
+        const btn = document.getElementById('filter-' + k);
+        if (k === kind) {
+          btn.className = 'px-2.5 py-1 rounded-full text-[11px] border border-coral/40 bg-coral-tint text-rust font-semibold shadow-xs';
+        } else {
+          btn.className = 'px-2.5 py-1 rounded-full text-[11px] border border-archGray-200 bg-white text-archGray-600 hover:text-ink hover:border-ocean transition';
+        }
+      });
+      renderSearchSuggestions(document.getElementById('search-input').value);
+    }
+
+    function renderSearchSuggestions(rawQuery) {
+      const dropdown = document.getElementById('search-dropdown');
+      const q = rawQuery.toLowerCase().trim();
+
+      const filtered = API_REGISTRY.filter(item => {
+        const matchesKind = activeKindFilter === 'all' 
+          || (activeKindFilter === 'rule' ? !!item.recipe : item.kind === activeKindFilter);
+        const matchesQuery = !q || item.name.toLowerCase().includes(q) || item.kind.toLowerCase().includes(q);
+        return matchesKind && matchesQuery;
+      });
+
+      if (filtered.length === 0) {
+        dropdown.innerHTML = `
+          <div class="p-4 text-xs font-mono text-archGray-600 text-center italic">
+            No matching items found for "${rawQuery}"
+          </div>
+        `;
+        dropdown.classList.remove('hidden');
+        return;
+      }
+
+      dropdown.innerHTML = filtered.map((item, idx) => {
+        const kindColor = item.kind === 'fn' ? 'bg-ocean/10 text-ocean' : 'bg-island-tint text-island-dark';
+        return `
+          <div
+            onclick="selectItem('${item.id}')"
+            class="suggest-item p-3 hover:bg-sand-50 transition cursor-pointer flex items-center justify-between gap-3 text-xs font-mono"
+            data-index="${idx}"
+          >
+            <div class="flex items-center gap-2 truncate">
+              <span class="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase ${kindColor}">
+                ${item.kind}
+              </span>
+              <span class="text-ink font-semibold truncate">
+                ${item.name}
+              </span>
+            </div>
+
+            <div class="flex items-center gap-2 shrink-0">
+              ${item.recipe ? `
+                <span class="px-1.5 py-0.2 rounded text-[10px] bg-amber-tint text-amber border border-amber/30 font-medium">
+                  ⚡ recipe
+                </span>
+              ` : ''}
+              <span class="text-[11px] text-archGray-600">
+                ${item.prevalence.split('·')[0]}
+              </span>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      dropdown.innerHTML += `
+        <div class="px-3 py-1.5 bg-sand-50/90 border-t border-archGray-100 flex items-center justify-between text-[10px] font-mono text-archGray-600 select-none">
+          <span><kbd class="px-1 py-0.5 rounded bg-white border border-archGray-200">↑</kbd> <kbd class="px-1 py-0.5 rounded bg-white border border-archGray-200">↓</kbd> navigate</span>
+          <span><kbd class="px-1 py-0.5 rounded bg-white border border-archGray-200">↵</kbd> select</span>
+          <span><kbd class="px-1 py-0.5 rounded bg-white border border-archGray-200">esc</kbd> close</span>
+        </div>
+      `;
+
+      dropdown.classList.remove('hidden');
+      selectedDropdownIndex = -1;
+    }
+
+    function selectItem(itemId) {
+      const item = API_REGISTRY.find(i => i.id === itemId);
+      if (!item) return;
+
+      currentItem = item;
+      closeSearchSuggestions();
+
+      // Update Header Crumb & Search Input placeholder
+      document.getElementById('active-item-crumb').innerText = `${item.kind}:${item.name}`;
+      document.getElementById('search-input').value = item.name;
+      toggleSearchControls(true);
+
+      // Update Hero identity
+      document.getElementById('item-qualified-name').innerText = item.name;
+      const kindBadge = document.getElementById('item-kind-badge');
+      kindBadge.innerText = item.kind === 'fn' ? 'Function' : (item.kind === 'struct' ? 'Struct' : 'Item');
+      kindBadge.className = item.kind === 'fn' ? 'px-2.5 py-1 rounded bg-ocean text-white font-mono text-xs font-bold uppercase tracking-wide shadow-xs' : 'px-2.5 py-1 rounded bg-island-dark text-white font-mono text-xs font-bold uppercase tracking-wide shadow-xs';
+
+      // Update Prevalence Badge
+      const prevBadge = document.getElementById('item-prevalence-badge');
+      prevBadge.innerHTML = `
+        <span class="w-2 h-2 rounded-full ${item.prevalenceTone === 'coral' ? 'bg-coral' : (item.prevalenceTone === 'amber' ? 'bg-amber' : 'bg-island')}"></span>
+        <span class="text-archGray-600">Prevalence:</span>
+        <strong class="text-ink">${item.prevalence}</strong>
+      `;
+
+      // Update Description
+      document.getElementById('item-description').innerText = item.description;
+
+      // Update Migration / Actionability Card
+      const recipeBox = document.getElementById('item-recipe-container');
+      if (item.recipe) {
+        recipeBox.innerHTML = `
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="flex h-2 w-2 relative">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-coral opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-2 w-2 bg-coral"></span>
+              </span>
+              <h3 class="font-mono text-xs font-bold uppercase tracking-wider text-rust">
+                Confirmed Migration Recipe
+              </h3>
+              <span class="text-[11px] font-mono text-archGray-600 hidden sm:inline-block">
+                (${item.recipe.transition})
+              </span>
+            </div>
+            <button onclick="copyRecipe('${item.recipe.id}')" class="text-xs font-mono text-coral hover:text-rust font-semibold flex items-center gap-1.5 transition">
+              <span>Copy fix</span>
+              <span>⎘</span>
+            </button>
+          </div>
+
+          <!-- Visual Replacement Bridge -->
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-stretch">
+            <div class="md:col-span-5 p-3.5 rounded-xl bg-sand-100 border border-rust/20 flex flex-col justify-between">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-[10px] font-mono uppercase font-bold text-rust bg-coral-tint px-2 py-0.5 rounded">
+                  Deprecated / Re-signed
+                </span>
+                <span class="text-[10px] font-mono text-archGray-600">${item.recipe.beforeVersion}</span>
+              </div>
+              <code class="font-mono text-xs text-ink block font-medium">
+                ${item.recipe.before}
+              </code>
+            </div>
+
+            <div class="md:col-span-2 flex flex-col items-center justify-center py-1">
+              <div class="w-8 h-8 rounded-full bg-sand-100 border border-ocean-hairline flex items-center justify-center text-ink font-bold text-sm shadow-2xs">
+                →
+              </div>
+              <span class="text-[10px] font-mono text-archGray-600 mt-1">Rule: ${item.recipe.id}</span>
+            </div>
+
+            <div class="md:col-span-5 p-3.5 rounded-xl bg-island-tint border border-island/30 flex flex-col justify-between">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-[10px] font-mono uppercase font-bold text-island-dark bg-white px-2 py-0.5 rounded border border-island/20">
+                  Confirmed Successor
+                </span>
+                <span class="text-[10px] font-mono text-island-dark font-medium">${item.recipe.afterVersion}</span>
+              </div>
+              <code class="font-mono text-xs text-ink block font-semibold">
+                ${item.recipe.after}
+              </code>
+            </div>
+          </div>
+
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2 text-[11px] text-archGray-600 font-mono">
+            <p class="italic m-0">A rule is a human-confirmed successor recipe, not a compiler attestation.</p>
+            <a href="#" class="text-ocean hover:underline flex items-center gap-1 shrink-0 font-medium">
+              <span>Read migration study (doc 09)</span>
+              <span>↗</span>
+            </a>
+          </div>
+        `;
+      } else if (item.manualBreakNote) {
+        recipeBox.innerHTML = `
+          <div class="p-4 rounded-xl bg-coral-tint/60 border border-coral/30 flex items-start gap-3 text-xs font-mono">
+            <span class="text-rust font-bold text-base mt-0.5">⚠️</span>
+            <div class="space-y-1">
+              <div class="font-bold text-rust uppercase">Honest Data Guarantee (RULE-3 & RULE-7)</div>
+              <p class="text-ink leading-relaxed font-sans">${item.manualBreakNote}</p>
+            </div>
+          </div>
+        `;
+      } else {
+        recipeBox.innerHTML = `
+          <div class="p-4 rounded-xl bg-island-tint/60 border border-island/30 flex items-start gap-3 text-xs font-mono">
+            <span class="text-island-dark font-bold text-base mt-0.5">✓</span>
+            <div class="space-y-1">
+              <div class="font-bold text-island-dark uppercase">Stable Surface Symbol</div>
+              <p class="text-ink leading-relaxed font-sans">No breaking deprecation rules are registered for this item on current stable streams.</p>
+            </div>
+          </div>
+        `;
+      }
+
+      // Update Telemetry Dock with initial item state
+      inspectCell('gpui-unofficial', 'latest', 'same', item.canonicalDigest);
+    }
+
+    function inspectCell(fork, version, status, digest) {
+      document.getElementById('inspect-channel').innerText = `${fork} ${version}`;
+      
+      const statusEl = document.getElementById('inspect-status');
+      const digestEl = document.getElementById('inspect-digest');
+      const matchEl = document.getElementById('inspect-digest-match');
+
+      if (status === 'added' || status === 'same') {
+        statusEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-island"></span><span>Present (${status === 'added' ? 'Introduced here' : 'Unchanged AST'})</span>`;
+        statusEl.className = 'text-sm font-bold text-island-dark flex items-center gap-2';
+        digestEl.innerText = digest || currentItem.canonicalDigest;
+        matchEl.innerText = 'Exact Canonical Match';
+        matchEl.className = 'text-island-dark font-semibold';
+      } else if (status === 'removed') {
+        statusEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-coral"></span><span>Removed in this release</span>`;
+        statusEl.className = 'text-sm font-bold text-rust flex items-center gap-2';
+        digestEl.innerText = 'Item absent from public AST surface';
+        matchEl.innerText = 'Dropped';
+        matchEl.className = 'text-rust font-semibold';
+      } else {
+        statusEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-archGray-200"></span><span>Absent from stream</span>`;
+        statusEl.className = 'text-sm font-bold text-archGray-600 flex items-center gap-2';
+        digestEl.innerText = 'Item never measured on this release stream';
+        matchEl.innerText = 'No surface';
+        matchEl.className = 'text-archGray-600 font-semibold';
+      }
+    }
+
+    function copyRecipe(ruleId) {
+      const code = `// Successor rule: ${ruleId}\n// Qualified: ${currentItem.name}\n${currentItem.recipe ? currentItem.recipe.after : ''}`;
+      
+      const el = document.createElement('textarea');
+      el.value = code;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+
+      const toast = document.getElementById('toast');
+      document.getElementById('toast-msg').innerText = `Copied fix for ${currentItem.name}`;
+      toast.classList.remove('translate-y-16', 'opacity-0');
+      setTimeout(() => {
+        toast.classList.add('translate-y-16', 'opacity-0');
+      }, 2200);
+    }
+
+    // Initialize with default item
+    window.addEventListener('DOMContentLoaded', () => {
+      selectItem('record_frame_timing');
+    });
+  </script>
+</body>
+</html>
