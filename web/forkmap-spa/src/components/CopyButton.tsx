@@ -15,12 +15,15 @@ export function CopyButton({
   label = "copy",
   announce = "copied",
   className,
+  title = "copy the payload text",
 }: {
   text: string;
   label?: string;
   /** The polite live-region announcement on success. */
   announce?: string;
   className?: string;
+  /** The button's own tooltip — where a caveat about what gets copied goes. */
+  title?: string;
 }) {
   const [state, setState] = useState<"idle" | "ok" | "fail">("idle");
   const timer = useRef<number | null>(null);
@@ -75,7 +78,7 @@ export function CopyButton({
       <button
         type="button"
         className={`copy-btn${className ? ` ${className}` : ""}${state === "ok" ? " copied" : ""}`}
-        title="copy the payload text"
+        title={title}
         onClick={onCopy}
       >
         {btnLabel}

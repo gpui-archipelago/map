@@ -1448,7 +1448,7 @@ export function AlignmentView({
   // folded row, sitting with the honesty disclosure in both modes (reference
   // material at the foot of the view; the tool owns the page).
   const studiesBlock = (
-    <details className="align-fold" id="alignment-studies">
+    <details className="ref-fold" id="alignment-studies">
       <summary>Methodology &amp; studies</summary>
       {docsBody}
     </details>
@@ -1609,7 +1609,7 @@ export function AlignmentView({
           // the box and the examples carry the page — and the two reference
           // rows (the studies, the honesty disclosure) sit under it.
           <div className="panel align-empty" id="alignment-empty-state">
-            <details className="align-fold">
+            <details className="ref-fold">
               <summary>Cross-Fork API Longevity &amp; Digest Parity</summary>
               <p className="align-empty-lead" id="alignment-hint">
                 {`${EMPTY_LEAD} ${manifest.counts.providers} forks.`}

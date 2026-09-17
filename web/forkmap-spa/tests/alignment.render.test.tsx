@@ -395,10 +395,10 @@ describe("Alignment view renders the recorded stories (server render)", () => {
     expect(html).toContain('id="alignment-empty-state"');
     // The card is a stack of folded rows: the view's subject, its method (the
     // studies, sitting with the honesty disclosure), each closed by default.
-    expect(html).toContain('<details class="align-fold">');
+    expect(html).toContain('<details class="ref-fold">');
     expect(html).toContain("<summary>Cross-Fork API Longevity &amp; Digest Parity</summary>");
     expect(html).toContain("<summary>Methodology &amp; studies</summary>");
-    expect(html).not.toContain('class="align-fold" open');
+    expect(html).not.toContain('class="ref-fold" open');
     expect(html).toContain(
       `Search a symbol above to compare presence, signature drift and hash parity across all ${counts.providers} forks.`,
     );
@@ -463,7 +463,7 @@ describe("Alignment view renders the recorded stories (server render)", () => {
       const html = renderAlignment(params);
       // the studies row is its own disclosure, immediately before the About
       // note (the pair of reference rows the view ends on)
-      expect(html).toContain('<details class="align-fold" id="alignment-studies">');
+      expect(html).toContain('<details class="ref-fold" id="alignment-studies">');
       expect(html).toContain("<summary>Methodology &amp; studies</summary>");
       const studies = html.indexOf('id="alignment-studies"');
       const about = html.indexOf('id="alignment-about"');

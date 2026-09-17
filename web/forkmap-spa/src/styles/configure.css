@@ -9,27 +9,78 @@
  * T-40 factored the copy control out for the Alignment rule rows. */
 
 @layer components {
-  /* ---------- status panel (RULE-5 badge / honest warn + RULE-6 flags) ---------- */
+  /* ---------- the header bar: title + the three fields + the command ----------
+   * One line, the Changes toolbar's architecture (title rides the bar over a
+   * hairline, no card). Keyboard focus lands on a select literally named by
+   * the fork/release it holds, so no visible field labels are needed. */
 
+  #configure-controls {
+    align-items: center;
+    gap: 10px;
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid var(--border-subtle);
+    padding: 0 0 10px;
+    margin: 10px 0 8px;
+  }
+  .configure-title {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 1;
+    color: var(--content);
+  }
+  #configure-controls .ctl-label {
+    align-self: center;
+    margin-left: 4px;
+  }
+  #configure-controls > input {
+    font: inherit;
+    font-family: var(--font-mono);
+    font-size: 0.86rem;
+    width: 15ch;
+    padding: 9px 11px;
+    border: 1px solid var(--border-subtle);
+    border-radius: 999px;
+    background: #fff;
+    color: var(--color-ink-deep);
+  }
+  #configure-controls > input:focus {
+    outline: none;
+    border-color: var(--border-accent);
+    box-shadow: 0 0 0 2px rgba(55, 143, 189, 0.18);
+  }
+  /* The runnable equivalent of the whole page, spelled out on the button. */
+  .configure-new {
+    font-family: var(--font-mono);
+    font-size: 0.78rem !important;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  #configure-hint[hidden] {
+    display: none;
+  }
+
+  /* ---------- verification & platform: banner + spec rows ---------- */
+
+  .status-ok,
+  .status-warn {
+    border-radius: 8px;
+    padding: 9px 14px;
+    margin: 10px 0 14px;
+    font-size: 0.95em;
+  }
   .status-ok {
     background: rgba(125, 171, 89, 0.16);
     border: 1px solid rgba(125, 171, 89, 0.4);
     border-left: 4px solid var(--color-present);
-    border-radius: 8px;
-    padding: 10px 16px;
-    margin: 10px 0;
   }
   .status-warn {
     background: rgba(168, 98, 20, 0.13);
     border: 1px solid rgba(168, 98, 20, 0.35);
     border-left: 4px solid var(--warning);
-    border-radius: 8px;
-    padding: 10px 16px;
-    margin: 10px 0;
-  }
-  .status-ok p,
-  .status-warn p {
-    margin: 4px 0;
   }
   .status-flag {
     border: 1px dashed var(--color-changed);
@@ -43,36 +94,60 @@
     color: var(--color-changed);
     font-size: 0.9em;
   }
-  .cfg-line {
-    margin: 6px 0;
-    font-size: 0.95em;
+  .cfg-specs {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 6px 18px;
+    margin: 0 0 4px;
+    font-size: 0.92em;
+  }
+  .cfg-specs dt {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--content-muted);
+    padding-top: 2px;
+  }
+  .cfg-specs dd {
+    margin: 0;
+    color: var(--color-ink-deep);
   }
 
-  /* ---------- files: code shells with copy buttons ---------- */
+  /* ---------- files: one card, a tab per file, one copy control ---------- */
 
-  .code-shell {
-    margin: 18px 0;
-  }
-  .code-shell:first-child {
-    margin-top: 10px;
-  }
-  .code-head {
+  .files-head {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     justify-content: space-between;
     gap: 12px;
     flex-wrap: wrap;
+    margin: 0 0 -1px;
   }
-  .code-head h3 {
-    margin: 0;
+  .file-tabs {
+    display: flex;
+    gap: 2px;
+  }
+  .file-tab {
+    font: inherit;
     font-family: var(--font-mono);
-    font-size: 0.92rem;
-    color: var(--content);
-  }
-  .file-sub {
-    margin: 2px 0 8px;
+    font-size: 0.82rem;
     color: var(--content-muted);
-    font-size: 0.9em;
+    background: transparent;
+    border: 1px solid transparent;
+    border-bottom: 1px solid var(--border-subtle);
+    border-radius: 8px 8px 0 0;
+    padding: 6px 14px;
+    cursor: pointer;
+  }
+  .file-tab:hover {
+    color: var(--color-ocean);
+  }
+  .file-tab.active {
+    color: var(--color-ink-deep);
+    background: #f7fafb;
+    border-color: var(--border-subtle);
+    border-bottom-color: #f7fafb;
   }
   .code-block {
     background: #f7fafb;
@@ -90,6 +165,9 @@
 
   /* ---------- v2 scope notes (shown as notes, never as buttons) ---------- */
 
+  .view#view-configure .ref-fold {
+    margin-top: 22px;
+  }
   .scope-notes {
     margin: 8px 0 6px;
     padding-left: 22px;

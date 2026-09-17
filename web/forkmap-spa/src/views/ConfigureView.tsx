@@ -10,9 +10,17 @@
 // never leaves the six measured forks. The (p, v, name) hash params are the
 // deep-link state; typing in the project-name field re-renders the name line
 // live and commits the name to the hash on blur/Enter — like app.js.
+//
+// T-52 copy pass: the page states its claim instead of arguing it. The
+// runnable equivalent — `cargo gocar new <name> --provider <id>` — rides the
+// header bar as a copy button (the words "byte-equal to the CLI" are gone:
+// the command is shown), the verification facts are a banner + spec list
+// rather than a run-on paragraph, and the two generated files share one card
+// with tabs and one copy control.
 
 import { useEffect, useRef, useState } from "react";
 import { AboutNote } from "../components/AboutNote";
+import { CopyButton } from "../components/CopyButton";
 import {
   configureBindingFor,
   configureScaffoldFor,
@@ -26,89 +34,26 @@ import type { ForkmapManifest, ManifestProvider, ManifestVersionRow } from "../b
 import { routeHash } from "../routing";
 import { StudyDocLink } from "../components/StudyDocLink";
 
+/** The provider option's text: the fork id, plus the crates.io package only
+ * where it differs from the id (RULE-7 honest — and in the current corpus it
+ * never does, so the closed select no longer truncates). */
+function providerOptionLabel(p: ManifestProvider): string {
+  return p.package === p.id ? p.id : `${p.id} (${p.package})`;
+}
+
 /** `<vers> (yanked, pre-release)` version-option label (RULE-6 flags shown). */
 function versionOptionLabel(v: ManifestVersionRow): string {
   const flags = releaseFlags(v);
   return flags.length ? `${v.vers} (${flags.join(", ")})` : v.vers;
 }
 
-/** The copy-to-clipboard flash of one file (T-31 inline flash, ported from
- * app.js bindCopy: clipboard API with a select-and-execCommand fallback for
- * non-secure hosts). The polite live region is the Configure a11y increment:
- * a screen reader hears the result without focus being stolen — a detached
- * toast was rejected, see the T-39 outcome. */
-function CodeShell({ title, sub, text }: { title: string; sub?: string; text: string }) {
-  const preRef = useRef<HTMLPreElement | null>(null);
-  const timer = useRef<number | null>(null);
-  const [copyState, setCopyState] = useState<"idle" | "ok" | "fail">("idle");
+/** The two generated files of one offer, in tab order. */
+type FileTab = "cargo" | "main";
 
-  useEffect(() => {
-    return () => {
-      if (timer.current !== null) window.clearTimeout(timer.current);
-    };
-  }, []);
-
-  const flash = (ok: boolean) => {
-    setCopyState(ok ? "ok" : "fail");
-    if (timer.current !== null) window.clearTimeout(timer.current);
-    timer.current = window.setTimeout(() => setCopyState("idle"), 1400);
-  };
-
-  const onCopy = async () => {
-    const pre = preRef.current;
-    if (!pre) return;
-    const textToCopy = pre.textContent ?? "";
-    try {
-      await navigator.clipboard.writeText(textToCopy);
-      flash(true);
-      return;
-    } catch {
-      // fall through to the select + execCommand fallback
-    }
-    const sel = window.getSelection();
-    const range = document.createRange();
-    range.selectNodeContents(pre);
-    sel?.removeAllRanges();
-    sel?.addRange(range);
-    let ok = false;
-    try {
-      ok = document.execCommand("copy");
-    } catch {
-      ok = false;
-    }
-    sel?.removeAllRanges();
-    flash(ok);
-  };
-
-  const label =
-    copyState === "ok" ? "copied ✓" : copyState === "fail" ? "press Ctrl/Cmd-C to copy" : "copy";
-  return (
-    <div className="code-shell">
-      <div className="code-head">
-        <h3>{title}</h3>
-        <button
-          type="button"
-          className={`copy-btn${copyState === "ok" ? " copied" : ""}`}
-          title="copy the file text"
-          onClick={onCopy}
-        >
-          {label}
-        </button>
-      </div>
-      {sub && <p className="file-sub muted">{sub}</p>}
-      <pre className="code-block" ref={preRef}>
-        {text}
-      </pre>
-      <span className="visually-hidden" role="status" aria-live="polite">
-        {copyState === "ok" ? "copied" : copyState === "fail" ? "copy failed — press Ctrl/Cmd-C to copy" : ""}
-      </span>
-    </div>
-  );
-}
-
-/** The "Status of this offer" panel: the compile marker or the honest
- * not-probed box (RULE-5), the yanked/prerelease flags (RULE-6), the binding
- * unit (T-17 platform companion) and the row facts line. */
+/** The "Verification & platform" panel: the compile marker or the honest
+ * not-probed banner (RULE-5), then the facts as a spec list — the platform
+ * binding unit (T-17 companion) and the compiler floor — then the RULE-6
+ * flags and the curated note a row outside the docs/07 matrix carries. */
 function StatusPanel({
   manifest,
   provider,
@@ -123,142 +68,155 @@ function StatusPanel({
   const st = compileStatus(provider, vers);
   const m = provider.compile_verified ?? null;
   const c = provider.platform_companion ?? null;
-  const parts: string[] = [];
-  if (row) {
-    if (row.rust_version) parts.push(`declared rust-version ${row.rust_version}`);
-    if (row.facade) {
-      parts.push(
-        `facade table: ${row.facade.aliases.length} alias${row.facade.aliases.length === 1 ? "" : "es"}, ${row.facade.polyfills.length} polyfill${row.facade.polyfills.length === 1 ? "" : "s"}`,
-      );
-    }
-    // The dataset's toolchain floor is still a stub (null = unknown, never
-    // absent-as-measured): until a compiler pass attests one, the declared
-    // floor stays the advisory story — read like app.js does.
-    const floor = row.toolchain_floor;
-    if (!floor) {
-      parts.push("no attested compiler floor yet — the declared floor is the advisory story");
-    }
-  }
-  const pinText = c ? (c.pin === "mirror" ? "version-locked to the fork release (mirror)" : `fixed at ${c.pin.fixed} for the lineage`) : "";
-  const feat = c?.features?.length ? `, features ${c.features.map((f) => `"${f}"`).join(" + ")}` : "";
+  const pin = c ? (c.pin === "mirror" ? "version-locked 1:1 (mirror)" : `fixed at ${c.pin.fixed}`) : "";
+  const feat = c?.features?.length ? ` · features ${c.features.map((f) => `"${f}"`).join(" + ")}` : "";
+  // The dataset's toolchain floor is still a stub (null = unknown, never
+  // absent-as-measured): until a compiler pass attests one, the declared floor
+  // stays the advisory story (doc 10).
+  const floor = row?.toolchain_floor ?? null;
+  const facade = row?.facade ?? null;
 
   return (
     <div className="panel" id="configure-status">
-      <h2>Status of this offer</h2>
+      <h2>Verification &amp; platform</h2>
       {st.badge && st.marker ? (
         // RULE-5: badge data + evidence link — never a bare claim.
-        <div className="status-ok">
-          <p>
-            {"Compile-verified — this exact starting point was built through `cargo gocar new` → `lock` → `cargo build --locked` with zero hand edits."}
-          </p>
-          <p className="subnote">
-            {`rustc ${st.marker.toolchain}. Evidence: `}
-            <StudyDocLink num={7} href={st.marker.evidence} />
-          </p>
-        </div>
+        <p className="status-ok">
+          {`Compile-verified — this exact row through \`cargo gocar new\` → \`lock\` → \`cargo build --locked\`, zero hand edits · rustc ${st.marker.toolchain} · `}
+          <StudyDocLink num={7} href={st.marker.evidence}>
+            doc 07
+          </StudyDocLink>
+        </p>
       ) : (
-        <div className="status-warn">
-          <p>{"Not compile-probed here — no build evidence exists for this exact (fork, version) starting point."}</p>
-          <p className="subnote">
-            {m ? (
-              <>
-                <span>{`This provider's only compile-verified row is ${m.vers} (rustc ${m.toolchain}): `}</span>
-                <StudyDocLink num={7} href={m.evidence} />
-                <span>{"."}</span>
-              </>
-            ) : (
-              <span>{"The docs/07 matrix has no compile probe for this provider."}</span>
-            )}
-          </p>
-          {binding?.note && (
-            // Curated reason the docs record (early-era / system-stack rows) —
-            // data from the export, never site prose about a specific release.
-            <p className="subnote">
-              <strong>{"Why this row is not in the matrix: "}</strong>
-              {binding.note}
-            </p>
-          )}
-        </div>
+        <p className="status-warn">
+          {`⚠️ Not compile-probed for ${vers} · `}
+          {m
+            ? `${`last verified on this fork: ${m.vers} (rustc ${m.toolchain})`} · `
+            : "no compile probe exists for this fork · "}
+          {m ? (
+            <StudyDocLink num={7} href={m.evidence}>
+              doc 07
+            </StudyDocLink>
+          ) : null}
+        </p>
+      )}
+      <dl className="cfg-specs">
+        <dt>Platform binding</dt>
+        <dd>
+          {c
+            ? `${c.package} · ${pin}${feat} · post-split launch via gpui_platform::application()`
+            : `${provider.package} ships its own platform layer · pre-split launch via Application::new()`}
+        </dd>
+        <dt>Compiler floor</dt>
+        <dd>
+          {row?.rust_version ? `declared rust-version ${row.rust_version} · ` : ""}
+          {floor ?? "advisory only — no attested floor yet"}
+          {" · "}
+          <StudyDocLink num={10}>doc 10</StudyDocLink>
+        </dd>
+        {facade && (
+          <>
+            <dt>Facade table</dt>
+            <dd>
+              {`${facade.aliases.length} alias${facade.aliases.length === 1 ? "" : "es"}, ${facade.polyfills.length} polyfill${facade.polyfills.length === 1 ? "" : "s"}`}
+            </dd>
+          </>
+        )}
+      </dl>
+      {binding?.note && (
+        // Curated reason the docs record (early-era / system-stack rows) —
+        // data from the export, never site prose about a specific release.
+        <p className="subnote">
+          <strong>{"Why this row is not in the matrix: "}</strong>
+          {binding.note}
+        </p>
       )}
       {row?.prerelease && (
-        <p className="status-flag">
-          <span>
-            {"Pre-release release — never a default choice (rule 6), and `cargo gocar lock` refuses prerelease floors by design (docs 07): binding this generation through the tool means the stable provider row (e.g. gpui-pre), not this pin."}
-          </span>
-        </p>
+        <p className="status-flag">{"A pre-release — never a default choice (rule 6)."}</p>
       )}
       {row?.yanked && (
-        <p className="status-flag">
-          <span>{"Yanked on crates.io — do not bind a new project to it (rule 6)."}</span>
-        </p>
-      )}
-      <p className="cfg-line">
-        <strong>{"Binding unit: "}</strong>
-        {c ? (
-          <span>{`${provider.package} ${vers} + platform companion ${c.package} (${pinText}${feat}) — post-split launch via gpui_platform::application().`}</span>
-        ) : (
-          <span>
-            {`${provider.package} ${vers} alone — pre-split provider, ships its own platform layer (era template: Application::new()).`}
-          </span>
-        )}
-      </p>
-      {parts.length > 0 && (
-        <p className="cfg-line muted">{`${parts.join(" · ")} (declared values are never attestations; doc 10).`}</p>
+        <p className="status-flag">{"Yanked on crates.io — do not bind a new project to it (rule 6)."}</p>
       )}
     </div>
   );
 }
 
-/** The Files panel: two code shells (manifest + main.rs) whose bytes are the
- * export's own, byte-equal to what `cargo gocar new` writes. */
-function FilesPanel({
+/** The Files card: the offer's two generated files behind tabs, one copy
+ * control for the file on screen. The bytes are the export's own — the one
+ * substitution between them and the template is `{{project_name}}`, applied
+ * before they render. Exported with an initial `tab` so the parity suite can
+ * assert the other file's bytes without a click (SSR runs no handlers). */
+export function FilesPanel({
   manifest,
   provider,
   vers,
   name,
+  tab = "cargo",
 }: {
   manifest: ForkmapManifest;
   provider: ManifestProvider;
   vers: string;
   name: string;
+  tab?: FileTab;
 }) {
   const binding = configureBindingFor(manifest, provider.id, vers);
   const scaffold = configureScaffoldFor(manifest, provider.id);
+  const [active, setActive] = useState<FileTab>(tab);
+  const files: { id: FileTab; label: string; text: string }[] =
+    binding && scaffold
+      ? [
+          { id: "cargo", label: "Cargo.toml", text: binding.cargo_toml.replaceAll("{{project_name}}", name) },
+          { id: "main", label: "src/main.rs", text: scaffold.main_rs },
+        ]
+      : [];
+  const file = files.find((f) => f.id === active) ?? files[0];
   return (
     <div className="panel" id="configure-files">
       <h2>Files</h2>
-      <div id="configure-files-body">
-        {!binding || !scaffold ? (
+      {!file ? (
+        <div id="configure-files-body">
           <p className="empty-hint">
             {"No scaffold bytes in the bundle for this row — regenerate with `python3 scripts/export-fork-map.py`."}
           </p>
-        ) : (
-          <>
-            <CodeShell
-              title="Cargo.toml"
-              sub={
-                "`{{project_name}}` is resolved to the name above — the only substitution between these bytes and the exported template, which is byte-equal to what `cargo gocar new` writes (pinned by tests)."
-              }
-              text={binding.cargo_toml.replaceAll("{{project_name}}", name)}
+        </div>
+      ) : (
+        <>
+          <div className="files-head">
+            <div className="file-tabs" role="tablist" aria-label="the generated files">
+              {files.map((f) => (
+                <button
+                  key={f.id}
+                  type="button"
+                  role="tab"
+                  id={`configure-tab-${f.id}`}
+                  className={`file-tab${f.id === file.id ? " active" : ""}`}
+                  aria-selected={f.id === file.id}
+                  aria-controls="configure-files-body"
+                  onClick={() => setActive(f.id)}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
+            <CopyButton
+              className="file-copy"
+              text={file.text}
+              label="copy"
+              announce={`${file.label} copied`}
             />
-            <CodeShell
-              title="src/main.rs"
-              sub={
-                provider.platform_companion
-                  ? "Post-split launch shape — `gpui_platform::application()` supplies the platform layer the fork no longer ships."
-                  : "Pre-split launch shape — `Application::new()` on the fork's own platform layer."
-              }
-              text={scaffold.main_rs}
-            />
-          </>
-        )}
-      </div>
+          </div>
+          <div id="configure-files-body" role="tabpanel" aria-labelledby={`configure-tab-${file.id}`}>
+            <pre className="code-block">{file.text}</pre>
+          </div>
+        </>
+      )}
     </div>
   );
 }
 
 /** The Next commands panel: the managed path for a bindable row, or the
- * plain-cargo reading path for a flagged one (rule 6). */
+ * plain-cargo reading path for a flagged one (rule 6 — the block's own
+ * comments carry the caveat, so no prose repeats it below). */
 function CommandsPanel({ provider, vers }: { provider: ManifestProvider; vers: string }) {
   const row = provider.versions.find((v) => v.vers === vers) ?? null;
   const flagged = row?.yanked || row?.prerelease;
@@ -282,11 +240,6 @@ cargo gocar check-workspace`;
       <h2>Next commands</h2>
       <div id="configure-commands">
         <pre className="code-block">{code}</pre>
-        {flagged && (
-          <p className="subnote">
-            {"A gocar-managed lock never selects a yanked or prerelease floor (rule 6); for a tool-managed starting point pick the provider's latest stable row."}
-          </p>
-        )}
       </div>
     </div>
   );
@@ -303,11 +256,7 @@ function ScopeNotes() {
   );
   return (
     <>
-      <p>
-        {
-          "This view is static text from the committed bundle — no project zip, no server-side build. For the full scaffold (README, .gitignore, directory layout) run `cargo gocar new <name> --provider <id>`; the files above are that same generator's output."
-        }
-      </p>
+      <p>{"Static text from the committed bundle — no project zip, no server-side build."}</p>
       <ul className="scope-notes">
         {li(
           "Kit-rebase alias-shim bundles are not offered here (v2).",
@@ -366,98 +315,100 @@ export function ConfigureView({ manifest, params }: { manifest: ForkmapManifest;
 
   const resolved = resolvedProjectName(nameText);
   const nameValid = validCrateName(nameText);
+  // The runnable equivalent of this offer. `cargo gocar new` always floors at
+  // the fork's latest stable (docs 08), so the one case it does not reproduce
+  // — a row that is not that stable — says so on the button.
+  const command = `cargo gocar new ${resolved} --provider ${provider.id}`;
+  const commandTitle =
+    provider.latest_stable && provider.latest_stable !== vers
+      ? `copy this command — \`cargo gocar new\` floors at ${provider.id}'s latest stable (${provider.latest_stable}); the offer above is ${vers}`
+      : "copy this command — it writes the files below";
 
   return (
     <section id="view-configure" className="view">
       <div className="wrap">
-        <div className="view-head">
-          <p className="view-eyebrow mono">which fork to bind — a byte-exact starting point</p>
-          <h1>
-            Configure <span className="view-tag mono">a starting point, byte-equal to `cargo gocar new`</span>
-          </h1>
-          <p className="lede">
-            Pick a fork — optionally an exact release (the default is the provider’s latest stable, never yanked or
-            prerelease). The manifest and starter <code>main.rs</code> below are the CLI’s own rendered bytes for that
-            (provider, version): one generator, two output paths, pinned byte-equal by tests.
-          </p>
-        </div>
-
-        <div className="controls panel picker">
-          <label className="ctl">
-            <span>Provider</span>
-            <select id="configure-provider" value={provider.id} onChange={(e) => onProvider(e.target.value)}>
-              {manifest.providers.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {`${p.id} (${p.package})`}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="ctl">
-            <span>Version</span>
-            <select id="configure-version" value={vers} onChange={(e) => onVersion(e.target.value)}>
-              {provider.versions.map((v) => (
-                <option key={v.vers} value={v.vers}>
-                  {versionOptionLabel(v)}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="ctl">
-            <span>Project name</span>
-            <input
-              id="configure-name"
-              type="text"
-              value={nameText}
-              autoComplete="off"
-              spellCheck={false}
-              onChange={(e) => setNameText(e.target.value)}
-              onFocus={() => {
-                nameFocused.current = true;
-              }}
-              onBlur={() => {
-                nameFocused.current = false;
+        {/* One line, like Changes and Alignment: the title rides the bar over a
+            hairline, the three fields are the whole form, and the command that
+            writes these bytes is one click away — no prose claiming it. */}
+        <div className="controls picker configure-bar" id="configure-controls">
+          <h1 className="configure-title">Configure</h1>
+          <select
+            id="configure-provider"
+            aria-label="the fork to bind"
+            title="the fork to bind"
+            value={provider.id}
+            onChange={(e) => onProvider(e.target.value)}
+          >
+            {manifest.providers.map((p) => (
+              <option key={p.id} value={p.id}>
+                {providerOptionLabel(p)}
+              </option>
+            ))}
+          </select>
+          <select
+            id="configure-version"
+            aria-label="the release"
+            title="the exact release (the default is the fork's latest stable)"
+            value={vers}
+            onChange={(e) => onVersion(e.target.value)}
+          >
+            {provider.versions.map((v) => (
+              <option key={v.vers} value={v.vers}>
+                {versionOptionLabel(v)}
+              </option>
+            ))}
+          </select>
+          <span className="ctl-label">Project</span>
+          <input
+            id="configure-name"
+            type="text"
+            aria-label="the project name"
+            value={nameText}
+            autoComplete="off"
+            spellCheck={false}
+            onChange={(e) => setNameText(e.target.value)}
+            onFocus={() => {
+              nameFocused.current = true;
+            }}
+            onBlur={() => {
+              nameFocused.current = false;
+              commitName();
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
                 commitName();
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  commitName();
-                }
-              }}
-            />
-          </label>
-          <div className="ctl-hint" id="configure-hint">
-            {/* app.js's live input handler clears the hint while a valid name
-             * is being typed (only the invalid warning or the next render's
-             * standard line shows); this port keeps the standard line visible
-             * while typing — same end states, no blank gap, never a wrong
-             * message. */}
-            {nameValid ? (
-              <span>
-                {"The offer below is rendered from the bundle for this exact (provider, version) — the default is the latest stable (rule 6)."}
-              </span>
-            ) : (
-              <span className="status-flag-inline">
-                {"project name must start with a letter; only letters, digits, '-' and '_' follow — showing the scaffold under the default name until fixed"}
-              </span>
-            )}
-          </div>
+              }
+            }}
+          />
+          <CopyButton
+            className="configure-new"
+            text={command}
+            label={`📋 ${command}`}
+            title={commandTitle}
+            announce={`copied: ${command}`}
+          />
         </div>
+        {/* app.js clears the hint while a valid name is being typed and shows
+            only the invalid-name warning; the id stays addressable either way. */}
+        <p className="ctl-hint" id="configure-hint" hidden={nameValid}>
+          {!nameValid && (
+            <span className="status-flag-inline">
+              {"must start with a letter — letters, digits, '-' and '_' only; the files below keep the default name until it does."}
+            </span>
+          )}
+        </p>
 
         <StatusPanel manifest={manifest} provider={provider} vers={vers} />
         <FilesPanel manifest={manifest} provider={provider} vers={vers} name={resolved} />
         <CommandsPanel provider={provider} vers={vers} />
 
-        <div className="panel">
-          <h2>
-            {"What this view does not do "}
-            <span className="view-tag mono">v2 scope, shown as notes</span>
-          </h2>
+        <details className="ref-fold">
+          <summary>What this view does not do</summary>
           <div id="configure-scope">
             <ScopeNotes />
           </div>
-        </div>
+        </details>
 
         <div className="about-note" id="configure-about">
           <AboutNote />

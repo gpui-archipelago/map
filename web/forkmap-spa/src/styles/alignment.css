@@ -1279,36 +1279,19 @@
     min-width: 0;
   }
 
-  /* ---------- the reference rows: the studies + the honesty disclosure ----------
-   * Both are disclosures at the foot of the view — the empty card's method and
-   * the symbol mode's footnote — so the tool (the box, the deck, the matrix)
-   * never has to compete with them for the page. */
+  /* ---------- the reference rows ----------
+   * The shared .ref-fold (views.css) carries the shape; Alignment's own subject
+   * reads as a title rather than a section label, and with a symbol open the
+   * rows are the view's footnote. */
 
-  .align-fold {
-    margin: 0;
-    border-top: 1px solid #ece2d2;
-    padding-top: 10px;
-  }
-  .align-fold > summary {
-    cursor: pointer;
-    width: fit-content;
+  #alignment-empty-state > .ref-fold:first-child > summary {
+    font-family: inherit;
     font-size: 1.02rem;
     font-weight: 600;
-    color: var(--content-muted);
+    text-transform: none;
+    letter-spacing: 0;
   }
-  .align-fold > summary:hover {
-    color: var(--color-ocean);
-  }
-  /* The studies row names a section, not a subject: a quiet mono label. */
-  #alignment-studies > summary {
-    font-family: var(--font-mono);
-    font-size: 0.72rem;
-    font-weight: 400;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-  }
-  /* With a symbol open the rows are the view's footnote. */
-  .view.has-item .align-fold {
+  .view.has-item .ref-fold {
     margin-top: 22px;
   }
 
@@ -1322,7 +1305,7 @@
     gap: 12px;
     padding: 14px 22px 12px;
   }
-  .align-empty > .align-fold:first-child {
+  .align-empty > .ref-fold:first-child {
     border-top: 0;
     padding-top: 0;
   }

@@ -621,6 +621,31 @@
     font-style: italic;
   }
 
+  /* ---------- the reference rows: the studies / scope notes / honesty ----------
+   * Reference material folds into a quiet labelled row at the foot of a view
+   * (closed by default): the tool the view exists for is what stays open. The
+   * honesty disclosure next to them is the same shape (.about-note details).
+   * A view that wants a larger summary — Alignment's own subject — overrides
+   * the summary's type. */
+
+  .ref-fold {
+    margin: 0;
+    border-top: 1px solid #ece2d2;
+    padding-top: 10px;
+  }
+  .ref-fold > summary {
+    cursor: pointer;
+    width: fit-content;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--content-muted);
+  }
+  .ref-fold > summary:hover {
+    color: var(--color-ocean);
+  }
+
   /* ---------- about-note (honest rules disclosure on Changes/Alignment) ---------- */
 
   .about-note {

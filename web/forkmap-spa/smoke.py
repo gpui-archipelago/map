@@ -298,8 +298,8 @@ def main() -> int:
         # data, so branch on whether the default release is the provider's own
         # compile-verified row (compileStatus) — never assume a default badge.
         rec_marker = rec.get("compile_verified")
-        configure_badge_ok = "Compile-verified — this exact starting point was built through"
-        configure_badge_no = "Not compile-probed here — no build evidence exists for this exact (fork, version) starting point."
+        configure_badge_ok = "Compile-verified — this exact row through"
+        configure_badge_no = "Not compile-probed for"
         configure_compiled = bool(rec_marker and rec_marker.get("vers") == rec_vers)
         configure_badge_want = configure_badge_ok if configure_compiled else configure_badge_no
         configure_badge_not = configure_badge_no if configure_compiled else configure_badge_ok
@@ -478,25 +478,28 @@ def main() -> int:
              "#/configure",
              ["id=\"view-configure\"", "id=\"configure-provider\"", "id=\"configure-version\"",
               "id=\"configure-name\"", configure_badge_want,
+              f"📋 cargo gocar new gpui-app --provider {rec_id}",
+              "Platform binding", "Compiler floor",
               f'min-version = "{rec_vers}"', 'name = "gpui-app"', "cargo gocar verify-env",
               "Kit-rebase alias-shim bundles are not offered here (v2).",
               "id=\"honest-rule-1\"", "id=\"honest-rule-7\"", "aria-haspopup=\"dialog\""],
              ["status-flag", configure_badge_not]),
             ("configure story (kael 0.2.0: honest warn + curated note + resolved name)",
              "#/configure?p=kael&v=0.2.0&name=my-app",
-             ["Not compile-probed here — no build evidence exists for this exact (fork, version) starting point.",
+             [f"Not compile-probed for 0.2.0",
               "Why this row is not in the matrix:", kael_note[:80],
               'min-version = \"0.2.0\"', 'name = \"my-app\"',
-              f"declared rust-version {kael_rust} · no attested compiler floor yet"],
-             ["Compile-verified — this exact starting point was built through"]),
+              f"declared rust-version {kael_rust} · advisory only — no attested floor yet"],
+             ["Compile-verified — this exact row through"]),
             ("configure story (yanked gpui-ce 0.3.2: RULE-6 flag + reading commands)",
              "#/configure?p=gpui-ce&v=0.3.2",
              ["Yanked on crates.io — do not bind a new project to it (rule 6).",
-              "cargo generate-lockfile", "A gocar-managed lock never selects a yanked or prerelease floor (rule 6)"],
+              "cargo generate-lockfile",
+              "# The offer above is for reading an era; binding it needs plain cargo:"],
              ["# Pin the artifact (MVS+)", "cargo gocar verify-env"]),
             ("configure story (prerelease uno 1.17.0-pre: never a default choice)",
              "#/configure?p=gpui-unofficial&v=1.17.0-pre",
-             ["Pre-release release — never a default choice (rule 6), and `cargo gocar lock` refuses prerelease floors by design (docs 07)",
+             ["A pre-release — never a default choice (rule 6).",
               "1.17.0-pre (pre-release)", "cargo generate-lockfile"],
              ["# Pin the artifact (MVS+)"]),
         ]
