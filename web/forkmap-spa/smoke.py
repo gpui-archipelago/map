@@ -387,10 +387,11 @@ def main() -> int:
                      "id=\"landing-about\"",
                      "id=\"honest-rule-1\"", "id=\"honest-rule-7\""],
              ["id=\"data-facts\"", "hero-quote"]),
-            ("nav chrome (one row: brand, tabs, counts, the repo link)",
-             "#/", ["gpui-archipelago", "Changes", "Alignment", "Configure", "Journal",
+            ("nav chrome (the suite breadcrumb, the tabs, the counts, the repo link)",
+             "#/", ["gpui-archipelago", "Fork Map", "Overview", "Changes", "Alignment", "Configure", "Journal",
+                     "href=\"https://gpui-archipelago.github.io/\"",
                      "href=\"https://github.com/gpui-archipelago/map\"", "GitHub"],
-             ["(the fork map)", "header-schema", "gpui-archipelago.github.io"]),
+             ["(the fork map)", "Map overview", "header-schema"]),
             ("changes route", "#/changes", ["id=\"view-changes\"", "id=\"changes-controls\"",
                                              changes_default_caption], []),
             ("changes story (same-fork changelog)",
@@ -533,7 +534,8 @@ def main() -> int:
         # The landing's survey counts (in the chrome's right edge) and its
         # provenance card's freeze stamp, schema and totals: the labels are copy
         # and change; the rendered numbers and the ids carrying them do not.
-        for w in [f"{nprov}</span>", f"{nvers}</span>", "id=\"data-as-of\"", "id=\"data-bundle\"", "id=\"data-schema\""]:
+        for w in [f"{nprov}</span>", f"{nvers}</span>", "id=\"data-as-of\"", "id=\"data-bundle\"", "id=\"data-schema\"",
+                  "id=\"footer-schema\""]:
             if w not in dom:
                 failures.append(f"bundle-driven page facts: missing {w!r}")
 

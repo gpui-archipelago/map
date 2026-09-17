@@ -16,7 +16,8 @@ export function Footer({ manifest }: { manifest: ForkmapManifest }) {
       <div className="wrap">
         <p className="footer-tag mono">gpui-archipelago — every fork is an island. Here they can find each other.</p>
         <p id="footer-provenance">
-          Built from the gocar dataset by <code>cargo gocar export-fork-map</code>, synced{" "}
+          Built from the gocar dataset by <code>cargo gocar export-fork-map</code> — bundle{" "}
+          <code id="footer-schema">{manifest.schema}</code>, synced{" "}
           {manifest.dataset_synced_at ?? "never"}.
         </p>
       </div>

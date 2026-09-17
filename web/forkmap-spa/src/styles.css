@@ -74,14 +74,35 @@
     padding-bottom: 6px;
   }
 
+  /* The suite breadcrumb: the wordmark links home, `/ Fork Map` names the tool
+     you are in. */
   .brand-lockup {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .brand-home {
     display: flex;
     align-items: center;
     gap: 10px;
     color: inherit;
   }
-  .brand-lockup:hover {
+  .brand-home:hover {
     text-decoration: none;
+  }
+  .brand-home:hover .brand-mark {
+    color: var(--color-ocean);
+  }
+  .brand-sep {
+    color: var(--color-gray-200);
+    font-weight: 600;
+  }
+  .brand-tool {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--content-muted);
+    white-space: nowrap;
   }
 
   /* The map's own mark: the crab-machine logo squared into the tile. */
