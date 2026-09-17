@@ -388,20 +388,60 @@ describe("Alignment view renders the recorded stories (server render)", () => {
     expect(html).not.toContain("→ β (1.19.0-pre)");
   });
 
-  test("an empty hash renders the pick-an-item hint and no matrix (and the list is closed)", () => {
+  test("an empty hash renders the empty mode (guide card + examples) and no matrix (list closed)", () => {
     const html = renderAlignment({});
-    expect(html).toContain("Pick an item or a preset above.");
+    // Empty mode: the guide card states what the page answers and carries the
+    // methodology rows — the matrix only ever renders for a measured symbol.
+    expect(html).toContain('id="alignment-empty-state"');
+    expect(html).toContain("Cross-Fork API Longevity &amp; Digest Parity");
+    expect(html).toContain(
+      `Search a symbol above to compare presence, signature drift and hash parity across all ${counts.providers} forks.`,
+    );
+    expect(html).toContain('id="alignment-docs"');
     expect(html).not.toContain('class="matrix"');
     expect(html).not.toContain('class="cell cell-same"');
     expect(html).toContain('id="alignment-suggest" class="suggest" role="listbox" hidden=""');
-    // preset chips (all recorded-story items exist in the corpus)
-    expect(html).toContain("presets");
-    expect(html).toContain("struct:accessibility::AccessibilityNode");
+    // The examples (all recorded-story items exist in the corpus): the chip
+    // reads as the name, its title carries the full identity.
+    expect(html).toContain("examples");
+    expect(html).toContain(">accessibility::AccessibilityNode</button>");
+    expect(html).toContain('title="struct:accessibility::AccessibilityNode"');
+    expect(html).not.toContain(">struct:accessibility::AccessibilityNode</button>");
+    // nothing to clear yet: the `/` hint stands in the ✕'s slot, and the
+    // examples row is in the layout (only the symbol mode folds it away)
+    expect(html).toContain('class="search-kbd"');
+    expect(html).not.toContain('id="alignment-clear"');
+    expect(html).not.toContain('id="alignment-presets" hidden=""');
+  });
+
+  test("view-symbol mode: the totals ride the title line, the ✕ replaces the hint, examples stand down", () => {
+    const key = "fn:Window::blur";
+    const html = renderAlignment({ item: key });
+    // The symbol's own totals sit on its title line, above the variant deck —
+    // the frame the signatures below are read against.
+    const headRow = html.indexOf('class="item-head-row"');
+    const stats = html.indexOf('class="hero-stats"');
+    const deck = html.indexOf('id="alignment-variants"');
+    expect(headRow).toBeGreaterThan(0);
+    expect(stats).toBeGreaterThan(headRow);
+    expect(stats).toBeLessThan(deck);
+    // The box carries the selected query and its own clear affordance, so one
+    // click returns to the empty mode (the smoke clicks it in a real browser).
+    expect(html).toContain('id="alignment-clear"');
+    expect(html).toContain('aria-label="Clear the search"');
+    expect(html).not.toContain('class="search-kbd"');
+    // The examples row is still in the DOM but out of the layout, and the
+    // empty mode's card is gone.
+    expect(html).toContain('id="alignment-presets" hidden=""');
+    expect(html).not.toContain('id="alignment-empty-state"');
   });
 
   test("a hash naming an unmeasured/unknown item never invents a matrix", () => {
     const html = renderAlignment({ item: "fn:no_such_item_measured" });
-    expect(html).toContain("Pick an item or a preset above.");
+    expect(html).toContain('id="alignment-empty-state"');
+    expect(html).toContain(
+      `Search a symbol above to compare presence, signature drift and hash parity across all ${counts.providers} forks.`,
+    );
     expect(html).not.toContain('class="matrix"');
   });
 
@@ -414,7 +454,7 @@ describe("Alignment view renders the recorded stories (server render)", () => {
 
   test("the docs panel names where each class of change is documented", () => {
     const html = renderAlignment({ item: "fn:Window::blur" });
-    expect(html).toContain("<h2>Studies &amp; docs</h2>");
+    expect(html).toContain("<h2>Methodology &amp; studies</h2>");
     expect(html).toContain("doc 08 — study: is the used-API report meaningful on real GPUI code?");
     expect(html).toContain("doc 13 — field note: two kits, one measured generation");
   });

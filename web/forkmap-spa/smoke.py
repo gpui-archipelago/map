@@ -373,6 +373,13 @@ def main() -> int:
             f">⚡ </span>has a migration recipe<span class=\"kind-pill-count\">{fmt(len(rule_keys))}</span>"
         )
 
+        # The empty mode's lead line (AlignmentView): the page's own statement
+        # of what it answers, with the fork count the manifest carries.
+        alignment_empty_lead = (
+            f"Search a symbol above to compare presence, signature drift and hash parity"
+            f" across all {len(bundle_data['providers'])} forks."
+        )
+
         checks = [
             ("landing hero", "#/", ["The GPUI fork map", "id=\"honest-rule-1\"", "id=\"honest-rule-7\"",
                                     "id=\"data-layers\"", "id=\"compile-badges\"", "id=\"data-facts\""], []),
@@ -403,11 +410,13 @@ def main() -> int:
              "#/", ["id=\"landing-link-doc07\"", "id=\"landing-link-doc12\"", "id=\"landing-link-doc13\"",
                      "aria-haspopup=\"dialog\""], []),
             ("study reader affordance (alignment docs panel rows)",
-             "#/alignment", ["Studies &amp; docs", "aria-haspopup=\"dialog\""], []),
-            ("alignment route (search panel + docs + hint, no matrix yet)",
-             "#/alignment", ["id=\"view-alignment\"", "Search measured items", "presets",
-                              "Studies &amp; docs",
-                              "Pick an item or a preset above.",
+             "#/alignment", ["Methodology &amp; studies", "aria-haspopup=\"dialog\""], []),
+            ("alignment empty mode (title bar + box one line, examples, guide card)",
+             "#/alignment", ["id=\"view-alignment\"", "Search measured items", "examples",
+                              "Methodology &amp; studies",
+                              "Cross-Fork API Longevity &amp; Digest Parity",
+                              alignment_empty_lead,
+                              "id=\"alignment-empty-state\"",
                               "id=\"honest-rule-1\""], ["class=\"matrix\""]),
             ("alignment story (kael AccessibilityNode matrix + chips)",
              "#/alignment?item=struct:accessibility::AccessibilityNode",

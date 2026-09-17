@@ -208,7 +208,7 @@ const NEUTRAL_LEGEND: [CellState, string][] = [
  * vocabulary as the legend — T-40). */
 const PHRASES = Object.fromEntries(LEGEND) as Record<CellState, string>;
 
-const EMPTY_HINT = "Pick an item or a preset above.";
+const EMPTY_LEAD = "Search a symbol above to compare presence, signature drift and hash parity across all";
 
 /** yanked / pre-release / stable — the flag text of a release row. */
 function flagText(v: VersionRow): string {
@@ -1147,8 +1147,44 @@ function ItemBoxBody({
   return (
     <>
       <div className="panel item-head">
-        <div className="item-title">
-          <KindChip item={itemKey} />
+        <div className="item-head-row">
+          <div className="item-title">
+            <KindChip item={itemKey} />
+          </div>
+          {/* The symbol's own totals ride its title line: how much of the
+              corpus carries it, across how many forks, under how many
+              signatures — the frame the deck and matrix below answer in. */}
+          <div className="hero-stats" aria-label="item stats">
+            <span className="stat-pill mono" title="releases that include this item">
+              <svg aria-hidden="true" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4">
+                <path d="M2.5 5 8 2.5 13.5 5 8 7.5 2.5 5Z" />
+                <path d="M2.5 8 8 10.5 13.5 8" />
+                <path d="M2.5 11 8 13.5 13.5 11" />
+              </svg>
+              {`${rec.versions} of ${manifest.counts.versions} releases`}
+            </span>
+            <span className="stat-pill mono" title="forks in the dataset">
+              <svg aria-hidden="true" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4">
+                <circle cx="5" cy="3.5" r="1.6" />
+                <circle cx="11" cy="3.5" r="1.6" />
+                <path d="M5 5.1v2.2a2.6 2.6 0 0 0 2.6 2.6 2.6 2.6 0 0 1 2.6 2.6v.4" />
+                <path d="M11 5.1v2.2" />
+                <path d="M5 10.6v2" />
+                <circle cx="5" cy="13.5" r="1.6" />
+              </svg>
+              {`${manifest.counts.providers} forks`}
+            </span>
+            <span className="stat-pill mono" title="distinct signature hashes, α β γ… in first-measured order">
+              <svg aria-hidden="true" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4">
+                <circle cx="3.5" cy="3.5" r="1.3" />
+                <circle cx="12.5" cy="3.5" r="1.3" />
+                <circle cx="8" cy="12.5" r="1.3" />
+                <path d="M3.5 4.8v2.4a2.2 2.2 0 0 0 2.2 2.2h1.6" />
+                <path d="M12.5 4.8v2.4a2.2 2.2 0 0 1-2.2 2.2h-1.6" />
+              </svg>
+              {`${variants.length} variant${variants.length === 1 ? "" : "s"}`}
+            </span>
+          </div>
         </div>
         {docStory && docStory.docs.length > 0 && <ItemDocTitle itemKey={itemKey} story={docStory} />}
       </div>
@@ -1163,37 +1199,6 @@ function ItemBoxBody({
         isolated={isolated}
         onToggle={(i) => setIsolated((cur) => (cur === i ? null : i))}
       />
-      <div className="hero-stats" aria-label="item stats">
-        <span className="stat-pill mono" title="releases that include this item">
-          <svg aria-hidden="true" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4">
-            <path d="M2.5 5 8 2.5 13.5 5 8 7.5 2.5 5Z" />
-            <path d="M2.5 8 8 10.5 13.5 8" />
-            <path d="M2.5 11 8 13.5 13.5 11" />
-          </svg>
-          {`${rec.versions} of ${manifest.counts.versions} releases`}
-        </span>
-        <span className="stat-pill mono" title="forks in the dataset">
-          <svg aria-hidden="true" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4">
-            <circle cx="5" cy="3.5" r="1.6" />
-            <circle cx="11" cy="3.5" r="1.6" />
-            <path d="M5 5.1v2.2a2.6 2.6 0 0 0 2.6 2.6 2.6 2.6 0 0 1 2.6 2.6v.4" />
-            <path d="M11 5.1v2.2" />
-            <path d="M5 10.6v2" />
-            <circle cx="5" cy="13.5" r="1.6" />
-          </svg>
-          {`${manifest.counts.providers} forks`}
-        </span>
-        <span className="stat-pill mono" title="distinct signature hashes, α β γ… in first-measured order">
-          <svg aria-hidden="true" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4">
-            <circle cx="3.5" cy="3.5" r="1.3" />
-            <circle cx="12.5" cy="3.5" r="1.3" />
-            <circle cx="8" cy="12.5" r="1.3" />
-            <path d="M3.5 4.8v2.4a2.2 2.2 0 0 0 2.2 2.2h1.6" />
-            <path d="M12.5 4.8v2.4a2.2 2.2 0 0 1-2.2 2.2h-1.6" />
-          </svg>
-          {`${variants.length} variant${variants.length === 1 ? "" : "s"}`}
-        </span>
-      </div>
       {(fromRules.length > 0 || toRules.length > 0) && (
         <div
           className="rule-box"
@@ -1354,6 +1359,18 @@ export function AlignmentView({
     if (window.location.hash !== hash) window.location.hash = hash;
   };
 
+  /** The box's own ✕: empty the box and drop the selected symbol, so the view
+   * is back to its empty mode in one click (no back button, no reload). */
+  const clearSearch = () => {
+    setQuery("");
+    setOpen(false);
+    setActive(-1);
+    const next: Record<string, string> = {};
+    if (params.back) next.back = params.back;
+    const hash = routeHash("alignment", next);
+    if (window.location.hash !== hash) window.location.hash = hash;
+  };
+
   /** A quick-filter pill: re-narrow the (open) suggestion list — the pills
    * live inside the dropdown, so they only ever act on the suggestions. */
   const onKindClick = (filter: string) => {
@@ -1408,15 +1425,34 @@ export function AlignmentView({
   // pretends it is complete.
   const moreText = `first ${shown.length} of ${(shown.length + more).toLocaleString("en-US")} — keep typing to narrow`;
 
+  // The recorded-docs rows (the four study links the empty state and the
+  // symbol-mode panel both render) and the honesty disclosure. Built once and
+  // placed by the mode below, so the two modes can never drift apart.
+  const docsBody = (
+    <div id="alignment-docs">
+      <div id="alignment-docs-body">
+        {DOC_BLURBS.map((n) => (
+          <div key={n} className="doc-row">
+            <StudyDocLink num={n} />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+  const aboutBlock = (
+    <div className="about-note" id="alignment-about">
+      <AboutNote />
+    </div>
+  );
+
   return (
     <section id="view-alignment" className={`view${selectedKey ? " has-item" : ""}`}>
       <div className="wrap">
-        <div className="align-band">
-          <div className="view-head">
-            <h1>Alignment</h1>
-          </div>
-
-          <div className="panel picker align-search" id="alignment-search-panel" ref={panelRef}>
+        {/* One line, like Changes: the view's own title rides the control bar
+            over a hairline, and the box is the only control on it. */}
+        <div className="controls align-bar" id="alignment-search-panel" ref={panelRef}>
+          <h1 className="align-title">Alignment</h1>
+          <div className="align-field">
             <label className="ctl search-ctl" id="alignment-search-label">
               <span className="visually-hidden">Search measured items</span>
               <span className="search-box">
@@ -1428,7 +1464,7 @@ export function AlignmentView({
                   id="alignment-query"
                   ref={inputRef}
                   type="search"
-                  placeholder="e.g. Window::blur"
+                  placeholder="Search a symbol across all forks"
                   autoComplete="off"
                   spellCheck={false}
                   role="combobox"
@@ -1444,9 +1480,27 @@ export function AlignmentView({
                   }}
                   onKeyDown={onKeyDown}
                 />
-                <kbd className="search-kbd" aria-hidden="true">
-                  /
-                </kbd>
+                {/* The box's own action: clear it, and the view is back to the
+                    empty mode (no query, no selected symbol). The `/` hint
+                    stands in while there is nothing to clear. */}
+                {typed ? (
+                  <button
+                    type="button"
+                    className="search-clear"
+                    id="alignment-clear"
+                    aria-label="Clear the search"
+                    title="clear the search"
+                    onClick={clearSearch}
+                  >
+                    <svg aria-hidden="true" viewBox="0 0 12 12" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="1.6">
+                      <path d="M2 2 10 10M10 2 2 10" />
+                    </svg>
+                  </button>
+                ) : (
+                  <kbd className="search-kbd" aria-hidden="true">
+                    /
+                  </kbd>
+                )}
               </span>
             </label>
             {/* The suggestion dropdown (T-41: the kind pills are a toolbar in
@@ -1482,22 +1536,27 @@ export function AlignmentView({
                 </p>
               )}
             </div>
-            <div className="preset-row" id="alignment-presets" hidden={presetKeys.length === 0}>
-              <span className="preset-label mono" title="recorded examples">
-                presets
-              </span>
-              <span id="alignment-preset-chips" className="preset-chips">
-                {presetKeys.map((k) => (
-                  <button key={k} type="button" className="preset-chip mono" onClick={() => selectItem(k)}>
-                    {k}
-                  </button>
-                ))}
-              </span>
-            </div>
-            <p className="ctl-hint" id="alignment-hint">
-              {!selectedKey && EMPTY_HINT}
-            </p>
           </div>
+        </div>
+
+        {/* The recorded examples — the shape of a query in the corpus's own
+            words (title carries the full identity). Only while nothing is
+            selected: with a symbol open, its facts want the room. */}
+        <div
+          className="preset-row"
+          id="alignment-presets"
+          hidden={presetKeys.length === 0 || selectedKey !== null}
+        >
+          <span className="preset-label mono" title="recorded examples">
+            examples
+          </span>
+          <span id="alignment-preset-chips" className="preset-chips">
+            {presetKeys.map((k) => (
+              <button key={k} type="button" className="preset-chip mono" title={k} onClick={() => selectItem(k)}>
+                {splitKey(k)[1]}
+              </button>
+            ))}
+          </span>
         </div>
 
         <p className="align-back-row" id="alignment-back" hidden={!showBack}>
@@ -1525,20 +1584,34 @@ export function AlignmentView({
           )}
         </div>
 
-        <div className="panel" id="alignment-docs">
-          <h2>Studies &amp; docs</h2>
-          <div id="alignment-docs-body">
-            {DOC_BLURBS.map((n) => (
-              <div key={n} className="doc-row">
-                <StudyDocLink num={n} />
-              </div>
-            ))}
-          </div>
-        </div>
+        {/* The id contract: the retired static renderer bound #alignment-hint,
+            so the id stays addressable in both modes — the empty card's lead
+            while nothing is selected, an empty hidden slot with a symbol open
+            (the same shape #alignment-back keeps). */}
+        {selectedKey && <p className="ctl-hint" id="alignment-hint" hidden />}
 
-        <div className="about-note" id="alignment-about">
-          <AboutNote />
-        </div>
+        {selectedKey ? (
+          <>
+            <div className="panel">
+              <h2>Methodology &amp; studies</h2>
+              {docsBody}
+            </div>
+            {aboutBlock}
+          </>
+        ) : (
+          /* Empty mode: the guide. What the page answers, then the measured
+             record behind it — no matrix, nothing invented. */
+          <div className="panel align-empty" id="alignment-empty-state">
+            <h2 className="align-empty-title">Cross-Fork API Longevity &amp; Digest Parity</h2>
+            <p className="align-empty-lead" id="alignment-hint">
+              {`${EMPTY_LEAD} ${manifest.counts.providers} forks.`}
+            </p>
+            <hr className="align-empty-rule" />
+            <h3 className="align-empty-sub">Methodology &amp; studies</h3>
+            {docsBody}
+            {aboutBlock}
+          </div>
+        )}
       </div>
     </section>
   );

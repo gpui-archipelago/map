@@ -60,41 +60,31 @@
     gap: 10px;
     padding: 0 6px 0 0;
   }
-  .view.has-item .preset-row {
-    margin-top: 6px;
-  }
-  .view.has-item .ctl-hint {
-    display: none;
-  }
 
-  /* ---------- header band: title left, slim search right ---------- */
+  /* ---------- header bar: the view's title and its one control on a single
+   * line — the Changes toolbar's architecture (title rides the bar, hairline
+   * under it, no card), so the matrix answers own the page instead of a
+   * floating search island ---------- */
 
-  .align-band {
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 22px;
-    flex-wrap: wrap;
-    padding-bottom: 14px;
-    border-bottom: 1px solid #ece2d2;
-    margin-bottom: 12px;
+  .align-bar {
+    align-items: center;
+    gap: 12px;
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid var(--border-subtle);
+    padding: 0 0 10px;
+    margin: 10px 0 8px;
   }
-  .align-band .view-head {
+  .align-title {
     margin: 0;
-    min-width: 280px;
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 1;
+    color: var(--content);
   }
-  .align-band .view-head h1 {
-    font-size: 1.55rem;
-    margin: 0;
-  }
-  .align-band .view-head .view-eyebrow {
-    margin-bottom: 3px;
-  }
-  .picker.align-search {
-    width: min(430px, 100%);
-    margin: 0 0 2px;
-    padding: 10px 14px;
-    box-shadow: 0 1px 3px rgba(23, 77, 104, 0.08);
+  .align-field {
+    flex: 1 1 320px;
+    min-width: 0;
   }
   .search-ctl {
     gap: 0;
@@ -132,12 +122,38 @@
     padding: 0 5px;
     pointer-events: none;
   }
-  .align-search .preset-row {
-    margin-top: 8px;
+  /* The examples line rides under the bar — while nothing is selected (with a
+   * symbol open the same room belongs to the matrix). */
+  #alignment-presets {
+    margin: 0 0 14px;
   }
-  .align-search .ctl-hint {
-    margin-top: 6px;
-    font-size: 0.82rem;
+  /* The box's own ✕, in the slot the `/` hint occupies while there is nothing
+   * to clear. `.search-box` is the positioning context. */
+  .search-box .search-clear {
+    position: absolute;
+    right: 5px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    border: 0;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--content-muted);
+    cursor: pointer;
+  }
+  .search-box .search-clear:hover {
+    background: var(--color-sand-100);
+    color: var(--color-ink-deep);
+    border: 0;
+  }
+  /* One clear affordance: the browser's own search-input ✕ is suppressed. */
+  .search-box input[type="search"]::-webkit-search-cancel-button,
+  .search-box input[type="search"]::-webkit-search-decoration {
+    -webkit-appearance: none;
+    appearance: none;
   }
 
   /* ---------- type-ahead combobox (T-38) ----------
@@ -1166,19 +1182,35 @@
     display: flex;
     gap: 8px;
     flex-wrap: wrap;
-    margin: 12px 0 4px;
+    margin: 0;
+  }
+  /* The symbol header is one line: kind:name left, the symbol's own totals
+   * right — the size of the corpus it has to be read against, before the
+   * signatures below it. */
+  .item-head-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
   }
 
   /* ---------- T-43: the item docstring under the title ----------
    * The promoted Title of the doc pipeline: an fn item's measured docstring
    * renders once under the kind:name hero (never repeated on the variant
-   * cards — those stay signature-only), with a mono caption of the measured
-   * counts behind it. The doc is a release-resolved byte string from the
-   * doc-texts sidecar (rule 7); it never rides the boot path. */
+   * cards — those stay signature-only) in one card with its measured counts,
+   * so the doc and the thing it was measured over never read as two loose
+   * lines. The doc is a release-resolved byte string from the doc-texts
+   * sidecar (rule 7); it never rides the boot path. */
 
   .item-doc {
-    margin: 8px 2px 0;
+    margin: 10px 0 0;
     max-width: 76ch;
+    background: var(--color-sand-50);
+    border: 1px solid #ece2d2;
+    border-left: 3px solid var(--border-accent);
+    border-radius: 8px;
+    padding: 9px 12px;
   }
   .item-doc-text {
     margin: 0;
@@ -1187,17 +1219,12 @@
     color: var(--color-ink-deep);
     white-space: pre-wrap;
     overflow-wrap: break-word;
-    background: var(--color-sand-50);
-    border: 1px solid #ece2d2;
-    border-left: 3px solid var(--border-accent);
-    border-radius: 8px;
-    padding: 9px 12px;
   }
   .view.has-item .item-doc-text {
     font-size: 1.08rem;
   }
   .item-doc-cap {
-    margin: 5px 3px 0;
+    margin: 6px 0 0;
     font-size: 0.72rem;
     color: var(--content-muted);
     cursor: help;
@@ -1252,13 +1279,50 @@
     min-width: 0;
   }
 
+  /* ---------- empty mode: the guide card ----------
+   * Nothing selected renders the page's own statement of what it answers, and
+   * the measured record behind it (the four studies + the honesty
+   * disclosure), in one card — not a documentation index in place of a tool. */
+
+  .align-empty {
+    padding: 22px 24px 10px;
+  }
+  .align-empty-title {
+    margin: 0 0 8px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--content-muted);
+  }
+  .align-empty-lead {
+    margin: 0 0 18px;
+    max-width: 78ch;
+    color: var(--content);
+  }
+  .align-empty-rule {
+    border: 0;
+    border-top: 1px solid #ece2d2;
+    margin: 0 0 14px;
+  }
+  .align-empty-sub {
+    margin: 0 0 8px;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--content-muted);
+  }
+  .align-empty .about-note {
+    margin: 18px 0 4px;
+  }
+
   @media (max-width: 560px) {
-    .align-band {
+    .align-bar {
       flex-direction: column;
       align-items: stretch;
     }
-    .picker.align-search {
-      width: 100%;
+    .align-field {
+      flex: 1 1 auto;
     }
     .deck-grid {
       grid-template-columns: 1fr;
