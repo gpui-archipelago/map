@@ -1,44 +1,21 @@
 @import "tailwindcss";
+@import "./tokens.css";
 
 /* T-39 — fork-map SPA styles.
  *
- * The archipelago identity tokens (T-37) ported from web/forkmap/style.css as
- * Tailwind v4 @theme tokens; the chrome/component classes below mirror the
+ * Tokens are vendored from the canonical design system (gpui-archipelago-site
+ * src/styles/tokens.css) as ./tokens.css — see that file's banner; don't edit
+ * values here. This file keeps the chrome/component classes, which mirror the
  * static site's class names + structure so the parity story (recorded stories
  * render the same, ids/classes survive) stays checkable. Built in by the
- * Tailwind v4 Vite plugin — never the CDN script, no runtime network. Fonts
- * stay local stacks exactly as T-37 decided.
+ * Tailwind v4 Vite plugin — never the CDN script, no runtime network; fonts
+ * stay local stacks.
  */
-
-@theme {
-  --color-sand-50: #fffdfa;
-  --color-sand-100: #fff8ed;
-  --color-sand-200: #fae0b7;
-  --color-paper: #f7f1e5;
-  --color-ink: #174d68;
-  --color-ink-deep: #10364b;
-  --color-muted: #5b6368;
-  --color-arch: #dde1e3;
-  --color-coral: #ef4e28;
-  --color-rust: #cb3b1b;
-  --color-ocean: #378fbd;
-  --color-ocean-deep: #1e6b98;
-  --color-island: #7dab59;
-  --color-island-deep: #527c2f;
-  --color-amber: #a86214;
-  --color-present: #527c2f;
-  --color-changed: #8a5200;
-  --color-removed: #cb3b1b;
-  --color-absent: #d5c9b4;
-
-  --font-sans: "Source Sans 3", "Avenir Next", "Segoe UI", system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-}
 
 @layer base {
   body {
     margin: 0;
-    background: var(--color-paper);
+    background: var(--color-paper-warm);
     color: var(--color-ink-deep);
     font-family: var(--font-sans);
     line-height: 1.55;
@@ -105,33 +82,16 @@
     text-decoration: none;
   }
 
+  /* The map's own mark: the crab-machine logo squared into the tile. */
   .brand-tile {
     width: 38px;
     height: 38px;
     border-radius: 10px;
-    background: linear-gradient(135deg, var(--color-sand-100), #f6e7cd);
     border: 1px solid rgba(55, 143, 189, 0.35);
     box-shadow: 0 1px 3px rgba(23, 77, 104, 0.12);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 3px;
+    object-fit: cover;
+    display: block;
     flex: none;
-  }
-  .tile-isle {
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    display: inline-block;
-  }
-  .tile-isle.i1 {
-    background: var(--color-coral);
-  }
-  .tile-isle.i2 {
-    background: var(--color-ocean);
-  }
-  .tile-isle.i3 {
-    background: var(--color-island);
   }
 
   .brand-text {
@@ -150,17 +110,17 @@
     font-weight: 700;
     font-size: 1.04rem;
     letter-spacing: -0.02em;
-    color: var(--color-ink);
+    color: var(--content);
   }
   .brand-aka {
-    color: var(--color-muted);
+    color: var(--content-muted);
     font-size: 0.74rem;
   }
   .brand-chip {
     font-size: 0.66rem;
-    color: var(--color-muted);
+    color: var(--content-muted);
     background: var(--color-sand-100);
-    border: 1px solid var(--color-arch);
+    border: 1px solid var(--border-subtle);
     border-radius: 999px;
     padding: 1px 9px;
     white-space: nowrap;
@@ -168,7 +128,7 @@
   .brand-sub {
     font-family: var(--font-mono);
     font-size: 0.66rem;
-    color: var(--color-muted);
+    color: var(--content-muted);
     letter-spacing: 0.03em;
     text-transform: uppercase;
   }
@@ -178,9 +138,9 @@
     align-items: center;
     gap: 8px;
     font-size: 0.74rem;
-    color: var(--color-muted);
+    color: var(--content-muted);
     background: var(--color-sand-100);
-    border: 1px solid var(--color-arch);
+    border: 1px solid var(--border-subtle);
     border-radius: 999px;
     padding: 5px 14px;
     white-space: nowrap;
@@ -188,7 +148,7 @@
   .h-metric {
     display: inline-flex;
     align-items: baseline;
-    color: var(--color-ink);
+    color: var(--content);
   }
   .h-num {
     font-weight: 700;
@@ -203,7 +163,7 @@
     flex: none;
   }
   .h-sep {
-    color: var(--color-arch);
+    color: var(--color-gray-200);
   }
 
   .site-nav {
@@ -212,7 +172,7 @@
     flex-wrap: wrap;
   }
   .site-nav a {
-    color: var(--color-muted);
+    color: var(--content-muted);
     padding: 5px 13px;
     border-radius: 999px;
     font-size: 0.86rem;
@@ -225,12 +185,27 @@
   .site-nav a:hover {
     background: rgba(55, 143, 189, 0.1);
     text-decoration: none;
-    color: var(--color-ink);
+    color: var(--content);
   }
   .site-nav a.active {
     background: var(--color-ink);
     color: #f4f8fa;
     box-shadow: 0 1px 3px rgba(23, 77, 104, 0.25);
+  }
+
+  /* The nav's one outbound link (back to the main site): a hairline sets it
+     apart from the in-app views without breaking the pill hover shape. */
+  .site-nav .nav-back {
+    margin-left: 6px;
+  }
+  .site-nav .nav-back::before {
+    content: "";
+    display: inline-block;
+    width: 1px;
+    height: 0.85em;
+    margin-right: 12px;
+    vertical-align: -0.08em;
+    background: var(--border-subtle);
   }
 
   /* ---------- header / chrome — narrow screens ----------
@@ -267,7 +242,7 @@
     .h-metric:not(:first-child)::before {
       content: "·";
       margin-right: 8px;
-      color: var(--color-arch);
+      color: var(--color-gray-200);
     }
   }
 
@@ -275,7 +250,7 @@
 
   .panel {
     background: #fff;
-    border: 1px solid var(--color-arch);
+    border: 1px solid var(--border-subtle);
     border-radius: 12px;
     padding: 18px 20px;
     margin-bottom: 16px;
@@ -290,16 +265,16 @@
   .panel h2 {
     margin: 0 0 10px;
     font-size: 1.16em;
-    color: var(--color-ink);
+    color: var(--content);
   }
   .panel-head h2 {
     margin: 0 0 4px;
     font-size: 1.06rem;
-    color: var(--color-ink);
+    color: var(--content);
   }
   .panel-kicker {
     font-size: 0.7rem;
-    color: var(--color-muted);
+    color: var(--content-muted);
     text-transform: uppercase;
     letter-spacing: 0.05em;
   }
@@ -308,16 +283,16 @@
   }
   .panel-sub {
     font-size: 0.95rem;
-    color: var(--color-ink);
+    color: var(--content);
     margin: 16px 0 8px;
   }
   .subnote {
     font-size: 0.86rem;
-    color: var(--color-muted);
+    color: var(--content-muted);
     line-height: 1.5;
   }
   .muted {
-    color: var(--color-muted);
+    color: var(--content-muted);
   }
 
   .skip {
@@ -341,7 +316,7 @@
     padding: 22px 0 26px;
     margin-top: 36px;
     font-size: 0.82rem;
-    color: var(--color-muted);
+    color: var(--content-muted);
   }
   .site-footer .wrap {
     display: flex;
@@ -349,7 +324,7 @@
     gap: 8px;
   }
   .footer-tag {
-    color: var(--color-ink);
+    color: var(--content);
   }
 
   /* ---------- fatal ---------- */
@@ -357,7 +332,7 @@
   .fatal {
     background: #fff8ed;
     border: 1px solid #e2c48f;
-    border-left: 4px solid var(--color-coral);
+    border-left: 4px solid var(--action);
     border-radius: 10px;
     padding: 18px 20px;
     color: var(--color-ink-deep);
@@ -371,7 +346,7 @@
   }
   .noscript {
     padding: 10px 20px;
-    color: var(--color-muted);
+    color: var(--content-muted);
   }
 
   /* ---------- boot screen (loading is a state, not a failure) ---------- */
@@ -379,24 +354,24 @@
   .boot-panel {
     max-width: 720px;
     margin: 48px auto 0;
-    border-left: 4px solid var(--color-ocean);
+    border-left: 4px solid var(--border-accent);
   }
   .boot-title {
     margin: 2px 0 10px;
     font-size: 1.3rem;
-    color: var(--color-ink);
+    color: var(--content);
   }
   .boot-line {
     font-family: var(--font-mono);
     font-size: 0.84rem;
-    color: var(--color-ink);
+    color: var(--content);
     margin: 0 0 10px;
   }
   .boot-track {
     height: 10px;
     border-radius: 999px;
-    background: var(--color-sand-200);
-    border: 1px solid var(--color-arch);
+    background: var(--color-sand);
+    border: 1px solid var(--border-subtle);
     overflow: hidden;
   }
   .boot-fill {
