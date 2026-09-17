@@ -296,8 +296,7 @@
      here, or the row never fits one line. */
   .controls.picker .ctl select {
     min-width: 96px;
-    max-width: 14ch;
-    text-align: center;
+    text-align: left;
     font-family: var(--font-mono);
     font-size: 0.86rem;
     color: var(--content);
@@ -305,13 +304,13 @@
     border: 1px solid var(--border-subtle);
     border-radius: 999px;
     /* Vertical padding only: the row stays one line while the chips grow into
-       comfortable touch targets. */
+       comfortable touch targets. No width cap either: with the flag suffix
+       gone the labels are short enough to size to their own content. */
     padding: 9px 10px;
   }
   .controls.picker .ctl select[id$="-provider"] {
     min-width: 140px;
     max-width: 22ch;
-    text-align: left;
   }
   /* …and the row closes up: the gaps and pill padding are the toolbar's own. */
   .controls.picker .pair {

@@ -51,11 +51,12 @@ import { useTypeMembers } from "../bundle/keyPayload";
 import type { FnTextsBundle, ForkmapManifest, ManifestVersionRow, Side, TypeMembersBundle, VersionRow } from "../bundle/types";
 import { routeHash } from "../routing";
 
-/** `<vers> (yanked, pre-release)` option label — RULE-6 flags shown, never
- * hidden. */
+/** `<vers> (yanked)` option label — RULE-6's yanked flag is shown, never
+ * hidden. A prerelease carries no suffix: its own version string says so
+ * (`1.19.0-pre`, `0.2.1-test3`), and the note under the pickers states the
+ * flags of the compared pair in words. */
 function optionLabel(v: ManifestVersionRow): string {
-  const flags = releaseFlags(v);
-  return flags.length ? `${v.vers} (${flags.join(", ")})` : v.vers;
+  return v.yanked ? `${v.vers} (yanked)` : v.vers;
 }
 
 /** The current pair as a T-38 `back` target ("changes?a=…&b=…", no "#/"). */

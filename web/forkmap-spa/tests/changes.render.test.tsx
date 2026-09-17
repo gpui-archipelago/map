@@ -200,10 +200,16 @@ describe("Changes view renders the recorded stories (server render)", () => {
     expect((split.match(/class="diff-marker mono"/g) ?? []).length).toBe(2);
   });
 
-  test("the yanked/pre-release flags ride the release pickers", () => {
-    // gpui 0.1.0-test is prerelease+yanked: its picker option must flag it.
+  test("a yanked release stays flagged in the pickers; the prerelease suffix is gone", () => {
+    // gpui 0.1.0 and 0.1.0-test are both yanked, and their version strings do
+    // not say so — that flag stays. The prerelease half of the old suffix is
+    // dropped (0.1.0-test says it itself), and the note under the pickers still
+    // states the flags of the compared pair in words.
     const html = renderChanges({ a: "gpui:0.1.0", b: "gpui:0.1.0-test" });
-    expect(html).toContain("(yanked, pre-release)");
+    expect(html).toContain("0.1.0 (yanked)");
+    expect(html).toContain("0.1.0-test (yanked)");
+    expect(html).not.toContain("pre-release");
+    expect(html).toContain("One side of this comparison is yanked or a prerelease");
   });
 
   test("honest-rule ids and every static-renderer-bound changes-* id exist in the rendered view", () => {
