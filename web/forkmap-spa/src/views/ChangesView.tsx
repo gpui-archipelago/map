@@ -683,11 +683,11 @@ export function ChangesView({
               once. One package while both sides diff one fork; looking at two
               is the fork toggle (or a deep link). */}
           <div className="pair">
-            {sameFork ? (
-              <span className="ctl-label mono" aria-hidden="true">
-                package
-              </span>
-            ) : (
+            {/* Scope group: the fork(s) this comparison reads, and the control
+                that splits them. No visible 'package' label — a crate name in a
+                dropdown says what it is — and no toggle inside the A ⇄ B
+                equation: ⑂ sits next to the picker it acts on. */}
+            {!sameFork && (
               <span className="diff-marker mono" aria-hidden="true">
                 A
               </span>
@@ -707,6 +707,17 @@ export function ChangesView({
                 ))}
               </select>
             </label>
+            <button
+              id="changes-fork-scope"
+              type="button"
+              className="fork-scope mono"
+              aria-pressed={pickForks}
+              aria-label={forkScopeLabel}
+              title={forkScopeTitle}
+              onClick={onForkScope}
+            >
+              ⑂
+            </button>
             {/* Each badge is welded to the chip it names: a wrap never leaves a
                 stray letter at the end of a row. */}
             <span className="side">
@@ -728,19 +739,6 @@ export function ChangesView({
           </div>
           <button id="changes-swap" className="swap-btn mono" type="button" aria-label="swap A and B" title="swap A and B" onClick={swap}>
             ⇄
-          </button>
-          {/* Beside the swap, between the two sides: the one control that adds
-              B's own fork picker (or folds a two-fork pair back to one). */}
-          <button
-            id="changes-fork-scope"
-            type="button"
-            className="fork-scope mono"
-            aria-pressed={pickForks}
-            aria-label={forkScopeLabel}
-            title={forkScopeTitle}
-            onClick={onForkScope}
-          >
-            ⑂
           </button>
           <div className="pair">
             <span className="side">

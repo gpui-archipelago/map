@@ -193,7 +193,7 @@
     box-shadow: 0 1px 3px rgba(23, 77, 104, 0.25);
   }
 
-  /* One line: Changes  package [fork]  [A] [version]  ⇄  [B] [version]  ⑂ Fork  ‹ prev next ›.
+  /* One line: Changes  [fork] [⑂]  [A] [version]  ⇄  [B] [version]  ‹ prev next ›.
      The page title rides the toolbar — the row is the view's own heading, not
      a second one above it — over a hairline, with no card. */
   #changes-controls {
@@ -240,8 +240,8 @@
     font-size: 11px;
     flex: none;
   }
-  /* The fork control is the swap's twin: a square icon button beside it, with
-     the words in its accessible name and tooltip. */
+  /* The fork control is part of the scope group: a square icon button beside
+     the picker it acts on, with its words in the accessible name and tooltip. */
   #changes-fork-scope {
     display: inline-flex;
     align-items: center;
@@ -252,14 +252,19 @@
     border-radius: 8px;
     font-size: 1.2rem;
   }
-  /* Quieter than the pickers it sits between — until it is on. */
+  /* Off: a plain icon, quieter than the pickers it sits between. On: filled,
+     so it is obvious why a second fork picker has appeared. */
   .fork-scope {
     color: var(--content-muted);
   }
   .fork-scope[aria-pressed="true"] {
-    background: rgba(55, 143, 189, 0.12);
-    border-color: var(--border-accent);
-    color: var(--color-ocean-deep);
+    background: var(--color-ink);
+    border-color: var(--color-ink);
+    color: #f4f8fa;
+  }
+  .fork-scope[aria-pressed="true"]:hover {
+    background: var(--color-ink-deep);
+    color: #f4f8fa;
   }
   /* The swap is an icon between the two sides, not a labelled control. */
   #changes-swap {

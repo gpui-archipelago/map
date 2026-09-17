@@ -198,21 +198,22 @@
     margin: 10px 0;
   }
 
-  /* The facts line: the delta's nature glyph, then each side's count + hash. */
+  /* The facts line — the diff's inputs. The rule under it separates them from
+     the results (the counts and the rows), which is why it gets the room. */
   .diff-meta {
     display: flex;
     align-items: center;
     gap: 4px 8px;
     flex-wrap: wrap;
     font-size: 0.88em;
-    margin: 0 0 14px;
+    margin: 0 0 18px;
     padding-bottom: 12px;
-    border-bottom: 1px solid #ece2d2;
+    border-bottom: 1px solid var(--border-subtle);
   }
 
   .diff-summary {
     font-weight: 600;
-    margin: 10px 0 14px;
+    margin: 0 0 14px;
     display: flex;
     align-items: baseline;
     gap: 8px;

@@ -156,9 +156,11 @@ describe("Changes view renders the recorded stories (server render)", () => {
     expect(shownBadges(same)).toBe(2);
     expect(shownBadges(split)).toBe(2);
     expect(shownBadges(cross)).toBe(2);
-    // The fork control sits beside the swap, icon-only, and is pressed exactly
-    // when B's fork picker is on screen.
-    expect(same.indexOf('id="changes-swap"')).toBeLessThan(same.indexOf('id="changes-fork-scope"'));
+    // The fork control sits in the scope group — after the fork picker it acts
+    // on, before the A ⇄ B version equation — and is pressed exactly when B's
+    // fork picker is on screen.
+    expect(same.indexOf('id="changes-a-provider"')).toBeLessThan(same.indexOf('id="changes-fork-scope"'));
+    expect(same.indexOf('id="changes-fork-scope"')).toBeLessThan(same.indexOf('id="changes-swap"'));
     expect(same).toMatch(/id="changes-fork-scope"[^>]*aria-pressed="false"/);
     expect(split).toMatch(/id="changes-fork-scope"[^>]*aria-pressed="true"/);
     expect(cross).toMatch(/id="changes-fork-scope"[^>]*aria-pressed="true"/);
@@ -168,13 +170,14 @@ describe("Changes view renders the recorded stories (server render)", () => {
   });
 
   test("one package picker while both sides diff one fork, two when they do not", () => {
-    // The common case: one package, two A/B badge anchors, one fork control.
+    // The common case: one scope picker, two A/B badge anchors, one fork
+    // control — and no visible 'package' label (the crate name says it).
     const one = renderChanges({ a: "gpui-unofficial:1.16.3", b: "gpui-unofficial:1.17.2" });
-    expect(one).toContain(">package<");
+    expect(one).toContain('id="changes-a-provider"');
+    expect(one).not.toContain(">package<");
     expect(one).toMatch(/id="changes-b-provider"[^>]*hidden/);
     expect(one).toContain('class="diff-marker mono"');
     expect(one).not.toContain('class="pair-side mono"');
-    expect(one).not.toContain("⑂ Fork");
     expect(one).toMatch(/id="changes-fork-scope"[^>]*aria-pressed="false"/);
     expect(one).toContain('aria-label="add the second fork picker"');
     // A cross-fork pair keeps both fork pickers (and the toggle says so).
