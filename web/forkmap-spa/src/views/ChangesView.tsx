@@ -24,7 +24,7 @@
 // (RULE-4: its absence IS the marker — no file is requested). The re-signed
 // fn texts ride the pair's own rows; no whole-file sidecar is fetched.
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AboutNote } from "../components/AboutNote";
 import { ItemList, ProviderLine, RemovedRowExtra, ResignedRowExtra } from "../components/rows";
 import {
@@ -542,12 +542,10 @@ export function ChangesView({
   const onAProv = (value: string) => {
     const prov = providerFor(manifest, value);
     if (!prov || prov.id === a.provider.id) return;
-    // While both sides diff one fork this picker *is* the pair's fork, so
-    // switching packages re-pairs the whole comparison inside the new fork.
-    // Moving A alone here would strand B on the old fork — and that is the only
-    // thing that used to make B's own picker appear uninvited. Once the sides
-    // differ (the fork control added B's picker), it is A's fork and A's alone.
-    if (sameFork) {
+    // Linked, this picker *is* the pair's fork, so switching packages re-pairs
+    // the whole comparison inside the new fork. Split, it is A's fork alone —
+    // which is what its label says — and B keeps its own.
+    if (!pickForks) {
       const pair = packagePair(prov);
       go({ a: changesPairValue(prov, pair.a), b: changesPairValue(prov, pair.b) });
       return;
@@ -572,12 +570,24 @@ export function ChangesView({
   const swap = () =>
     go({ a: changesPairValue(b.provider.id, b.vers), b: changesPairValue(a.provider.id, a.vers) });
 
+  // The ⑂ control moves between the two scope pills when the mode changes, so
+  // it is a different element afterwards: hand focus back to it, or a keyboard
+  // user activating it lands on <body> and has to tab in from the top again.
+  const forkToggleRef = useRef<HTMLButtonElement | null>(null);
+  const refocusFork = useRef(false);
+  useEffect(() => {
+    if (!refocusFork.current) return;
+    refocusFork.current = false;
+    forkToggleRef.current?.focus();
+  }, [pickForks]);
+
   // ⑂ adds B's own fork picker (the snapshot comparison is a deliberate act);
   // pressing it again on a one-fork pair takes the picker away, and on a
   // two-fork pair it folds them back to one — B takes A's fork at that
   // stream's default pair, so the result stays diffable.
   const onForkScope = () => {
     const next = forkScopeAction(sameFork, splitFork);
+    refocusFork.current = true;
     setSplitFork(next.split);
     if (next.fold) onBProv(a.provider.id);
   };
@@ -606,6 +616,24 @@ export function ChangesView({
       ? `both sides ${way}: ${target.a} → ${target.b}`
       : `no ${way} release pair in ${a.provider.id}`;
   };
+
+  // One toggle, rendered inside whichever scope pill owns the split: the single
+  // package picker while linked, B's picker once split. `ref` follows it across
+  // that move (see the effect above).
+  const forkToggle = (
+    <button
+      id="changes-fork-scope"
+      ref={forkToggleRef}
+      type="button"
+      className="picker-toggle mono"
+      aria-pressed={pickForks}
+      aria-label={forkScopeLabel}
+      title={forkScopeTitle}
+      onClick={onForkScope}
+    >
+      ⑂
+    </button>
+  );
 
   // The pair rows' diff body: loading/error states print the data layer's own
   // honest copy of what is fetched (the whole corpus is never part of this
@@ -674,25 +702,38 @@ export function ChangesView({
       <div className="wrap">
         <div className="controls picker" id="changes-controls">
           <h1 className="changes-title">Changes</h1>
-          {/* Grouped by entity, not by field: everything for A on the left,
-              everything for B on the right, so each badge appears exactly
-              once. One package while both sides diff one fork; looking at two
-              is the fork toggle (or a deep link). */}
-          <div className="pair">
-            {/* Scope group: the fork both sides read, with the control that
-                splits it fused into the same pill — so ⑂ reads as an action on
-                the package, not an operator in the A ⇄ B equation. */}
-            {!sameFork && (
+          {/* Scope, equation, history. Linked: one package picker with the ⑂
+              that splits it fused in. Split: A's fork becomes a chip of its own
+              — badge and all, the moment the split is on — and ⑂ rides B's
+              picker, the one it added and the one it collapses. */}
+          {pickForks ? (
+            <div className="pair">
               <span className="diff-marker mono" aria-hidden="true">
                 A
               </span>
-            )}
+              <label className="ctl">
+                <select
+                  id="changes-a-provider"
+                  aria-label="A · fork"
+                  title="A's fork"
+                  value={a.provider.id}
+                  onChange={(e) => onAProv(e.target.value)}
+                >
+                  {manifest.providers.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {`${p.id}${p.package === p.id ? "" : ` (${p.package})`}`}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+          ) : (
             <div className="fused-package-picker">
               <select
                 id="changes-a-provider"
                 className="picker-select"
-                aria-label={sameFork ? "package — both sides diff this fork" : "A · fork"}
-                title={sameFork ? "both sides diff this fork" : "A's fork"}
+                aria-label="package — both sides diff this fork"
+                title="both sides diff this fork"
                 value={a.provider.id}
                 onChange={(e) => onAProv(e.target.value)}
               >
@@ -702,22 +743,15 @@ export function ChangesView({
                   </option>
                 ))}
               </select>
-              <button
-                id="changes-fork-scope"
-                type="button"
-                className="picker-toggle mono"
-                aria-pressed={pickForks}
-                aria-label={forkScopeLabel}
-                title={forkScopeTitle}
-                onClick={onForkScope}
-              >
-                ⑂
-              </button>
+              {forkToggle}
             </div>
+          )}
+          <div className="pair">
             {/* Each badge is welded to the chip it names: a wrap never leaves a
-                stray letter at the end of a row. */}
+                stray letter at the end of a row. While the pair is one fork the
+                badges sit on the releases; once split they move to the forks. */}
             <span className="side">
-              {sameFork && (
+              {!pickForks && (
                 <span className="diff-marker mono" aria-hidden="true">
                   A
                 </span>
@@ -741,22 +775,44 @@ export function ChangesView({
               <span className="diff-marker mono" aria-hidden="true">
                 B
               </span>
-              <label className="ctl">
-                <select
-                  id="changes-b-provider"
-                  aria-label="B · fork"
-                  title="B's fork"
-                  hidden={!pickForks}
-                  value={b.provider.id}
-                  onChange={(e) => onBProv(e.target.value)}
-                >
-                  {manifest.providers.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {`${p.id}${p.package === p.id ? "" : ` (${p.package})`}`}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              {pickForks ? (
+                <div className="fused-package-picker">
+                  <select
+                    id="changes-b-provider"
+                    className="picker-select"
+                    aria-label="B · fork"
+                    title="B's fork"
+                    value={b.provider.id}
+                    onChange={(e) => onBProv(e.target.value)}
+                  >
+                    {manifest.providers.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {`${p.id}${p.package === p.id ? "" : ` (${p.package})`}`}
+                      </option>
+                    ))}
+                  </select>
+                  {forkToggle}
+                </div>
+              ) : (
+                /* Present but hidden while the pair is one fork: the id the
+                   static renderer bound must never vanish. */
+                <label className="ctl">
+                  <select
+                    id="changes-b-provider"
+                    aria-label="B · fork"
+                    title="B's fork"
+                    hidden
+                    value={b.provider.id}
+                    onChange={(e) => onBProv(e.target.value)}
+                  >
+                    {manifest.providers.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {`${p.id}${p.package === p.id ? "" : ` (${p.package})`}`}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
             </span>
             <label className="ctl">
               <select id="changes-b" aria-label="B · release" title={optionLabel(bRow ?? b.provider.versions[0])} value={b.vers} onChange={(e) => onBVers(e.target.value)}>

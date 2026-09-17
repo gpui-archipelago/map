@@ -189,6 +189,10 @@ describe("Changes view renders the recorded stories (server render)", () => {
     expect(two).not.toMatch(/id="changes-b-provider"[^>]*hidden/);
     expect(two).toMatch(/id="changes-fork-scope"[^>]*aria-pressed="true"/);
     expect(two).toContain('aria-label="merge back to a single package"');
+    // …and it is fused into B's picker, the one it added and collapses.
+    expect(two).toMatch(
+      /<div class="fused-package-picker">[\s\S]*?id="changes-b-provider"[\s\S]*?id="changes-fork-scope"[\s\S]*?<\/div>/,
+    );
   });
 
   test("the fork control's split state really shows B's fork picker", () => {
@@ -199,9 +203,23 @@ describe("Changes view renders the recorded stories (server render)", () => {
     expect(split).toMatch(/id="changes-fork-scope"[^>]*aria-pressed="true"/);
     expect(split).toContain('aria-label="merge back to a single package"');
     expect(split).not.toMatch(/id="changes-b-provider"[^>]*hidden/);
-    // B's badge joins the picker, and A's is still the shared package picker.
+    // The A badge moves to A's own part the moment the split is on: it labels
+    // the fork picker, and still appears exactly once.
+    const aMarkers = (html: string) => (html.match(/>A<\/span>/g) ?? []).length;
+    expect(aMarkers(split)).toBe(1);
+    expect(split.indexOf(">A</span>")).toBeLessThan(split.indexOf('id="changes-a-provider"'));
+    expect(split.indexOf(">B</span>")).toBeLessThan(split.indexOf('id="changes-b-provider"'));
+    // …while the pair is one fork the badges label the releases instead.
+    const linked = renderChanges({ a: "gpui-unofficial:1.16.3", b: "gpui-unofficial:1.17.2" });
+    expect(aMarkers(linked)).toBe(1);
+    expect(linked.indexOf(">A</span>")).toBeGreaterThan(linked.indexOf('id="changes-a-provider"'));
+    expect(linked.indexOf(">A</span>")).toBeLessThan(linked.indexOf('id="changes-a"'));
+    expect(linked.indexOf(">B</span>")).toBeLessThan(linked.indexOf('id="changes-b"'));
+    // B's badge joins the picker, and A's part is labelled A — the package is
+    // no longer one, so A's picker is A's fork alone.
+    expect(split).toContain('aria-label="A · fork"');
     expect(split).toContain('aria-label="B · fork"');
-    expect(split).toContain("package — both sides diff this fork");
+    expect(split).not.toContain("package — both sides diff this fork");
     // Still two badges: the pair is one fork, so A's picker stays the shared
     // package and only the badges on the chips remain.
     expect((split.match(/class="diff-marker mono"/g) ?? []).length).toBe(2);

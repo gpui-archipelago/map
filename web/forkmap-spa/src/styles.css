@@ -257,15 +257,18 @@
     border-color: var(--border-accent);
     box-shadow: 0 0 0 2px rgba(55, 143, 189, 0.18);
   }
-  /* The select supplies the pill's height and padding; the pill owns the rest. */
-  .fused-package-picker select {
+  /* The select supplies the pill's height and padding; the pill owns the rest.
+     These override the picker's chip styling, so they carry its specificity:
+     the chip's pill radius inside the fused pill left a rounded corner sitting
+     against the divider (the select's own rounded box showed through). */
+  .controls.picker .fused-package-picker select {
     border: 0;
     border-radius: 0;
     background: transparent;
-    padding-right: 26px;
+    padding-right: 28px;
   }
   /* Nothing to focus here: the ring is the pill's (focus-within). */
-  .fused-package-picker select:focus {
+  .controls.picker .fused-package-picker select:focus {
     outline: none;
     box-shadow: none;
   }
