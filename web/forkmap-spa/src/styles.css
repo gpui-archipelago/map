@@ -193,12 +193,31 @@
     box-shadow: 0 1px 3px rgba(23, 77, 104, 0.25);
   }
 
-  /* One line: A [fork] [version]  ⇄  B [fork] [version]  ‹ prev next ›. */
-  .pair-side {
+  /* One line: package [fork]  [A] [version]  ⇄  [B] [version]  [≠ fork]  ‹ prev next ›. */
+  .ctl-label,
+  .diff-marker {
     align-self: center;
-    margin-right: 2px;
-    font-size: 0.72rem;
+    font-family: var(--font-mono);
     color: var(--content-muted);
+    flex: none;
+  }
+  .ctl-label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  /* The A/B anchors: the letters read as badges, not as stray text. */
+  .diff-marker {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 4px;
+    background: var(--color-gray-200);
+    color: var(--color-ink-deep);
+    font-weight: 700;
+    font-size: 11px;
   }
   .pair-steps {
     display: inline-flex;
@@ -206,11 +225,19 @@
     align-self: center;
     margin-left: auto;
   }
+  /* The fork-scope control: quieter than the pickers it sits beside. */
+  .fork-scope {
+    font-weight: 400;
+    font-size: 0.76rem;
+    color: var(--content-muted);
+  }
 
-  /* The diff nature is a glyph, not a sentence. */
-  .diff-kind-glyph {
-    display: inline-block;
-    font-size: 1.05rem;
+  /* The diff nature is a word, not a glyph (an icon read as a menu handle). */
+  .diff-nature {
+    align-self: center;
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
     color: var(--content-muted);
     cursor: help;
   }
@@ -231,10 +258,13 @@
   /* The pair picks are the pair display: one line of chips, which is also
      the whole 'what am I looking at' statement on this view. The shared
      `.ctl select` min-width (210px, sized for the labelled Configure form)
-     would push the swap/step controls onto a second row, so it is released
-     here: each chip sizes to its own widest label (rule-6 flags included). */
+     would push the controls onto a second row, so it is released here, and
+     the chips get a cap: a flagged release label is the one that overflows,
+     and the closed chip states it in its title (the full option list always
+     reads verbatim). */
   .controls.picker .ctl select {
     min-width: 0;
+    max-width: 28ch;
     font-family: var(--font-mono);
     font-size: 0.8rem;
     color: var(--content);
@@ -242,6 +272,17 @@
     border: 1px solid var(--border-subtle);
     border-radius: 999px;
     padding: 4px 10px;
+  }
+  /* …and the row closes up: five controls, four chips and three badges have to
+     read as one line, so the gaps and pill padding are the picker's own. */
+  .controls.picker {
+    gap: 16px;
+  }
+  .controls.picker .pair {
+    gap: 8px;
+  }
+  .controls.picker button {
+    padding: 5px 12px;
   }
 
   /* The Changes pair drawer: the delta is the point, so the pickers collapse

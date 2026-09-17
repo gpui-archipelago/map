@@ -30,7 +30,7 @@ function renderChanges(params: Record<string, string>): string {
 }
 
 describe("Changes view renders the recorded stories (server render)", () => {
-  test("recorded story: uno 1.16.3 → 1.17.2 renders the changelog glyph + removed frame rows", () => {
+  test("recorded story: uno 1.16.3 → 1.17.2 renders the changelog word + removed frame rows", () => {
     const html = renderChanges({ a: "gpui-unofficial:1.16.3", b: "gpui-unofficial:1.17.2" });
     expect(html).toContain('id="view-changes"');
     expect(html).toContain("Changelog.");
@@ -41,7 +41,7 @@ describe("Changes view renders the recorded stories (server render)", () => {
     expect(html).not.toContain("Snapshot comparison.");
   });
 
-  test("cross-fork story: ce 0.2.2 vs uno 1.18.1 renders the snapshot glyph, never a changelog (RULE-1)", () => {
+  test("cross-fork story: ce 0.2.2 vs uno 1.18.1 renders the snapshot word, never a changelog (RULE-1)", () => {
     const html = renderChanges({ a: "gpui-ce:0.2.2", b: "gpui-unofficial:1.18.1" });
     expect(html).toContain("Snapshot comparison.");
     expect(html).not.toContain("Changelog.");
@@ -56,7 +56,7 @@ describe("Changes view renders the recorded stories (server render)", () => {
     expect(html).toContain('id="changes-caption"');
   });
 
-  test("the pair steppers walk one stream's own history, and sit out elsewhere", () => {
+  test("the pair steppers walk one stream's own history, and only where there is one", () => {
     // gpui 0.2.1 → 0.2.2 is the default pair, mid-line: it can step back, but
     // it is the tip of that line, so there is nothing later to shift to.
     const mid = renderChanges({ a: "gpui:0.2.1", b: "gpui:0.2.2" });
@@ -68,12 +68,11 @@ describe("Changes view renders the recorded stories (server render)", () => {
     const first = renderChanges({ a: "gpui:0.1.0", b: "gpui:0.2.0" });
     expect(first).toMatch(/id="changes-step-prev"[^>]*disabled/);
     expect(first).not.toMatch(/id="changes-step-next"[^>]*disabled/);
-    // A cross-fork pair has no shared lineage to walk: neither direction is
-    // offered, and both say why.
+    // A cross-fork pair has no shared lineage to walk: no steppers at all,
+    // rather than a dead control row.
     const cross = renderChanges({ a: "gpui-ce:0.2.2", b: "gpui-unofficial:1.18.1" });
-    expect(cross).toMatch(/id="changes-step-prev"[^>]*disabled/);
-    expect(cross).toMatch(/id="changes-step-next"[^>]*disabled/);
-    expect(cross).toContain("steps one fork");
+    expect(cross).not.toContain('id="changes-step-prev"');
+    expect(cross).not.toContain('id="changes-step-next"');
   });
 
   test("a deep link without an unnamed-side fallback renders the linked caption", () => {
@@ -102,11 +101,25 @@ describe("Changes view renders the recorded stories (server render)", () => {
     // The three counts are pressable section switches, all shown by default.
     expect(html).toContain('class="count-chip count-removed"');
     expect(html).toContain('aria-pressed="true"');
-    // No banner box: the delta's nature is a glyph on the facts line, with the
-    // pair's counts and api hashes on that same line.
+    // No banner box: the delta's nature is the one word that names it on the
+    // facts line, with the pair's counts and api hashes on that same line.
     expect(html).not.toContain("diff-kind-note");
-    expect(html).toContain("diff-kind-glyph");
+    expect(html).toContain("diff-nature");
     expect(html).toContain("records (api ");
+  });
+
+  test("one package picker while both sides diff one fork, two when they do not", () => {
+    // The common case: one package, two A/B badge anchors, one fork control.
+    const one = renderChanges({ a: "gpui-unofficial:1.16.3", b: "gpui-unofficial:1.17.2" });
+    expect(one).toContain(">package<");
+    expect(one).toMatch(/id="changes-b-provider"[^>]*hidden/);
+    expect(one).toContain('class="diff-marker mono"');
+    expect(one).not.toContain('class="pair-side mono"');
+    expect(one).toContain("≠ fork");
+    // A cross-fork pair keeps both fork pickers (and says how to fold back).
+    const two = renderChanges({ a: "gpui-ce:0.2.2", b: "gpui-unofficial:1.18.1" });
+    expect(two).not.toMatch(/id="changes-b-provider"[^>]*hidden/);
+    expect(two).toContain("= fork");
   });
 
   test("the yanked/pre-release flags ride the release pickers", () => {

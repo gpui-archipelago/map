@@ -64,14 +64,14 @@ function backTarget(a: Side, b: Side): string {
 
 function DiffNature({ a, b, crossFork }: { a: Side; b: Side; crossFork: boolean }) {
   // Whether the pair is one fork or two is the whole claim (RULE-1: cross-fork
-  // deltas are snapshot comparisons, never changelogs), so it is a glyph with
-  // the claim in its accessible name and tooltip rather than a banner sentence.
+  // deltas are snapshot comparisons, never changelogs), stated as the one word
+  // that names it — the full sentence rides the accessible name and tooltip.
   const note = crossFork
     ? `Snapshot comparison. Two different forks — ${a.provider.id} and ${b.provider.id} — with no shared lineage, so each row just compares the two releases item by item. For a fork's own history, see the Journal.`
     : `Changelog. Two releases of ${a.provider.id}, so this is that fork's own history — the same adjacency the Journal renders.`;
   return (
-    <span className="diff-kind-glyph mono" role="img" aria-label={note} title={note}>
-      {crossFork ? "⇌" : "≡"}
+    <span className="diff-nature mono" role="img" aria-label={note} title={note}>
+      {crossFork ? "snapshot" : "changelog"}
     </span>
   );
 }
@@ -435,6 +435,9 @@ export function ChangesView({
   // (static site behavior) and resets when the view remounts.
   const [search, setSearch] = useState("");
   const [kind, setKind] = useState("");
+  // The fork pickers are one package until asked otherwise: revealing the
+  // second one is how a snapshot comparison (two forks) is built by hand.
+  const [splitFork, setSplitFork] = useState(false);
 
   const go = (next: Record<string, string>) => {
     const hash = routeHash("changes", next);
@@ -446,6 +449,10 @@ export function ChangesView({
   const aRow = rowFor(a.provider, a.vers);
   const bRow = rowFor(b.provider, b.vers);
   const sameRelease = a.provider === b.provider && a.vers === b.vers;
+  const sameFork = a.provider === b.provider;
+  // Cross-fork pairs (deep links, or the fork control below) always show both
+  // fork pickers; same-fork pairs show the one package picker until split.
+  const pickForks = splitFork || !sameFork;
   const back = backTarget(a, b);
   const loaded = useDiffPair(
     manifest,
@@ -486,10 +493,24 @@ export function ChangesView({
   const swap = () =>
     go({ a: changesPairValue(b.provider.id, b.vers), b: changesPairValue(a.provider.id, a.vers) });
 
+  // ≠ fork reveals the second fork picker (the snapshot comparison is a
+  // deliberate act); = fork folds a cross-fork pair back to one stream — B
+  // takes A's fork at that stream's default pair, so the result stays diffable.
+  const onForkScope = () => {
+    if (sameFork) setSplitFork((v) => !v);
+    else onBProv(a.provider.id);
+  };
+  const forkScopeTitle = !sameFork
+    ? `compare one fork again — B returns to ${a.provider.id}'s default pair`
+    : splitFork
+      ? "hide the second fork picker"
+      : "compare a different fork — a snapshot difference, never a changelog";
+
   // Walking the stream's own history: both sides step together, one branch
-  // step at a time. A cross-fork pair has no shared lineage to walk, so the
-  // steppers sit out (and say so); so does a pair at either end of the stream.
-  const walkable = a.provider === b.provider ? a.provider : null;
+  // step at a time. A cross-fork pair has no shared lineage to walk, so it gets
+  // no steppers at all; a pair at either end of a stream shows that direction
+  // disabled.
+  const walkable = sameFork ? a.provider : null;
   const steps = walkable
     ? { prev: stepPair(walkable, { a: a.vers, b: b.vers }, -1), next: stepPair(walkable, { a: a.vers, b: b.vers }, 1) }
     : { prev: null, next: null };
@@ -499,10 +520,9 @@ export function ChangesView({
   };
   const stepTitle = (dir: -1 | 1, target: { a: string; b: string } | null) => {
     const way = dir === -1 ? "earlier" : "later";
-    if (!walkable) return "steps one fork's own history — this pair spans two forks";
     return target
       ? `both sides ${way}: ${target.a} → ${target.b}`
-      : `no ${way} release pair in ${walkable.id}`;
+      : `no ${way} release pair in ${a.provider.id}`;
   };
 
   // The pair rows' diff body: loading/error states print the data layer's own
@@ -577,12 +597,27 @@ export function ChangesView({
         </div>
 
         <div className="controls panel picker" id="changes-controls">
+          {/* One package while both sides diff one fork; looking at two forks
+              is a deliberate step (the row's fork control) or arrives as a
+              deep link — never two identical pickers side by side. */}
           <div className="pair">
-            <span className="pair-side mono" aria-hidden="true">
-              A
-            </span>
+            {sameFork ? (
+              <span className="ctl-label mono" aria-hidden="true">
+                package
+              </span>
+            ) : (
+              <span className="diff-marker mono" aria-hidden="true">
+                A
+              </span>
+            )}
             <label className="ctl">
-              <select id="changes-a-provider" aria-label="A · fork" value={a.provider.id} onChange={(e) => onAProv(e.target.value)}>
+              <select
+                id="changes-a-provider"
+                aria-label={sameFork ? "package — both sides diff this fork" : "A · fork"}
+                title={sameFork ? "both sides diff this fork" : "A's fork"}
+                value={a.provider.id}
+                onChange={(e) => onAProv(e.target.value)}
+              >
                 {manifest.providers.map((p) => (
                   <option key={p.id} value={p.id}>
                     {`${p.id}${p.package === p.id ? "" : ` (${p.package})`}`}
@@ -590,8 +625,32 @@ export function ChangesView({
                 ))}
               </select>
             </label>
+            <span className="diff-marker mono" aria-hidden="true" hidden={sameFork}>
+              B
+            </span>
             <label className="ctl">
-              <select id="changes-a" aria-label="A · release" value={a.vers} onChange={(e) => onAVers(e.target.value)}>
+              <select
+                id="changes-b-provider"
+                aria-label="B · fork"
+                title="B's fork"
+                hidden={sameFork}
+                value={b.provider.id}
+                onChange={(e) => onBProv(e.target.value)}
+              >
+                {manifest.providers.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {`${p.id}${p.package === p.id ? "" : ` (${p.package})`}`}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+          <div className="pair">
+            <span className="diff-marker mono" aria-hidden="true">
+              A
+            </span>
+            <label className="ctl">
+              <select id="changes-a" aria-label="A · release" title={optionLabel(aRow ?? a.provider.versions[0])} value={a.vers} onChange={(e) => onAVers(e.target.value)}>
                 {a.provider.versions.map((v) => (
                   <option key={v.vers} value={v.vers}>
                     {optionLabel(v)}
@@ -604,20 +663,11 @@ export function ChangesView({
             ⇄ swap
           </button>
           <div className="pair">
-            <span className="pair-side mono" aria-hidden="true">
+            <span className="diff-marker mono" aria-hidden="true">
               B
             </span>
             <label className="ctl">
-              <select id="changes-b-provider" aria-label="B · fork" value={b.provider.id} onChange={(e) => onBProv(e.target.value)}>
-                {manifest.providers.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {`${p.id}${p.package === p.id ? "" : ` (${p.package})`}`}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="ctl">
-              <select id="changes-b" aria-label="B · release" value={b.vers} onChange={(e) => onBVers(e.target.value)}>
+              <select id="changes-b" aria-label="B · release" title={optionLabel(bRow ?? b.provider.versions[0])} value={b.vers} onChange={(e) => onBVers(e.target.value)}>
                 {b.provider.versions.map((v) => (
                   <option key={v.vers} value={v.vers}>
                     {optionLabel(v)}
@@ -626,30 +676,44 @@ export function ChangesView({
               </select>
             </label>
           </div>
-          {/* One step of the stream's stable backbone, both sides at once. Not
-              offered across forks (no shared lineage to walk) or at an end. */}
-          <span className="pair-steps">
-            <button
-              id="changes-step-prev"
-              type="button"
-              className="swap-btn mono"
-              disabled={!steps.prev}
-              title={stepTitle(-1, steps.prev)}
-              onClick={() => goStep(steps.prev)}
-            >
-              ‹ prev
-            </button>
-            <button
-              id="changes-step-next"
-              type="button"
-              className="swap-btn mono"
-              disabled={!steps.next}
-              title={stepTitle(1, steps.next)}
-              onClick={() => goStep(steps.next)}
-            >
-              next ›
-            </button>
-          </span>
+          <button
+            id="changes-fork-scope"
+            type="button"
+            className="fork-scope mono"
+            aria-pressed={pickForks && sameFork}
+            title={forkScopeTitle}
+            onClick={onForkScope}
+          >
+            {sameFork ? "≠ fork" : "= fork"}
+          </button>
+          {/* One step of the stream's stable backbone, both sides at once.
+              Only where there is one: a cross-fork pair has no shared lineage
+              to walk, so the steppers are absent rather than dead, and a pair
+              at either end of a stream shows that direction disabled. */}
+          {walkable && (
+            <span className="pair-steps">
+              <button
+                id="changes-step-prev"
+                type="button"
+                className="swap-btn mono"
+                disabled={!steps.prev}
+                title={stepTitle(-1, steps.prev)}
+                onClick={() => goStep(steps.prev)}
+              >
+                ‹ prev
+              </button>
+              <button
+                id="changes-step-next"
+                type="button"
+                className="swap-btn mono"
+                disabled={!steps.next}
+                title={stepTitle(1, steps.next)}
+                onClick={() => goStep(steps.next)}
+              >
+                next ›
+              </button>
+            </span>
+          )}
         </div>
 
         <div id="changes-hint">
