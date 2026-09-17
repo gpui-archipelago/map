@@ -1279,41 +1279,60 @@
     min-width: 0;
   }
 
-  /* ---------- empty mode: the guide card ----------
-   * Nothing selected renders the page's own statement of what it answers, and
-   * the measured record behind it (the four studies + the honesty
-   * disclosure), in one card — not a documentation index in place of a tool. */
+  /* ---------- the reference rows: the studies + the honesty disclosure ----------
+   * Both are disclosures at the foot of the view — the empty card's method and
+   * the symbol mode's footnote — so the tool (the box, the deck, the matrix)
+   * never has to compete with them for the page. */
 
-  .align-empty {
-    padding: 22px 24px 10px;
+  .align-fold {
+    margin: 0;
+    border-top: 1px solid #ece2d2;
+    padding-top: 10px;
   }
-  .align-empty-title {
-    margin: 0 0 8px;
-    font-size: 1.1rem;
+  .align-fold > summary {
+    cursor: pointer;
+    width: fit-content;
+    font-size: 1.02rem;
     font-weight: 600;
     color: var(--content-muted);
   }
-  .align-empty-lead {
-    margin: 0 0 18px;
-    max-width: 78ch;
-    color: var(--content);
+  .align-fold > summary:hover {
+    color: var(--color-ocean);
   }
-  .align-empty-rule {
-    border: 0;
-    border-top: 1px solid #ece2d2;
-    margin: 0 0 14px;
-  }
-  .align-empty-sub {
-    margin: 0 0 8px;
+  /* The studies row names a section, not a subject: a quiet mono label. */
+  #alignment-studies > summary {
     font-family: var(--font-mono);
     font-size: 0.72rem;
     font-weight: 400;
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    color: var(--content-muted);
+  }
+  /* With a symbol open the rows are the view's footnote. */
+  .view.has-item .align-fold {
+    margin-top: 22px;
+  }
+
+  /* ---------- empty mode: the guide card ----------
+   * A stack of three rows — the view's subject (folded), its method, its
+   * honesty disclosure — while the box above and its examples carry the page. */
+
+  .align-empty {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 14px 22px 12px;
+  }
+  .align-empty > .align-fold:first-child {
+    border-top: 0;
+    padding-top: 0;
   }
   .align-empty .about-note {
-    margin: 18px 0 4px;
+    margin: 0;
+  }
+  .align-empty-lead {
+    margin: 10px 0 0;
+    max-width: 78ch;
+    color: var(--content);
   }
 
   @media (max-width: 560px) {

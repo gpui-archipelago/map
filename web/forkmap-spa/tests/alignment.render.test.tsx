@@ -393,7 +393,12 @@ describe("Alignment view renders the recorded stories (server render)", () => {
     // Empty mode: the guide card states what the page answers and carries the
     // methodology rows — the matrix only ever renders for a measured symbol.
     expect(html).toContain('id="alignment-empty-state"');
-    expect(html).toContain("Cross-Fork API Longevity &amp; Digest Parity");
+    // The card is a stack of folded rows: the view's subject, its method (the
+    // studies, sitting with the honesty disclosure), each closed by default.
+    expect(html).toContain('<details class="align-fold">');
+    expect(html).toContain("<summary>Cross-Fork API Longevity &amp; Digest Parity</summary>");
+    expect(html).toContain("<summary>Methodology &amp; studies</summary>");
+    expect(html).not.toContain('class="align-fold" open');
     expect(html).toContain(
       `Search a symbol above to compare presence, signature drift and hash parity across all ${counts.providers} forks.`,
     );
@@ -452,11 +457,23 @@ describe("Alignment view renders the recorded stories (server render)", () => {
     expect(fromLanding).not.toContain('class="back-chip mono"');
   });
 
-  test("the docs panel names where each class of change is documented", () => {
-    const html = renderAlignment({ item: "fn:Window::blur" });
-    expect(html).toContain("<h2>Methodology &amp; studies</h2>");
-    expect(html).toContain("doc 08 — study: is the used-API report meaningful on real GPUI code?");
-    expect(html).toContain("doc 13 — field note: two kits, one measured generation");
+  test("the studies rows sit folded with the honesty disclosure, in both modes", () => {
+    const cases: Record<string, string>[] = [{}, { item: "fn:Window::blur" }];
+    for (const params of cases) {
+      const html = renderAlignment(params);
+      // the studies row is its own disclosure, immediately before the About
+      // note (the pair of reference rows the view ends on)
+      expect(html).toContain('<details class="align-fold" id="alignment-studies">');
+      expect(html).toContain("<summary>Methodology &amp; studies</summary>");
+      const studies = html.indexOf('id="alignment-studies"');
+      const about = html.indexOf('id="alignment-about"');
+      expect(studies).toBeGreaterThan(0);
+      expect(about).toBeGreaterThan(studies);
+      // the rows themselves (08/09/12/13) are inside the fold
+      expect(html).toContain('id="alignment-docs-body"');
+      expect(html).toContain("doc 08 — study: is the used-API report meaningful on real GPUI code?");
+      expect(html).toContain("doc 13 — field note: two kits, one measured generation");
+    }
   });
 
   test("honest-rule ids and every static-renderer-bound alignment-* id exist in the rendered view", () => {

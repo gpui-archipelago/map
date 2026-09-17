@@ -1444,6 +1444,15 @@ export function AlignmentView({
       <AboutNote />
     </div>
   );
+  // The measured record behind the page — the four study docs — as its own
+  // folded row, sitting with the honesty disclosure in both modes (reference
+  // material at the foot of the view; the tool owns the page).
+  const studiesBlock = (
+    <details className="align-fold" id="alignment-studies">
+      <summary>Methodology &amp; studies</summary>
+      {docsBody}
+    </details>
+  );
 
   return (
     <section id="view-alignment" className={`view${selectedKey ? " has-item" : ""}`}>
@@ -1592,23 +1601,21 @@ export function AlignmentView({
 
         {selectedKey ? (
           <>
-            <div className="panel">
-              <h2>Methodology &amp; studies</h2>
-              {docsBody}
-            </div>
+            {studiesBlock}
             {aboutBlock}
           </>
         ) : (
-          /* Empty mode: the guide. What the page answers, then the measured
-             record behind it — no matrix, nothing invented. */
+          // Empty mode: the guide. The card is the view's subject — folded, so
+          // the box and the examples carry the page — and the two reference
+          // rows (the studies, the honesty disclosure) sit under it.
           <div className="panel align-empty" id="alignment-empty-state">
-            <h2 className="align-empty-title">Cross-Fork API Longevity &amp; Digest Parity</h2>
-            <p className="align-empty-lead" id="alignment-hint">
-              {`${EMPTY_LEAD} ${manifest.counts.providers} forks.`}
-            </p>
-            <hr className="align-empty-rule" />
-            <h3 className="align-empty-sub">Methodology &amp; studies</h3>
-            {docsBody}
+            <details className="align-fold">
+              <summary>Cross-Fork API Longevity &amp; Digest Parity</summary>
+              <p className="align-empty-lead" id="alignment-hint">
+                {`${EMPTY_LEAD} ${manifest.counts.providers} forks.`}
+              </p>
+            </details>
+            {studiesBlock}
             {aboutBlock}
           </div>
         )}
