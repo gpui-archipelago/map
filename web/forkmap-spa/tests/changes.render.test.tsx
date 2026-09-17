@@ -15,7 +15,7 @@
 import { describe, expect, test } from "bun:test";
 import { renderToString } from "react-dom/server";
 import { createElement } from "react";
-import { ChangesView } from "../src/views/ChangesView";
+import { ChangesView, forkScopeAction } from "../src/views/ChangesView";
 import { readyPair, readyPairFor } from "./fixtures/corpus-fixtures";
 import { loadCorpusData, loadManifest } from "./fixtures/corpus-fixtures";
 import { STATIC_RENDERER_IDS } from "./fixtures/static-renderer-ids";
@@ -28,6 +28,41 @@ function renderChanges(params: Record<string, string>, forks = false): string {
     createElement(ChangesView, { manifest, data, params, pair: readyPairFor(manifest, params), forks }),
   );
 }
+
+describe("the fork control's state machine (forkScopeAction)", () => {
+  // The click path a server render cannot walk. The reported bug lived here:
+  // folding a two-fork pair left the split flag set, so the control stayed
+  // pressed (and B's picker on screen) over a single-fork row.
+  test("adding and putting away B's picker only happens on a one-fork pair", () => {
+    expect(forkScopeAction(true, false)).toEqual({ split: true, fold: false });
+    expect(forkScopeAction(true, true)).toEqual({ split: false, fold: false });
+  });
+
+  test("folding a two-fork pair takes the split state with it", () => {
+    // Split first (the user added B's picker), then picked a second fork: the
+    // fold must clear the split flag, not leave the control pressed.
+    expect(forkScopeAction(false, true)).toEqual({ split: false, fold: true });
+    // Same when the two-fork pair arrived whole (a deep link, never split).
+    expect(forkScopeAction(false, false)).toEqual({ split: false, fold: true });
+  });
+
+  test("no path leaves the control pressed over a single-fork row", () => {
+    // The reported flow, driven through the decision the button makes: add the
+    // picker, pick another fork, press again.
+    let split = false;
+    let shared = true;
+    const click = () => {
+      const next = forkScopeAction(shared, split);
+      split = next.split;
+      if (next.fold) shared = true; // the fold re-pairs both sides on one fork
+      return next;
+    };
+    expect(click()).toEqual({ split: true, fold: false });
+    shared = false; // a second fork was picked in B's picker
+    expect(click()).toEqual({ split: false, fold: true });
+    expect(split, "pressed over a single-fork row").toBe(false);
+  });
+});
 
 describe("Changes view renders the recorded stories (server render)", () => {
   test("recorded story: uno 1.16.3 → 1.17.2 renders the changelog word + removed frame rows", () => {

@@ -461,6 +461,22 @@ function DiffReady({
   );
 }
 
+/**
+ * The fork control's next state, and whether it folds the pair.
+ *
+ * A split one-fork pair toggles the second picker; a two-fork pair folds back
+ * to one — and the fold takes the split state with it, so the control is never
+ * left pressed over a single-fork row (it read as "active" with B's picker
+ * still on screen after folding, T-38 regression).
+ *
+ * Exported because the click itself is unreachable from a server render: this
+ * is the decision it makes, and it is asserted directly.
+ */
+export function forkScopeAction(sharedFork: boolean, split: boolean): { split: boolean; fold: boolean } {
+  if (sharedFork) return { split: !split, fold: false };
+  return { split: false, fold: true };
+}
+
 /** The data the view renders with, threaded through the component tree. */
 export function ChangesView({
   manifest,
@@ -560,8 +576,9 @@ export function ChangesView({
   // two-fork pair it folds them back to one — B takes A's fork at that
   // stream's default pair, so the result stays diffable.
   const onForkScope = () => {
-    if (sameFork) setSplitFork((v) => !v);
-    else onBProv(a.provider.id);
+    const next = forkScopeAction(sameFork, splitFork);
+    setSplitFork(next.split);
+    if (next.fold) onBProv(a.provider.id);
   };
   const forkScopeLabel = !sameFork
     ? "compare one fork again"
