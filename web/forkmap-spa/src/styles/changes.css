@@ -21,8 +21,10 @@
     max-width: 100%;
   }
 
-  /* ---------- T-38 delta filter bar ---------- */
+  /* ---------- T-38 delta filter bar (inside the diff block) ---------- */
 
+  /* Opens between the summary row and the rows it filters, so the reading
+     flow never has controls arriving above the pair facts. */
   .diff-filter {
     display: flex;
     align-items: center;
@@ -31,7 +33,7 @@
     background: var(--color-sand-100);
     border-color: rgba(55, 143, 189, 0.32);
     padding: 10px 16px;
-    margin: 14px 0 2px;
+    margin: 0 0 6px;
   }
   .diff-filter[hidden] {
     display: none;
@@ -46,6 +48,8 @@
   .diff-filter input[type="search"] {
     flex: 1 1 220px;
     min-width: 180px;
+    /* Inline in the diff block the drawer is a bar, not a full-width field. */
+    max-width: 520px;
     font: inherit;
     font-size: 0.88rem;
     padding: 5px 11px;

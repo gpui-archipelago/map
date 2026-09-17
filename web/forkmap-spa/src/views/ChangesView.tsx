@@ -207,44 +207,6 @@ function ListableDiff({
   const kindOptions = [...kinds].sort((x, y) => kindRank(x) - kindRank(y));
   return (
     <>
-      {/* In the DOM whether or not it is open — the summary row's toggle just
-          unhides it (an id the static renderer bound must never vanish). */}
-      <div className="panel diff-filter" id="changes-filter" hidden={!isFilterOpen}>
-        <input
-          id="changes-filter-search"
-          type="search"
-          placeholder="e.g. measure_all"
-          autoComplete="off"
-          spellCheck={false}
-          aria-label="filter delta rows by text"
-          value={search}
-          onChange={(e) => onSearch(e.target.value)}
-        />
-        <select id="changes-filter-kind" aria-label="filter delta rows by kind" value={effKind} onChange={(e) => onKind(e.target.value)}>
-          <option value="">all kinds</option>
-          {kindOptions.map((k) => (
-            <option key={k} value={k}>
-              {k}
-            </option>
-          ))}
-        </select>
-        <button
-          id="changes-filter-clear"
-          type="button"
-          className="mono"
-          hidden={!active}
-          onClick={() => {
-            onSearch("");
-            onKind("");
-          }}
-        >
-          clear filter
-        </button>
-        <span className="ff-note mono" id="changes-filter-note">
-          {noteText}
-        </span>
-      </div>
-
       <div className="panel diff-stage" id="changes-diff">
         <DiffMeta data={data} a={a} b={b} />
         <div className="diff-stage-body">
@@ -266,6 +228,45 @@ function ListableDiff({
               🔍 filter
             </button>
           </p>
+          {/* The drawer opens under the row that toggles it, so the controls
+              arrive between the counts and the rows they filter instead of
+              above the pair facts — and it stays in the DOM either way (an id
+              the static renderer bound must never vanish). */}
+          <div className="panel diff-filter" id="changes-filter" hidden={!isFilterOpen}>
+            <input
+              id="changes-filter-search"
+              type="search"
+              placeholder="e.g. measure_all"
+              autoComplete="off"
+              spellCheck={false}
+              aria-label="filter delta rows by text"
+              value={search}
+              onChange={(e) => onSearch(e.target.value)}
+            />
+            <select id="changes-filter-kind" aria-label="filter delta rows by kind" value={effKind} onChange={(e) => onKind(e.target.value)}>
+              <option value="">all kinds</option>
+              {kindOptions.map((k) => (
+                <option key={k} value={k}>
+                  {k}
+                </option>
+              ))}
+            </select>
+            <button
+              id="changes-filter-clear"
+              type="button"
+              className="mono"
+              hidden={!active}
+              onClick={() => {
+                onSearch("");
+                onKind("");
+              }}
+            >
+              clear filter
+            </button>
+            <span className="ff-note mono" id="changes-filter-note">
+              {noteText}
+            </span>
+          </div>
           {vis === 0 ? (
             <p className="empty-hint">
               {active
