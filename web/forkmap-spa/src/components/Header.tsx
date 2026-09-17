@@ -13,17 +13,18 @@ const NAV: { view: ViewName; href: string; label: string }[] = [
   { view: "journal", href: "#/journal", label: "Journal" },
 ];
 
+/** This SPA is the fork-map viewer; the main site is its sibling at the origin
+ *  root (this app is served from /map/). Absolute rather than ../ so it still
+ *  resolves when the map is served from a different path in dev. */
+const BACK_HREF = "https://gpui-archipelago.github.io/";
+
 export function Header({ manifest, counts, view }: { manifest: ForkmapManifest; counts: BundleCounts; view: ViewName }) {
   return (
     <header className="site-header">
       <div className="wrap">
         <div className="brand">
           <a className="brand-lockup" href="#/">
-            <span className="brand-tile" aria-hidden="true">
-              <span className="tile-isle i1" />
-              <span className="tile-isle i2" />
-              <span className="tile-isle i3" />
-            </span>
+            <img className="brand-tile" src="./logo-mark.webp" alt="" width={38} height={38} />
             <span className="brand-text">
               <span className="brand-line">
                 <span className="brand-mark">gpui-archipelago</span>
@@ -83,6 +84,11 @@ export function Header({ manifest, counts, view }: { manifest: ForkmapManifest; 
               {n.label}
             </a>
           ))}
+          {/* The way back to the main site. Sits last, mirroring the site's own
+              nav, whose one outbound link (GitHub) also comes last. */}
+          <a className="nav-back" href={BACK_HREF}>
+            gpui-archipelago <span aria-hidden="true">↗</span>
+          </a>
           </nav>
         </div>
       </header>

@@ -1,0 +1,145 @@
+/* ---------------------------------------------------------------------------
+ * Canonical design tokens — VENDORED from gpui-archipelago-site.
+ *
+ * Source of truth: gpui-archipelago-site `src/styles/tokens.css`. Everything
+ * below the banner is a verbatim copy of that file's token definitions; only
+ * the banner differs. Refresh from the canonical file when it changes — never
+ * edit the values here.
+ *
+ * Three layers: primitives (@theme — the raw palette) -> semantic roles
+ * (:root — roles, not colors; the swap point for brand or dark-mode changes)
+ * -> components (@layer, in styles.css and styles/*.css). @theme inline
+ * exposes the roles as utilities while keeping generated CSS referencing the
+ * role variables, so overriding a role in :root propagates everywhere.
+ * ------------------------------------------------------------------------- */
+
+/* ---- Layer 1: primitives, measured from the mark ---- */
+@theme {
+    --color-ink: #174d68; /* body text, headings — passes AA on paper alone */
+    --color-ink-deep: #10364b; /* deepest ink: body on warm paper (fork-map SPA) */
+    --color-coral: #ef4e28; /* the one accent: links, active states */
+    --color-coral-bright: #fd6f43; /* hover on coral elements only */
+    --color-rust: #cb3b1b; /* text on tinted fills (badges, chips, row hover) */
+    --color-ocean: #378fbd; /* focus rings, accent borders, water motif */
+    --color-ocean-deep: #1e6b98; /* deep water step (fork-map SPA) */
+    --color-island: #7dab59; /* reserved for the "solved" state */
+    --color-island-deep: #527c2f; /* deep island step (fork-map SPA) */
+    --color-sand-50: #fffdfa; /* warmest surface step (fork-map SPA) */
+    --color-sand-100: #fff8ed; /* raised warm fills (fork-map SPA) */
+    --color-sand: #fae0b7; /* warm neutral: code blocks, table headers */
+    --color-paper: #ffffff;
+    --color-paper-warm: #f7f1e5; /* warm page surface (fork-map SPA) */
+    --color-amber: #a86214; /* "needs a maintainer" state */
+    --color-gray-600: #5b6368; /* muted content */
+    --color-gray-200: #dde1e3; /* hairline borders, table rules */
+
+    /* Tints — fills derived from the palette (never for text) */
+    --color-coral-tint: rgba(239, 78, 40, 0.12);
+    --color-sand-tint: rgba(250, 224, 183, 0.4);
+    --color-sand-tint-strong: rgba(250, 224, 183, 0.5);
+    --color-amber-tint: rgba(168, 98, 20, 0.12);
+    --color-ocean-hairline: rgba(55, 143, 189, 0.35);
+
+    /* Type (design system §2) — stacks are the union of both apps' fallbacks:
+       the identity face first, then the system faces either project listed. */
+    --font-sans: "Source Sans 3", -apple-system, "Segoe UI", "Avenir Next", system-ui, Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+
+    /* Major-third scale (1.25), base 16px. Role names, not element names. */
+    --text-display: 40px; /* page title only */
+    --text-h1: 32px; /* section headers */
+    --text-h2: 25px; /* subsection headers */
+    --text-h3: 20px; /* minor headers */
+    --text-body: 16px;
+    --text-small: 13px;
+    --text-code: 15px;
+
+    --leading-body: 1.6;
+    --leading-code: 1.5;
+
+    /* Spacing (design system §5) */
+    --spacing-xs: 8px;
+    --spacing-sm: 12px;
+    --spacing-md: 20px;
+    --spacing-lg: 32px;
+    --spacing-xl: 48px;
+    --spacing-2xl: 64px;
+
+    /* Layout */
+    --container-prose: 72ch; /* prose line-length cap */
+    --radius-sm: 4px;
+    --radius-md: 6px;
+
+    /* Status palette — the fork-map SPA's measured mismatch states. This site
+       has no status vocabulary of its own; they live here so the map draws its
+       states from this one palette. */
+    --color-present: #527c2f; /* same value as island-deep */
+    --color-added: #1d7a52; /* emerald text green (AA on paper + white), distinct from present */
+    --color-changed: #8a5200; /* darker than amber: a changed state */
+    --color-removed: #cb3b1b; /* same value as rust */
+    --color-absent: #d5c9b4; /* warm grey: not measured */
+}
+
+/* ---- Layer 2: semantic roles ---- */
+:root {
+    /* Surfaces */
+    --surface: var(--color-paper);
+    --surface-warm: var(
+        --color-sand-tint
+    ); /* raised warm fills: table headers, inline code, pills */
+    --surface-warm-strong: var(--color-sand-tint-strong); /* Manifest band */
+
+    /* Content */
+    --content: var(--color-ink);
+    --content-muted: var(--color-gray-600);
+
+    /* Action */
+    --action: var(--color-coral);
+    --action-hover: var(--color-coral-bright);
+    --action-tint: var(--color-coral-tint); /* fills behind on-action text */
+    --on-action: var(--color-rust);
+
+    /* Warning */
+    --warning: var(--color-amber);
+    --warning-tint: var(--color-amber-tint);
+
+    /* Focus & borders */
+    --focus: var(--color-ocean);
+    --border-accent: var(--color-ocean); /* water-motif accents */
+    --border-subtle: var(--color-gray-200); /* tables, cards */
+    --border-divider: var(--color-ocean-hairline); /* section separators */
+
+    /* Reserved */
+    --solved: var(--color-island);
+}
+
+/* Expose the semantic roles as utilities, referencing the role variables so
+   overriding a role in :root propagates into every utility that uses it. */
+@theme inline {
+    --color-surface: var(--surface);
+    --color-surface-warm: var(--surface-warm);
+    --color-surface-warm-strong: var(--surface-warm-strong);
+
+    --color-content: var(--content);
+    --color-content-muted: var(--content-muted);
+
+    --color-action: var(--action);
+    --color-action-hover: var(--action-hover);
+    --color-action-tint: var(--action-tint);
+    --color-on-action: var(--on-action);
+
+    --color-warning: var(--warning);
+    --color-warning-tint: var(--warning-tint);
+
+    --color-focus: var(--focus);
+    --color-border-accent: var(--border-accent);
+    --color-border-subtle: var(--border-subtle);
+    --color-border-divider: var(--border-divider);
+
+    --color-solved: var(--solved);
+}
+
+/* Custom properties that don't need utilities. */
+:root {
+    --page-margin: 24px; /* page margin on mobile / content-column inset */
+}

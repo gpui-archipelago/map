@@ -16,12 +16,12 @@
     font-size: 0.76rem;
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    color: var(--color-muted);
+    color: var(--content-muted);
   }
   .view-head h1 {
     margin: 0 0 6px;
     font-size: 1.7rem;
-    color: var(--color-ink);
+    color: var(--content);
     display: flex;
     align-items: baseline;
     gap: 12px;
@@ -30,7 +30,7 @@
   .view-tag {
     font-size: 0.72rem;
     font-weight: 500;
-    color: var(--color-muted);
+    color: var(--content-muted);
   }
   .lede {
     margin: 0 0 12px;
@@ -45,19 +45,19 @@
     font-size: 0.76rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: var(--color-coral);
+    color: var(--action);
   }
   .hero h1 {
     margin: 0 0 8px;
     font-size: 2.2rem;
     line-height: 1.15;
-    color: var(--color-ink);
+    color: var(--content);
   }
   .hero-quote {
     margin: 0 0 14px;
     padding: 0 0 0 18px;
-    border-left: 3px solid var(--color-sand-200);
-    color: var(--color-muted);
+    border-left: 3px solid var(--color-sand);
+    color: var(--content-muted);
     font-style: italic;
     font-size: 1.02rem;
     max-width: 760px;
@@ -80,8 +80,8 @@
     display: flex;
     gap: 12px;
     background: #fff;
-    border: 1px solid var(--color-arch);
-    border-top: 3px solid var(--color-arch);
+    border: 1px solid var(--border-subtle);
+    border-top: 3px solid var(--border-subtle);
     border-radius: 12px;
     padding: 14px 16px;
     color: inherit;
@@ -94,20 +94,20 @@
     box-shadow: 0 3px 10px rgba(23, 77, 104, 0.1);
   }
   .card-cta.c-coral {
-    border-top-color: var(--color-coral);
+    border-top-color: var(--action);
   }
   .card-cta.c-ocean {
-    border-top-color: var(--color-ocean);
+    border-top-color: var(--border-accent);
   }
   .card-cta.c-island {
     border-top-color: var(--color-island);
   }
   .card-cta.c-amber {
-    border-top-color: var(--color-amber);
+    border-top-color: var(--warning);
   }
   .card-num {
     font-size: 0.82rem;
-    color: var(--color-muted);
+    color: var(--content-muted);
     flex: none;
     line-height: 1.6;
   }
@@ -118,12 +118,12 @@
   }
   .card-title {
     font-weight: 700;
-    color: var(--color-ink);
+    color: var(--content);
     font-size: 1rem;
   }
   .card-sub {
     font-size: 0.84rem;
-    color: var(--color-muted);
+    color: var(--content-muted);
     line-height: 1.45;
   }
 
@@ -135,11 +135,11 @@
     gap: 6px 18px;
     align-items: baseline;
     background: var(--color-sand-100);
-    border-color: var(--color-sand-200);
+    border-color: var(--color-sand);
   }
   .data-strip-when {
     font-size: 0.78rem;
-    color: var(--color-ink);
+    color: var(--content);
   }
   .data-facts {
     display: flex;
@@ -148,10 +148,10 @@
     font-size: 0.82rem;
   }
   .data-facts-counts {
-    color: var(--color-ink);
+    color: var(--content);
   }
   .data-facts-claim {
-    color: var(--color-muted);
+    color: var(--content-muted);
     font-style: italic;
   }
 
@@ -185,8 +185,8 @@
     font-size: 0.72rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: var(--color-muted);
-    border-bottom: 1px solid var(--color-arch);
+    color: var(--content-muted);
+    border-bottom: 1px solid var(--border-subtle);
     padding: 6px 10px;
   }
   table.layers td {
@@ -209,15 +209,15 @@
   }
   .tag-registry {
     background: rgba(55, 143, 189, 0.12);
-    color: var(--color-ink);
+    color: var(--content);
   }
   .tag-measured {
     background: rgba(125, 171, 89, 0.18);
     color: var(--color-island-deep);
   }
   .tag-stub {
-    background: var(--color-sand-200);
-    color: var(--color-muted);
+    background: var(--color-sand);
+    color: var(--content-muted);
   }
 
   /* ---------- honest rules ---------- */
@@ -232,7 +232,7 @@
     line-height: 1.5;
   }
   .rules strong {
-    color: var(--color-ink);
+    color: var(--content);
   }
 
   .doc {
@@ -257,14 +257,14 @@
     gap: 8px;
     flex-wrap: wrap;
     background: var(--color-sand-50);
-    border: 1px solid var(--color-arch);
+    border: 1px solid var(--border-subtle);
     border-radius: 8px;
     padding: 6px 10px;
     font-size: 0.84rem;
   }
   .badge-name {
     font-weight: 700;
-    color: var(--color-ink);
+    color: var(--content);
   }
   .badge-vers {
     font-family: var(--font-mono);
@@ -272,13 +272,13 @@
     color: var(--color-island-deep);
   }
   .badge-evidence {
-    color: var(--color-muted);
+    color: var(--content-muted);
     font-size: 0.8rem;
   }
 
   .kit-probe {
     background: var(--color-sand-50);
-    border: 1px solid var(--color-arch);
+    border: 1px solid var(--border-subtle);
     border-left: 3px solid var(--color-island);
     border-radius: 8px;
     padding: 8px 12px;
@@ -290,7 +290,7 @@
   }
   .kit-probe-head {
     font-weight: 700;
-    color: var(--color-ink);
+    color: var(--content);
     font-family: var(--font-mono);
     font-size: 0.82rem;
   }
@@ -350,7 +350,7 @@
     flex-direction: column;
     gap: 5px;
     font-size: 0.82rem;
-    color: var(--color-muted);
+    color: var(--content-muted);
   }
   .ctl > span {
     font-family: var(--font-mono);
@@ -363,7 +363,7 @@
     font: inherit;
     font-size: 0.94rem;
     padding: 7px 11px;
-    border: 1px solid var(--color-arch);
+    border: 1px solid var(--border-subtle);
     border-radius: 8px;
     background: #fff;
     color: var(--color-ink-deep);
@@ -372,7 +372,7 @@
   .ctl select:focus,
   .ctl input:focus {
     outline: none;
-    border-color: var(--color-ocean);
+    border-color: var(--border-accent);
     box-shadow: 0 0 0 2px rgba(55, 143, 189, 0.18);
   }
   .ctl input[type="search"] {
@@ -381,15 +381,15 @@
   .controls button {
     font: inherit;
     font-size: 0.84rem;
-    border: 1px solid var(--color-arch);
+    border: 1px solid var(--border-subtle);
     background: #fff;
-    color: var(--color-ink);
+    color: var(--content);
     border-radius: 999px;
     padding: 6px 16px;
     cursor: pointer;
   }
   .controls button:hover {
-    border-color: var(--color-ocean);
+    border-color: var(--border-accent);
     color: var(--color-ocean);
   }
   .swap-btn {
@@ -426,7 +426,7 @@
   }
   .provider-name {
     font-weight: 700;
-    color: var(--color-ink);
+    color: var(--content);
   }
   .compile-badge {
     background: rgba(125, 171, 89, 0.16);
@@ -442,7 +442,7 @@
 
   .item-kind-head {
     margin: 12px 0 4px;
-    color: var(--color-muted);
+    color: var(--content-muted);
     font-size: 0.74rem;
     text-transform: uppercase;
     letter-spacing: 0.06em;
@@ -471,7 +471,7 @@
   }
   .item-row.removed-row {
     background: #fffaf7;
-    border-left: 3px solid var(--color-coral);
+    border-left: 3px solid var(--action);
   }
   .item-row.added-row {
     background: #fbfdf7;
@@ -479,7 +479,7 @@
   }
   .item-row.resigned-row {
     background: #fdfaf2;
-    border-left: 3px solid var(--color-amber);
+    border-left: 3px solid var(--warning);
   }
   .align-link {
     font-size: 0.78em;
@@ -511,7 +511,7 @@
     word-break: break-word;
   }
   .sig-change .sig-arrow {
-    color: var(--color-muted);
+    color: var(--content-muted);
   }
 
   /* T-47 decision 2b: a re-signed type row's measured pub-member delta —
@@ -535,7 +535,7 @@
     border-color: #e6cdcd;
   }
   .member-delta .member-added {
-    color: var(--color-added, #2a7);
+    color: var(--color-added);
     border-color: #cbe6d5;
   }
 
@@ -568,15 +568,15 @@
   .copy-btn {
     font: inherit;
     font-size: 0.82rem;
-    border: 1px solid var(--color-arch);
+    border: 1px solid var(--border-subtle);
     background: var(--color-sand-50);
-    color: var(--color-ink);
+    color: var(--content);
     border-radius: 999px;
     padding: 1px 14px;
     cursor: pointer;
   }
   .copy-btn:hover {
-    border-color: var(--color-ocean);
+    border-color: var(--border-accent);
     color: var(--color-ocean);
   }
   .copy-btn.copied {
@@ -606,7 +606,7 @@
     margin-top: 16px;
   }
   .empty-hint {
-    color: var(--color-muted);
+    color: var(--content-muted);
     font-style: italic;
   }
 

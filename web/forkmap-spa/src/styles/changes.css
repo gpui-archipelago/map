@@ -12,7 +12,7 @@
   .pair-caption {
     margin: 4px 2px 14px;
     font-size: 0.78rem;
-    color: var(--color-muted);
+    color: var(--content-muted);
     background: rgba(55, 143, 189, 0.1);
     border: 1px solid rgba(55, 143, 189, 0.32);
     border-radius: 999px;
@@ -40,7 +40,7 @@
     font-size: 0.72rem;
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    color: var(--color-muted);
+    color: var(--content-muted);
     font-family: var(--font-mono);
   }
   .diff-filter input[type="search"] {
@@ -49,7 +49,7 @@
     font: inherit;
     font-size: 0.88rem;
     padding: 5px 11px;
-    border: 1px solid var(--color-arch);
+    border: 1px solid var(--border-subtle);
     border-radius: 999px;
     background: #fff;
     color: var(--color-ink-deep);
@@ -58,7 +58,7 @@
     font: inherit;
     font-size: 0.88rem;
     padding: 5px 10px;
-    border: 1px solid var(--color-arch);
+    border: 1px solid var(--border-subtle);
     border-radius: 999px;
     background: #fff;
     color: var(--color-ink-deep);
@@ -66,26 +66,26 @@
   .diff-filter input:focus,
   .diff-filter select:focus {
     outline: none;
-    border-color: var(--color-ocean);
+    border-color: var(--border-accent);
     box-shadow: 0 0 0 2px rgba(55, 143, 189, 0.18);
   }
   .diff-filter button {
     font: inherit;
     font-size: 0.82rem;
-    border: 1px solid var(--color-arch);
+    border: 1px solid var(--border-subtle);
     background: #fff;
-    color: var(--color-ink);
+    color: var(--content);
     border-radius: 999px;
     padding: 3px 13px;
     cursor: pointer;
   }
   .diff-filter button:hover {
-    border-color: var(--color-ocean);
+    border-color: var(--border-accent);
     color: var(--color-ocean);
   }
   .ff-note {
     font-size: 0.76rem;
-    color: var(--color-muted);
+    color: var(--content-muted);
     margin-left: auto;
   }
 
@@ -116,7 +116,7 @@
     font-size: 0.9em;
   }
   .diff-head > span:not(.release-chip) {
-    color: var(--color-muted);
+    color: var(--content-muted);
   }
 
   /* the two delta-nature banners: cross-fork = amber (snapshot, no lineage),
@@ -135,7 +135,7 @@
     color: #5c3405;
   }
   .diff-kind-note.snapshot strong {
-    color: var(--color-amber);
+    color: var(--warning);
   }
   .diff-kind-note.changelog {
     background: rgba(55, 143, 189, 0.1);
@@ -178,7 +178,7 @@
     font-weight: 700;
   }
   .count-chip.count-removed {
-    color: var(--color-rust);
+    color: var(--on-action);
     background: rgba(239, 78, 40, 0.1);
     border: 1px solid rgba(239, 78, 40, 0.28);
   }
@@ -204,7 +204,7 @@
     color: var(--color-island-deep);
   }
   .delta-unmeasured {
-    background: var(--color-sand-200);
+    background: var(--color-sand);
     border: 1px solid rgba(168, 98, 20, 0.4);
     border-radius: 8px;
     padding: 14px 18px;
@@ -222,7 +222,7 @@
     text-transform: uppercase;
     letter-spacing: 0.06em;
     margin: 0 0 8px;
-    color: var(--color-ink);
+    color: var(--content);
     padding: 0;
     background: transparent;
   }
@@ -234,12 +234,12 @@
     flex: none;
   }
   .delta-sec.removed h3::before {
-    background: var(--color-coral);
+    background: var(--action);
   }
   .delta-sec.added h3::before {
     background: var(--color-island);
   }
   .delta-sec.resigned h3::before {
-    background: var(--color-amber);
+    background: var(--warning);
   }
 }
