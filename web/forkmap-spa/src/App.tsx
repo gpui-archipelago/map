@@ -146,7 +146,7 @@ export function App() {
       </a>
       <Header manifest={manifest} counts={counts} view={route.view} />
       <main id="main">{body}</main>
-      <Footer manifest={manifest} counts={counts} />
+      <Footer manifest={manifest} />
       <noscript>
         <p className="noscript">
           This page needs JavaScript to load and validate <code>forkmap/data/forkmap-manifest.json</code> (the

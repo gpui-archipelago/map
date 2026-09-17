@@ -215,7 +215,7 @@ def main() -> int:
                 )
             return (
                 f"{len(docs)} docstrings across {doc_releases} release{s}"
-                f" · the first measured ({anchor[0]} {anchor[1]}) anchors this title"
+                f" — showing the first measured ({anchor[0]} {anchor[1]})"
             )
 
         def diff_doc_lines(base: str, other: str):
@@ -243,18 +243,50 @@ def main() -> int:
             added.extend(b[j:])
             return added, removed
 
-        def run_prefix(provider, key: str) -> str | None:
-            """The stream-summary chip's leading `${present} release(s)`
-            (variantSteps.present over the stable rows) — the letters/sequence
-            after it are the view's own derivation, so the checks assert only
-            this prefix, never a frozen variant run."""
-            present = sum(
-                1 for v in provider["versions"] if not v.get("prerelease") and digests_of(v.get("surface"), key)
-            )
-            if not present:
+        def item_variants(key: str) -> list[str]:
+            """itemVariants (derive.ts): the key's distinct measured digests in
+            first-measured corpus order — the α β γ… the deck cards, the matrix
+            dots and the summary chips share."""
+            first: dict[str, tuple[int, int]] = {}
+            for pi, p in enumerate(bundle_data["providers"]):
+                for vi, v in enumerate(p["versions"]):
+                    surf = v.get("surface")
+                    if surf is None:
+                        continue
+                    row = sorted({it["digest"] for it in surf if it["key"] == key})
+                    for digest in row:
+                        first.setdefault(digest, (pi, vi))
+            order = sorted(first.items(), key=lambda kv: (kv[1][0], kv[1][1], kv[0]))
+            return [digest for digest, _ in order]
+
+        def run_chip(provider, key: str, order: list[str]) -> str | None:
+            """The stream-summary variant chip (MatrixStream over variantSteps of
+            the *stable* rows): a single step reads `Variant α`, a run reads the
+            α → β (1.17.2) sequence — the run alone, no release-count prefix.
+            None when the fork's stable line never carried the item (the chip is
+            then the honest never-measured / preview-only wording)."""
+            steps: list[tuple[tuple[int, ...], str | None]] = []
+            for v in provider["versions"]:
+                if v.get("prerelease"):
+                    continue
+                ds = digests_of(v.get("surface"), key)
+                idx = tuple(sorted(i for i, d in enumerate(order) if d in ds))
+                if not idx:
+                    continue
+                if steps and steps[-1][0] == idx:
+                    continue
+                steps.append((idx, None if not steps else v["vers"]))
+            if not steps:
                 return None
-            noun = "stable release" if any(v.get("prerelease") for v in provider["versions"]) else "release"
-            return f"{present} {noun}{'' if present == 1 else 's'} · "
+
+            def letters(ix: tuple[int, ...]) -> str:
+                return "+".join(greek[i] for i in ix)
+
+            if len(steps) == 1:
+                return f"Variant {letters(steps[0][0])}"
+            return " → ".join(
+                letters(ix) if vers is None else f"{letters(ix)} ({vers})" for ix, vers in steps
+            )
 
         # The default Changes pair (routing.ts resolveChanges over the boot
         # manifest): an empty hash anchors on the first provider, whose B side
@@ -277,13 +309,8 @@ def main() -> int:
         # short forms and the α…last labels, never a frozen hex. The T-41
         # collapse's text and count come from the same presence partition.
         node_key = "struct:accessibility::AccessibilityNode"
-        node_digests: list[str] = []
-        for p in bundle_data["providers"]:
-            for v in p["versions"]:
-                for it in v.get("surface") or []:
-                    if it["key"] == node_key and it["digest"] not in node_digests:
-                        node_digests.append(it["digest"])
         greek = "αβγδεζηθικλμνξοπρστυφχψω"
+        node_digests = item_variants(node_key)
         node_first_short = node_digests[0][:8]
         node_last_short = node_digests[-1][:8]
         node_last_label = greek[len(node_digests) - 1] if len(node_digests) <= len(greek) else f"#{len(node_digests)}"
@@ -294,9 +321,9 @@ def main() -> int:
         node_absent_rows = sum(len(p["versions"]) for p in node_absent)
         node_absent_text = (
             f"never measured on {' · '.join(p['id'] for p in node_absent)}"
-            f" — absent across {node_absent_rows} recorded release{'' if node_absent_rows == 1 else 's'}"
+            f" — absent from {node_absent_rows} release{'' if node_absent_rows == 1 else 's'}"
         )
-        node_run_wants = [x for p in bundle_data["providers"] if (x := run_prefix(p, node_key))]
+        node_run_wants = [c for p in bundle_data["providers"] if (c := run_chip(p, node_key, node_digests))]
 
         # fn:Window::blur (the T-44 deep link) and fn:FileWatcher::new (the
         # T-43 doc-delta story): every doc byte and caption derived from the
@@ -376,15 +403,15 @@ def main() -> int:
              "#/", ["id=\"landing-link-doc07\"", "id=\"landing-link-doc12\"", "id=\"landing-link-doc13\"",
                      "aria-haspopup=\"dialog\""], []),
             ("study reader affordance (alignment docs panel rows)",
-             "#/alignment", ["Where this class of change is documented", "aria-haspopup=\"dialog\""], []),
+             "#/alignment", ["Studies &amp; docs", "aria-haspopup=\"dialog\""], []),
             ("alignment route (search panel + docs + hint, no matrix yet)",
              "#/alignment", ["id=\"view-alignment\"", "Search measured items", "presets",
-                              "Where this class of change is documented",
-                              "Pick an item above (or a preset) to render its fork matrix",
+                              "Studies &amp; docs",
+                              "Pick an item or a preset above.",
                               "id=\"honest-rule-1\""], ["class=\"matrix\""]),
             ("alignment story (kael AccessibilityNode matrix + chips)",
              "#/alignment?item=struct:accessibility::AccessibilityNode",
-             ["struct:accessibility::AccessibilityNode", "id=\"alignment-variants\"", "Measured digest variants",
+             ["struct:accessibility::AccessibilityNode", "id=\"alignment-variants\"", "Signature variants",
               f"Variant {greek[0]}", f"Variant {node_last_label}",
               f">{node_first_short}</code>", f">{node_last_short}</code>",
               *node_run_wants,

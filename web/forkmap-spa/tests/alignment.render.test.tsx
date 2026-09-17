@@ -181,7 +181,7 @@ function docTitleCap(story: ItemDocStory): string {
       ? `one docstring · measured on all ${n} release${n === 1 ? "" : "s"}`
       : `one docstring · measured on ${n} of ${n + story.bareReleases} release${n + story.bareReleases === 1 ? "" : "s"} — ${story.bareReleases} carry no doc comment`;
   }
-  return `${story.docs.length} docstrings across ${n} release${n === 1 ? "" : "s"} · the first measured (${story.anchor!.providerId} ${story.anchor!.vers}) anchors this title`;
+  return `${story.docs.length} docstrings across ${n} release${n === 1 ? "" : "s"} — showing the first measured (${story.anchor!.providerId} ${story.anchor!.vers})`;
 }
 
 describe("Alignment view renders the recorded stories (server render)", () => {
@@ -209,7 +209,7 @@ describe("Alignment view renders the recorded stories (server render)", () => {
     expect(html).toContain('id="alignment-variants"');
     // one deck card per measured digest — α…last, first-measured order (RULE-7)
     expect(occurrences(html, 'class="var-card"')).toBe(variants.length);
-    expect(html).toContain("<h3>Measured digest variants</h3>");
+    expect(html).toContain("<h3>Signature variants</h3>");
     expect(html).toContain(`<strong>Variant ${first.label}</strong>`);
     expect(html).toContain(`<strong>Variant ${last.label}</strong>`);
     expect(html).toContain(`>${first.shortDigest}</code>`);
@@ -236,7 +236,7 @@ describe("Alignment view renders the recorded stories (server render)", () => {
     const changedRow = kael.versions[changedIdx];
     const changedVariant = variants.find((x) => digestsOf(changedRow.surface, key)!.has(x.digest))!;
     expect(html).toContain(`changed — variant ${changedVariant.label}"`);
-    expect(html).toContain(`measured digest variant: ${first.label} ${first.shortDigest}…`);
+    expect(html).toContain(`signature variant: ${first.label} ${first.shortDigest}…`);
     // The matrix owns the stage (the dock column is gone since T-44 — the
     // release popover floats over it only while a cell is pinned).
     expect(html).toContain('class="matrix-stage"');
@@ -247,16 +247,17 @@ describe("Alignment view renders the recorded stories (server render)", () => {
     const stableRows = kael.versions.filter((v) => !v.prerelease);
     const stableRun = variantSteps(stableRows, variants, key);
     const letters = (ix: number[]) => ix.map((i) => variants[i].label).join("+");
-    const noun = kael.versions.some((v) => v.prerelease) ? "stable release" : "release";
-    const runPrefix = `${stableRun.present} ${noun}${stableRun.present === 1 ? "" : "s"}`;
     const summary =
       stableRun.steps.length === 1
-        ? `${runPrefix} · Variant ${letters(stableRun.steps[0].indexes)}`
-        : `${runPrefix} · ${stableRun.steps
+        ? `Variant ${letters(stableRun.steps[0].indexes)}`
+        : stableRun.steps
             .map((s, i) => (i === 0 ? letters(s.indexes) : `${letters(s.indexes)} (${s.vers})`))
-            .join(" → ")}`;
-    expect(html).toContain(summary);
-    expect(occurrences(html, "— never measured on this stream")).toBe(0);
+            .join(" → ");
+    // the stream chip carries the run alone (the swatch span closes right
+    // before the text) — no release-count prefix anymore
+    expect(html).toContain(`</span>${summary}</span>`);
+    expect(html).not.toContain("stable releases · ");
+    expect(occurrences(html, "— never measured here")).toBe(0);
     expect(occurrences(html, '<strong class="stream-name">')).toBe(partition.present.length);
     expect(html).toContain(`<strong class="stream-name">${partition.present[0].id}</strong>`);
     // collapsed block: the absent provider ids + the computed release count
@@ -264,7 +265,7 @@ describe("Alignment view renders the recorded stories (server render)", () => {
     expect(html).toContain('id="alignment-absent"');
     expect(html).toContain('aria-expanded="false"');
     expect(html).toContain(
-      `never measured on ${partition.absent.map((p) => p.id).join(" · ")} — absent across ${absentRows} recorded release${absentRows === 1 ? "" : "s"}`,
+      `never measured on ${partition.absent.map((p) => p.id).join(" · ")} — absent from ${absentRows} release${absentRows === 1 ? "" : "s"}`,
     );
     expect(html).toContain(">show</span>");
     expect(html).not.toContain(">hide</span>");
@@ -284,7 +285,7 @@ describe("Alignment view renders the recorded stories (server render)", () => {
     // The panel is comparative: a base chip per resolved variant and one delta
     // row each, and the policy is stated exactly once.
     expect(html).toContain('id="alignment-members"');
-    expect(html).toContain("Member contract");
+    expect(html).toContain("<h3>Members</h3>");
     expect(html).toContain("public members only");
     expect(html).toContain("private members never change a type&#x27;s hash");
     expect(occurrences(html, 'class="member-base-chip mono"')).toBe(4);
@@ -331,7 +332,7 @@ describe("Alignment view renders the recorded stories (server render)", () => {
     // panel, stating that no vector resolved rather than a fabricated 0.
     const noMap = renderLegend("struct:accessibility::AccessibilityNode", null);
     expect(noMap).toContain('id="alignment-members"');
-    expect(noMap).toContain("No member vector resolved");
+    expect(noMap).toContain("No single member list for this type");
     expect(noMap).not.toContain("members 0");
     // Every card states the honest unknown, never a fabricated count.
     expect(occurrences(noMap, "members —")).toBe(4);
@@ -344,7 +345,7 @@ describe("Alignment view renders the recorded stories (server render)", () => {
     // still be the honest one.)
     const html = renderAlignment({ item: "struct:accessibility::AccessibilityNode" });
     expect(html).toContain('id="alignment-members"');
-    expect(html).toContain("Member contract");
+    expect(html).toContain("<h3>Members</h3>");
     expect(html).toContain("public members only");
     // A non-member-bearing kind on the same path never renders it.
     const fnHtml = renderAlignment({ item: "fn:Window::blur" });
@@ -379,7 +380,7 @@ describe("Alignment view renders the recorded stories (server render)", () => {
     // so a preview's new variant can't sit between two stable cells and make a
     // later backport look like a regression to legacy.
     expect(html).toContain('class="stream-previews"');
-    expect(html).toContain('class="stream-previews-label mono">pre-release previews — not on the stable line');
+    expect(html).toContain('class="stream-previews-label mono">pre-releases');
     // uno's 1.19.0-pre (the β preview) is still a real, present cell — but in
     // the separate preview group, and no variant run lists it as a change
     // point back toward the legacy line (the recorded "new then legacy" snag).
@@ -389,7 +390,7 @@ describe("Alignment view renders the recorded stories (server render)", () => {
 
   test("an empty hash renders the pick-an-item hint and no matrix (and the list is closed)", () => {
     const html = renderAlignment({});
-    expect(html).toContain("Pick an item above (or a preset) to render its fork matrix");
+    expect(html).toContain("Pick an item or a preset above.");
     expect(html).not.toContain('class="matrix"');
     expect(html).not.toContain('class="cell cell-same"');
     expect(html).toContain('id="alignment-suggest" class="suggest" role="listbox" hidden=""');
@@ -400,7 +401,7 @@ describe("Alignment view renders the recorded stories (server render)", () => {
 
   test("a hash naming an unmeasured/unknown item never invents a matrix", () => {
     const html = renderAlignment({ item: "fn:no_such_item_measured" });
-    expect(html).toContain("Pick an item above (or a preset) to render its fork matrix");
+    expect(html).toContain("Pick an item or a preset above.");
     expect(html).not.toContain('class="matrix"');
   });
 
@@ -413,7 +414,7 @@ describe("Alignment view renders the recorded stories (server render)", () => {
 
   test("the docs panel names where each class of change is documented", () => {
     const html = renderAlignment({ item: "fn:Window::blur" });
-    expect(html).toContain("Where this class of change is documented");
+    expect(html).toContain("<h2>Studies &amp; docs</h2>");
     expect(html).toContain("doc 08 — study: is the used-API report meaningful on real GPUI code?");
     expect(html).toContain("doc 13 — field note: two kits, one measured generation");
   });
@@ -468,7 +469,7 @@ describe("T-40 alignment inspector renders (server render)", () => {
     expect(html).toContain('class="cell cell-dv0"');
     expect(html).toContain('class="cell cell-dv1"');
     expect(html).toContain('class="cell cell-absent"');
-    expect(html).toContain('title="gpui-unofficial 1.19.0-pre (pre-release): changed\nmeasured digest variant: β bdc56592…\ndiff base: α a07c1800…"');
+    expect(html).toContain('title="gpui-unofficial 1.19.0-pre (pre-release): changed\nsignature variant: β bdc56592…\ndiff base: α a07c1800…"');
     expect(html).toContain("<button");
     // T-44: the pin data attrs anchor the popover to the exact cell; the
     // aria-describedby retarget (release-popover-status) applies only to the
@@ -587,11 +588,10 @@ describe("T-44 release popover renders a pinned cell's record (server render)", 
     const html = renderPopover(key, cell);
     // the channel + the RULE-6 pre-release flag chip
     expect(html).toContain("gpui-unofficial 1.19.0-pre");
-    expect(html).toContain("pre-release — not a stable release (rule 6)");
-    // the stream-transition status names the branch predecessor
+    expect(html).toContain("a pre-release, not a stable release (rule 6)");
+    // the stream-transition status names the release it moved from
     expect(html).toContain('id="release-popover-status"');
-    expect(html).toContain("signature changed");
-    expect(html).toContain("branch predecessor 1.18.0");
+    expect(html).toContain("signature changed — vs 1.18.0");
     // the variant transition names α → β without re-printing the 64-hex
     // digests or the signatures (the deck owns them — the duplication trap)
     expect(html).toContain("α → β");
@@ -656,7 +656,7 @@ describe("T-44 release popover renders a pinned cell's record (server render)", 
     }
     expect(cell).not.toBeNull();
     const html = renderPopover(key, cell!, null);
-    expect(html).toContain("resolving the measured declaration…");
+    expect(html).toContain("resolving…");
     expect(html).not.toContain("docs.rs");
     expect(html).not.toContain("window.rs L");
   });
@@ -733,8 +733,7 @@ describe("T-44 the popover names a changed cell's transition without re-printing
     const html = popoverHtml(key, cell);
     // the state context names the previous published row — never a call
     // shape, never a doc-text dump (the review's cited literals stay out)
-    expect(html).toContain("signature changed");
-    expect(html).toContain("branch predecessor 0.1.2");
+    expect(html).toContain("signature changed — vs 0.1.2");
     expect(html).toContain("α → β");
     expect(html).not.toContain("Bounds<Pixels>");
     expect(html).not.toContain("new(role");
@@ -761,7 +760,7 @@ describe("T-44 the popover names a changed cell's transition without re-printing
     );
     expect(html).toContain("α → β");
     expect(html).not.toContain("window.rs L");
-    expect(html).toContain("resolving the measured declaration…");
+    expect(html).toContain("resolving…");
   });
 });
 
@@ -879,7 +878,7 @@ describe("T-42 digest variants render over the recorded stories (server render)"
     // neutral dot states moved to their own legend above the matrix
     expect(html).toContain('id="alignment-dot-legend"');
     expect(html).toContain('class="legend-info mono"');
-    expect(html).toContain('title="dot colour = the content hash that release carries · a colour change within a fork means the signature moved"');
+    expect(html).toContain('title="colour = the signature hash that release carries; the same colour means the same signature"');
   });
 
   test("a single-signature item keeps the deck to one card + the dot-state legend", () => {
@@ -1028,7 +1027,7 @@ describe("T-43 docstrings render the promoted Title + measured deltas (server re
 
   test("before the item's column bucket lands the item area shows the honest loading state (T-33 increment 5)", () => {
     const html = renderAlignmentBeforeColumn({ item: "fn:Window::blur" });
-    expect(html).toContain("Loading this item&#x27;s digest column…");
+    expect(html).toContain(">Loading…</p>");
     expect(html).toContain('role="status"');
     // The matrix + deck need the digest state — nothing is invented while the
     // bucket is in flight, and the rest of the page (search, docs) still
@@ -1071,6 +1070,6 @@ describe("T-43 docstrings render the promoted Title + measured deltas (server re
     const html = renderAlignment({ item: "struct:accessibility::AccessibilityNode" }, payloadOf("struct:accessibility::AccessibilityNode"));
     expect(html).not.toContain('id="alignment-item-doc"');
     expect(html).not.toContain("doc-delta");
-    expect(html).toContain("Measured digest variants");
+    expect(html).toContain("Signature variants");
   });
 });

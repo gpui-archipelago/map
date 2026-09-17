@@ -8,8 +8,8 @@
 //   - searchIndex finds the recorded presets (exact → prefix → substring);
 //   - buildIndex counts a version once per key and carries the kind/name;
 //   - streamCallouts over the recorded stories produce the chips the view
-//     renders ("✕ first removed at …", "~ first re-signed at …", "✓ present
-//     throughout", "— never measured on this stream");
+//     renders ("✕ first removed at …", "~ first re-signed at …",
+//     "✓ present throughout", "— never measured here");
 //   - id coverage: every `alignment-*`/`view-alignment` id app.js binds must
 //     exist in the SPA's AlignmentView source.
 

@@ -221,12 +221,12 @@ export function ReleasePopover({
   // deck cannot show (which row the state is relative to — the *branch* base,
   // not the raw publish predecessor).
   let status = cell.phrase;
-  if (changed && cell.prevVers) status += ` — vs branch predecessor ${cell.prevVers}`;
+  if (changed && cell.prevVers) status += ` — vs ${cell.prevVers}`;
   if (cell.state === "removed" && cell.prevVers) {
-    status += ` — the branch predecessor (${cell.prevVers}) carried it`;
+    status += ` — ${cell.prevVers} had it`;
   }
   if (cell.state === "added" && cell.prevVers) {
-    status += ` — first present row of this stream since ${cell.prevVers}`;
+    status += ` — not in ${cell.prevVers}`;
   }
 
   const diffHref =
@@ -255,8 +255,8 @@ export function ReleasePopover({
             className={`release-flag mono ${cell.flagTxt === "yanked" ? "flag-yanked" : "flag-pre"}`}
             title={
               cell.flagTxt === "yanked"
-                ? "yanked from crates.io — unadvisable (rule 6)"
-                : "pre-release — not a stable release (rule 6)"
+                ? "yanked from crates.io (rule 6)"
+                : "a pre-release, not a stable release (rule 6)"
             }
           >
             {cell.flagTxt}
@@ -283,7 +283,7 @@ export function ReleasePopover({
         <p className="release-variants mono">
           {changed && prevLetters.length > 0
             ? `${prevLetters.join("+")} → ${letters.join("+")} — the signature changed here; both signatures are on the variant cards`
-            : `digest variant ${letters.join("+")} — measured signature on the variant card`}
+            : `signature variant ${letters.join("+")} — its measured text is on the variant card`}
         </p>
       )}
 
@@ -316,7 +316,7 @@ export function ReleasePopover({
       {changed && !memberDelta && splitKey(itemKey)[0] !== "fn" && (
         <p className="release-members" id="release-popover-members">
           <span className="muted release-members-note">
-            {"changed signature — a type's hash covers its public members only, so doc comments and private members never change it. The moved member is not named here for this key."}
+            {"changed signature — a type's hash covers public members only, so doc comments and private members never change it. No single moved member is recorded for this key."}
           </span>
         </p>
       )}
@@ -332,7 +332,7 @@ export function ReleasePopover({
                 : "absent — no declaration in this release (rule 4)"}
           </span>
         ) : !sourceReady ? (
-          <span className="release-source-empty muted">resolving the measured declaration…</span>
+          <span className="release-source-empty muted">resolving…</span>
         ) : srcs && srcs.length > 0 ? (
           <span className="release-source-links mono">
             {srcs.map((loc) => {
@@ -357,7 +357,7 @@ export function ReleasePopover({
                     href={docsRsSourceUrl(provider, cell.vers, loc)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    title="docs.rs source view of this release's measured declaration — every line bound is measured (rule 7)"
+                    title="docs.rs source for this release's declaration"
                   >
                     {`${loc.file} L${loc.start}–${loc.end}`}
                     <span aria-hidden="true"> ↗</span>
@@ -368,7 +368,7 @@ export function ReleasePopover({
                       href={gh}
                       target="_blank"
                       rel="noopener noreferrer"
-                      title={`github ${provider.upstream.repo}@${ghRef} — this fork's published bytes republish the upstream tree; every line bound is measured (rule 7)`}
+                      title={`github ${provider.upstream.repo}@${ghRef} — this fork republishes the upstream tree`}
                     >
                       github {ghRef}
                       <span aria-hidden="true"> ↗</span>
@@ -380,7 +380,7 @@ export function ReleasePopover({
           </span>
         ) : (
           <span className="release-source-empty muted">
-            no measured declaration location for this release (rule 4)
+            no declaration location recorded for this release
           </span>
         )}
       </div>
@@ -395,7 +395,7 @@ export function ReleasePopover({
             <span aria-hidden="true">⇄ </span>Diff in Changes
           </a>
         ) : (
-          <span className="ramp-chip ramp-off" title="this release has no branch predecessor to diff">
+          <span className="ramp-chip ramp-off" title="no earlier release on this branch to diff">
             ⇄ Diff in Changes
           </span>
         )}

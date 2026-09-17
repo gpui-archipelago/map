@@ -208,8 +208,7 @@ const NEUTRAL_LEGEND: [CellState, string][] = [
  * vocabulary as the legend — T-40). */
 const PHRASES = Object.fromEntries(LEGEND) as Record<CellState, string>;
 
-const EMPTY_HINT =
-  "Pick an item above (or a preset) to render its fork matrix — e.g. struct:accessibility::AccessibilityNode or fn:Window::blur.";
+const EMPTY_HINT = "Pick an item or a preset above.";
 
 /** yanked / pre-release / stable — the flag text of a release row. */
 function flagText(v: VersionRow): string {
@@ -268,29 +267,24 @@ function MatrixStream({
   const letters = (indexes: number[]) => indexes.map((i) => variants[i].label).join("+");
   const chips: { cls: string; txt: string; swatch?: number; title?: string }[] = [];
   if (!anyPresent) {
-    chips.push({ cls: "absent", txt: "— never measured on this stream" });
+    chips.push({ cls: "absent", txt: "— never measured here" });
   } else if (stableRun.present === 0) {
     chips.push({
       cls: "variant",
-      txt: "only in a preview — not yet on the stable line",
+      txt: "only in a pre-release",
     });
   } else {
     const seq = stableRun.steps
       .map((s, i) => (i === 0 ? letters(s.indexes) : `${letters(s.indexes)} (${s.vers})`))
       .join(" → ");
-    const noun = previewRows.length > 0 ? "stable release" : "release";
-    const prefix = `${stableRun.present} ${noun}${stableRun.present === 1 ? "" : "s"}`;
     chips.push({
       cls: "variant",
-      txt:
-        stableRun.steps.length === 1
-          ? `${prefix} · Variant ${letters(stableRun.steps[0].indexes)}`
-          : `${prefix} · ${seq}`,
+      txt: stableRun.steps.length === 1 ? `Variant ${letters(stableRun.steps[0].indexes)}` : seq,
       swatch: stableRun.steps[0].indexes[0] % VARIANT_PALETTE,
       title:
         stableRun.steps.length === 1
-          ? "stable releases carrying the item — the letter names its digest variant (legend above); pre-release previews are separate"
-          : "stable releases carrying the item · letters are the digest variants (legend above) · each switch names the stable where it happened · pre-release previews are separate",
+          ? "stable releases carrying this item — the letter is its signature variant"
+          : "stable releases carrying this item — each switch names the stable where the signature changed",
     });
   }
   if (stableRun.present > 0 && stableFirstRemoved) {
@@ -316,7 +310,7 @@ function MatrixStream({
     let title = label;
     if (cellVariants.length > 0) {
       const refs = cellVariants.map((x) => `${x.label} ${x.shortDigest}…`).join(" + ");
-      title += `\nmeasured digest variant${cellVariants.length > 1 ? "s" : ""}: ${refs}`;
+      title += `\nsignature variant${cellVariants.length > 1 ? "s" : ""}: ${refs}`;
       if (prevDigests.length > 0) {
         const prevRefs = prevDigests.map((d) => variantRef(variants, d) ?? `${d.slice(0, 8)}…`).join(" + ");
         title += `\ndiff base: ${prevRefs}`;
@@ -378,7 +372,7 @@ function MatrixStream({
         <span className="muted">{` ${p.versions.length} releases`}</span>
         <span
           className={`arch-tag ${companion ? "post" : "pre"} mono`}
-          title={companion ? `split off and republished under its own crates.io package (${companion.package})` : "published before the fork split"}
+          title={companion ? `published under its own crate after the split (${companion.package})` : "published before the fork split"}
         >
           {companion ? "post" : "pre"}
         </span>
@@ -396,7 +390,7 @@ function MatrixStream({
       </div>
       {previewRows.length > 0 && (
         <div className="stream-previews">
-          <div className="stream-previews-label mono">pre-release previews — not on the stable line</div>
+          <div className="stream-previews-label mono">pre-releases</div>
           <div className="stream-row" style={{ gridTemplateColumns: cols(previewRows.length) }}>
             {previewRows.map(({ row, i }) => renderCell(row, i))}
           </div>
@@ -443,13 +437,13 @@ function AbsentStreams({
           {show ? "▾" : "▸"}
         </span>
         <span className="absent-text">
-          {`never measured on ${absent.map((p) => p.id).join(" · ")} — absent across ${totalRows} recorded release${totalRows === 1 ? "" : "s"}`}
+          {`never measured on ${absent.map((p) => p.id).join(" · ")} — absent from ${totalRows} release${totalRows === 1 ? "" : "s"}`}
         </span>
         <span
           className="absent-action mono"
           title={
             unmeasured > 0
-              ? `${unmeasured} unmeasured row${unmeasured === 1 ? "" : "s"} excluded — rule 4 (an “absent” dot means the release was measured without the item)`
+              ? `${unmeasured} of these releases were never measured (rule 4: an “absent” dot means the release was measured without the item)`
               : undefined
           }
         >
@@ -499,10 +493,10 @@ export function KindPills({
             aria-pressed={active === p.filter}
             title={
               p.filter === "rule"
-                ? "items a confirmed migration rule touches (from-side or to-side of the rule store); counts computed from the loaded item index"
+                ? "items a confirmed migration rule touches"
                 : p.filter === "all"
-                  ? "all measured item identities — count computed from the loaded item index"
-                  : `only ${p.label} identities — count computed from the loaded item index`
+                  ? "all measured items"
+                  : `only ${p.label} items`
             }
             onClick={() => onPick(p.filter)}
           >
@@ -574,15 +568,15 @@ export function VariantLegend({
       ...chip.diff.removed.map((l) => `- ${l}`),
       ...chip.diff.added.map((l) => `+ ${l}`),
     ];
-    return `the releases of this digest-variant read their own docstring:\n\n${chip.doc}\n\nmeasured change vs the item's baseline docstring:\n${lines.join("\n")}`;
+    return `these releases read their own docstring:\n\n${chip.doc}\n\nchange vs the item's own docstring:\n${lines.join("\n")}`;
   };
   return (
-    <section className="deck" id="alignment-variants" aria-label="measured digest variants">
+    <section className="deck" id="alignment-variants" aria-label="measured signature variants">
       <div className="deck-head">
-        <h3>Measured digest variants</h3>
+        <h3>Signature variants</h3>
         <span className="deck-sub mono">
           {wide ? "letters keep counting past ω — colors repeat past the 8th variant · " : ""}
-          {"digest parity is measured (rules 1 & 2)"}
+          {"same hash, same signature (rules 1 & 2)"}
         </span>
       </div>
       <div className="deck-grid">
@@ -599,13 +593,13 @@ export function VariantLegend({
               type="button"
               className={`var-card${isolated === v.index ? " isolated" : ""}`}
               aria-pressed={isolated === v.index}
-              title={`${isolated === v.index ? "clear the isolate — show every release" : `isolate releases carrying ${v.label} in the forks below`} · first measured at ${first}`}
+              title={`${isolated === v.index ? "show every release" : `show only the releases carrying ${v.label}`} · first measured at ${first}`}
               onClick={() => onToggle(v.index)}
             >
               <span className="var-card-head">
                 <span className={`cell cell-dv${swatch}`} aria-hidden="true" />
                 <strong>{`Variant ${v.label}`}</strong>
-                <code className="var-digest mono" title={`blake3 hash: ${v.digest}`}>
+                <code className="var-digest mono" title={`signature hash: ${v.digest}`}>
                   {v.shortDigest}
                 </code>
               </span>
@@ -616,14 +610,14 @@ export function VariantLegend({
                 if (!chip) return null;
                 return (
                   <span className="doc-delta mono" title={docDeltaNote(chip)}>
-                    doc delta
+                    doc edit
                     <span className="doc-delta-count">{`-${chip.diff.removed.length} +${chip.diff.added.length}`}</span>
                   </span>
                 );
               })()}
               {count && (
                 <span className="var-card-stats">
-                  <span className="stat-pill mono" title="releases carrying exactly this hash">
+                  <span className="stat-pill mono" title="releases carrying this signature">
                     <svg aria-hidden="true" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4">
                       <path d="M2.5 5 8 2.5 13.5 5 8 7.5 2.5 5Z" />
                       <path d="M2.5 8 8 10.5 13.5 8" />
@@ -631,7 +625,7 @@ export function VariantLegend({
                     </svg>
                     {`${count.releases} release${count.releases === 1 ? "" : "s"}`}
                   </span>
-                  <span className="stat-pill mono" title="how many forks carry exactly this hash">
+                  <span className="stat-pill mono" title="forks carrying this signature">
                     <svg aria-hidden="true" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4">
                       <circle cx="5" cy="3.5" r="1.6" />
                       <circle cx="11" cy="3.5" r="1.6" />
@@ -675,7 +669,7 @@ function memberStatLine(stat: VariantMemberStat, isBase: boolean) {
     return (
       <span
         className="var-members muted"
-        title="no single member list was measured for this hash — the releases carrying it disagree, so no one list would be honest"
+        title="these releases disagree, so no single member list would be honest"
       >
         {"members —"}
       </span>
@@ -683,7 +677,7 @@ function memberStatLine(stat: VariantMemberStat, isBase: boolean) {
   }
   const shift = stat.shift;
   return (
-    <span className="var-members" title={`measured pub-member segments of this digest's contract${shift === null ? "" : ` · ${shift >= 0 ? "+" : ""}${shift} vs the previous variant in the deck's order`}`}>
+    <span className="var-members" title={`public members measured for this signature${shift === null ? "" : ` · ${shift >= 0 ? "+" : ""}${shift} vs the previous variant`}`}>
       {`members ${stat.count}`}
       {shift !== null && shift !== 0 && (
         <span className={`member-shift mono${shift > 0 ? " up" : " down"}`}>
@@ -723,19 +717,19 @@ function MemberPanel({
   return (
     <div className="member-panel" id="alignment-members">
       <div className="deck-head">
-        <h3>Member contract</h3>
+        <h3>Members</h3>
         <span className="deck-sub mono">
           {"public members only — doc comments and private members never change a type's hash"}
         </span>
       </div>
       {resolved.length === 0 ? (
         <p className="subnote">
-          {"No member vector resolved for this type's measured digests — the shared member map is still loading, or the key is measured under more than one digest per release (no single member set is honest)."}
+          {"No single member list for this type — the member map is still loading, or its releases disagree (no one list would be honest)."}
         </p>
       ) : (
         <>
           <div className="member-base-row">
-            <span className="muted">{"base variant — every other variant is diffed against it: "}</span>
+            <span className="muted">{"diff against: "}</span>
             {variants.map((v) => {
               const s = stats.find((x) => x.digest === v.digest);
               if (!s || s.vector === null) return null;
@@ -747,7 +741,7 @@ function MemberPanel({
                   className={`member-base-chip mono${isBase ? " selected" : ""}`}
                   aria-pressed={isBase}
                   onClick={() => onSelectBase?.(v.index)}
-                  title={`diff every other variant against ${v.label} (${v.shortDigest}…)`}
+                  title={`diff every other variant against ${v.label}`}
                 >
                   {`${v.label} · ${s.count}`}
                 </button>
@@ -774,7 +768,7 @@ function MemberPanel({
                       {base.digest === v.digest ? (
                         <span className="muted">{" · the base"}</span>
                       ) : delta === null ? (
-                        <span className="muted">{" · the measured member set is identical to the base"}</span>
+                        <span className="muted">{" · same members as the base"}</span>
                       ) : (
                         <>
                           <span className="muted">{" vs base: "}</span>
@@ -809,11 +803,11 @@ function MemberPanel({
       )}
       {ambiguous.length > 0 && (
         <p className="subnote">
-          {`${ambiguous.length} of ${stats.length} variants carry no single member set (measured under more than one digest per release) — those variants show no count and no delta.`}
+          {`${ambiguous.length} of ${stats.length} variants have no single member set (one release measures them under more than one hash) — they show no count and no delta.`}
         </p>
       )}
       <p className="subnote">
-        {"Member counts include only members a downstream consumer can name. A variant's count is the measured segment count of its own vector; the shift is against the previous variant in the deck's first-measured order, which is not a cross-stream chronology (rule 1)."}
+        {"Counts are public members a consumer can name; (+n) is the change since the previous variant, in the order they were first measured — not a timeline (rule 1)."}
       </p>
     </div>
   );
@@ -863,7 +857,7 @@ function DotLegend() {
       <span className="legend-entry">
         <span
           className="arch-tag post mono"
-          title="republished under its own crates.io package after the split (the package is named in the stream header)"
+          title="published under its own crate after the split (named in the fork header)"
         >
           post
         </span>
@@ -872,7 +866,7 @@ function DotLegend() {
       <span
         className="legend-info mono"
         aria-hidden="true"
-        title="dot colour = the content hash that release carries · a colour change within a fork means the signature moved"
+        title="colour = the signature hash that release carries; the same colour means the same signature"
       >
         ?
       </span>
@@ -901,7 +895,7 @@ function ItemDocTitle({ itemKey, story }: { itemKey: string; story: ItemDocStory
         ? `one docstring · measured on all ${n} release${n === 1 ? "" : "s"}`
         : `one docstring · measured on ${n} of ${n + bare} release${n + bare === 1 ? "" : "s"} — ${bare} carry no doc comment`;
   } else {
-    cap = `${story.docs.length} docstrings across ${n} release${n === 1 ? "" : "s"} · the first measured (${story.anchor!.providerId} ${story.anchor!.vers}) anchors this title`;
+    cap = `${story.docs.length} docstrings across ${n} release${n === 1 ? "" : "s"} — showing the first measured (${story.anchor!.providerId} ${story.anchor!.vers})`;
   }
   return (
     <div className="item-doc" id="alignment-item-doc">
@@ -913,7 +907,7 @@ function ItemDocTitle({ itemKey, story }: { itemKey: string; story: ItemDocStory
       </p>
       <p
         className="item-doc-cap mono"
-        title="doc comments are recorded per release and never change a hash, so these lines are the only record of doc edits (rule 7)"
+        title="doc comments never change a hash — these lines are the only record of doc edits"
       >
         {cap}
       </p>
@@ -995,7 +989,7 @@ function ItemBox({
     if (colState.status === "error") {
       return (
         <div className="panel item-column-state" role="alert">
-          <p className="mono">This item's digest column could not be loaded — the matrix needs it.</p>
+          <p className="mono">This item's data could not be loaded.</p>
           <p className="subnote" id="item-column-error">
             {colState.error}
           </p>
@@ -1008,11 +1002,7 @@ function ItemBox({
     // digest.
     return (
       <div className="panel item-column-state" role="status">
-        <p className="mono">Loading this item's digest column…</p>
-        <p className="subnote">
-          The matrix reads one small per-key fragment (<code>data/forkmap-column-*.json</code>) when an item is
-          selected — never the whole digest-state file.
-        </p>
+        <p className="mono">Loading…</p>
       </div>
     );
   }
@@ -1182,7 +1172,7 @@ function ItemBoxBody({
           </svg>
           {`${rec.versions} of ${manifest.counts.versions} releases`}
         </span>
-        <span className="stat-pill mono" title="forks in the dataset — the ones carrying it are in the matrix below">
+        <span className="stat-pill mono" title="forks in the dataset">
           <svg aria-hidden="true" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4">
             <circle cx="5" cy="3.5" r="1.6" />
             <circle cx="11" cy="3.5" r="1.6" />
@@ -1193,7 +1183,7 @@ function ItemBoxBody({
           </svg>
           {`${manifest.counts.providers} forks`}
         </span>
-        <span className="stat-pill mono" title="how many different hashes this item has had — α β γ… in the order they were first seen">
+        <span className="stat-pill mono" title="distinct signature hashes, α β γ… in first-measured order">
           <svg aria-hidden="true" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4">
             <circle cx="3.5" cy="3.5" r="1.3" />
             <circle cx="12.5" cy="3.5" r="1.3" />
@@ -1207,7 +1197,7 @@ function ItemBoxBody({
       {(fromRules.length > 0 || toRules.length > 0) && (
         <div
           className="rule-box"
-          title="a rule is a recipe, not proof — a human confirmed the successor, which is not the same as the data vouching for it (doc 09). Copy puts the rule id, its before/after keys and where the change was measured on your clipboard."
+          title="a confirmed migration rule — a human's call, not the data's. Copy puts the rule id, its before/after keys and where the change was measured on your clipboard."
         >
           <strong>Confirmed migration rules</strong>
           {fromRules.map((r) => (
@@ -1412,20 +1402,18 @@ export function AlignmentView({
   const typed = query.trim().length > 0;
   // T-46 honest floor state: below the min-query length the search has not
   // run, so the dropdown says so instead of claiming “no item matches”.
-  const floorHint =
-    "keep typing — the search starts at 2+ characters (a kind prefix like fn: or part of a name)";
+  const floorHint = "keep typing — search starts at 2 characters";
   // T-46 honest window state (RULE-7): the visible rows are the first of the
-  // full match set and the more-row says exactly how many rows exist beyond
-  // them — the list never pretends it is complete.
-  const moreText = `first ${shown.length} of ${(shown.length + more).toLocaleString("en-US")} shown — ${more.toLocaleString("en-US")} more match this; keep typing to narrow`;
+  // full match set and the more-row names the full count — the list never
+  // pretends it is complete.
+  const moreText = `first ${shown.length} of ${(shown.length + more).toLocaleString("en-US")} — keep typing to narrow`;
 
   return (
     <section id="view-alignment" className={`view${selectedKey ? " has-item" : ""}`}>
       <div className="wrap">
         <div className="align-band">
           <div className="view-head">
-            <p className="view-eyebrow mono">{`fork map / alignment — search an item and see which forks carry it`}</p>
-            <h1>Cross-Fork API Longevity &amp; Digest Parity</h1>
+            <h1>Alignment</h1>
           </div>
 
           <div className="panel picker align-search" id="alignment-search-panel" ref={panelRef}>
@@ -1440,7 +1428,7 @@ export function AlignmentView({
                   id="alignment-query"
                   ref={inputRef}
                   type="search"
-                  placeholder="type an item — e.g. Window::blur, record_frame_timing, accessibility::…"
+                  placeholder="e.g. Window::blur"
                   autoComplete="off"
                   spellCheck={false}
                   role="combobox"
@@ -1538,7 +1526,7 @@ export function AlignmentView({
         </div>
 
         <div className="panel" id="alignment-docs">
-          <h2>Where this class of change is documented</h2>
+          <h2>Studies &amp; docs</h2>
           <div id="alignment-docs-body">
             {DOC_BLURBS.map((n) => (
               <div key={n} className="doc-row">
