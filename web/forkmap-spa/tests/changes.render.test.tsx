@@ -101,11 +101,25 @@ describe("Changes view renders the recorded stories (server render)", () => {
     // The three counts are pressable section switches, all shown by default.
     expect(html).toContain('class="count-chip count-removed"');
     expect(html).toContain('aria-pressed="true"');
-    // No banner box: the delta's nature is the one word that names it on the
-    // facts line, with the pair's counts and api hashes on that same line.
+    // No banner box, and no visible nature label: the claim rides a
+    // visually-hidden element, with the pair's counts and api hashes on the
+    // facts line.
     expect(html).not.toContain("diff-kind-note");
     expect(html).toContain("diff-nature");
-    expect(html).toContain("records (api ");
+    expect(html).toContain("records (api: ");
+  });
+
+  test("each A/B badge appears exactly once, whichever fork mode the pair is in", () => {
+    // Grouped by entity: one badge per side, even when both fork pickers are
+    // on screen.
+    const same = renderChanges({ a: "gpui-unofficial:1.16.3", b: "gpui-unofficial:1.17.2" });
+    const cross = renderChanges({ a: "gpui-ce:0.2.2", b: "gpui-unofficial:1.18.1" });
+    const badges = (html: string) => html.match(/class="diff-marker mono"/g)?.length ?? 0;
+    expect(badges(same)).toBe(2);
+    expect(badges(cross)).toBe(2);
+    expect(same).toContain("⑂ Fork");
+    expect(same).not.toContain("⑂ Fork ✓");
+    expect(cross).toContain("⑂ Fork ✓");
   });
 
   test("one package picker while both sides diff one fork, two when they do not", () => {

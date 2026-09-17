@@ -72,6 +72,11 @@
     gap: 10px;
     flex-wrap: wrap;
   }
+  /* Both labels sit above their fields, so the buttons (which have none) lock
+     to the fields' bottom edge instead of floating in the blank beside them. */
+  .ff-body > button {
+    align-self: flex-end;
+  }
   .ff-note {
     font-size: 0.76rem;
     color: var(--content-muted);
@@ -255,8 +260,7 @@
     opacity: 0.45;
     filter: grayscale(1);
   }
-  /* The filter drawer is opt-in: the delta is the point, so the summary row
-     carries the toggle and #changes-filter stays in the DOM, hidden. */
+  /* The filter drawer is opt-in, and its trigger says when it is open. */
   .filter-toggle {
     margin-left: auto;
     font: inherit;
@@ -272,6 +276,12 @@
   .filter-toggle:hover {
     border-color: var(--border-accent);
     color: var(--color-ocean);
+  }
+  .filter-toggle[aria-expanded="true"] {
+    background: rgba(55, 143, 189, 0.12);
+    border-color: var(--border-accent);
+    color: var(--color-ocean-deep);
+    font-weight: 600;
   }
 
   .delta-identical {

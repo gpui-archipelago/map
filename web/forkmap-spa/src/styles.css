@@ -240,16 +240,18 @@
     font-size: 11px;
     flex: none;
   }
-  /* The fork-mode toggle is quieter than the pickers it sits beside, and
-     pressed when both fork pickers are on screen. */
+  /* The fork-mode toggle is quieter than the pickers it sits beside — until it
+     is on, when it says so the same way the status chips do. */
   .fork-scope {
     font-weight: 400;
     font-size: 0.76rem;
     color: var(--content-muted);
   }
   .fork-scope[aria-pressed="true"] {
+    background: rgba(55, 143, 189, 0.12);
     border-color: var(--border-accent);
-    color: var(--color-ocean);
+    color: var(--color-ocean-deep);
+    font-weight: 600;
   }
   /* The swap is an icon between the two sides, not a labelled control. */
   #changes-swap {
@@ -263,15 +265,9 @@
     font-size: 1.05rem;
   }
 
-  /* The diff nature is a word, not a glyph (an icon read as a menu handle). */
-  .diff-nature {
-    align-self: center;
-    font-size: 0.68rem;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--content-muted);
-    cursor: help;
-  }
+  /* The diff's nature is not labelled on the facts line: the pair's pickers
+     say which forks are in play. The claim itself rides the visually-hidden
+     .diff-nature element (see ChangesView) for assistive tech and the tests. */
 
   /* Present for screen readers (and the smoke), invisible on screen. */
   .visually-hidden {
@@ -311,6 +307,12 @@
   }
   /* …and the row closes up: the gaps and pill padding are the toolbar's own. */
   .controls.picker .pair {
+    gap: 8px;
+  }
+  /* One side's badge + chip: a wrap never separates them. */
+  .controls.picker .side {
+    display: inline-flex;
+    align-items: center;
     gap: 8px;
   }
   .controls.picker button {

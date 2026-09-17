@@ -64,14 +64,15 @@ function backTarget(a: Side, b: Side): string {
 
 function DiffNature({ a, b, crossFork }: { a: Side; b: Side; crossFork: boolean }) {
   // Whether the pair is one fork or two is the whole claim (RULE-1: cross-fork
-  // deltas are snapshot comparisons, never changelogs), stated as the one word
-  // that names it — the full sentence rides the accessible name and tooltip.
+  // deltas are snapshot comparisons, never changelogs). It is not labelled on
+  // the facts line — the pair's own pickers say which forks are in play — but
+  // the claim stays in the DOM, where assistive tech and the tripwires read it.
   const note = crossFork
     ? `Snapshot comparison. Two different forks — ${a.provider.id} and ${b.provider.id} — with no shared lineage, so each row just compares the two releases item by item. For a fork's own history, see the Journal.`
     : `Changelog. Two releases of ${a.provider.id}, so this is that fork's own history — the same adjacency the Journal renders.`;
   return (
-    <span className="diff-nature mono" role="img" aria-label={note} title={note}>
-      {crossFork ? "snapshot" : "changelog"}
+    <span className="diff-nature visually-hidden">
+      {note}
     </span>
   );
 }
@@ -90,13 +91,16 @@ function DiffMeta({ data, a, b }: { data: CorpusData; a: Side; b: Side }) {
   const bMeta = metaOf(b);
   const sideFact = (side: "A" | "B", row: ManifestVersionRow | null, m: number, n: number) =>
     `${side}: ${m === 0 ? "not measured" : `${n.toLocaleString()} records`}${
-      row?.api_hash ? ` (api ${row.api_hash.slice(0, 6)}…)` : ""
+      row?.api_hash ? ` (api: ${row.api_hash.slice(0, 6)}…)` : ""
     }`;
+  // Only the shims a side actually carries, so a clean release reads "none".
   const facadeText = (row: ManifestVersionRow | null) => {
     const f = row?.facade;
-    return f
-      ? `${f.aliases.length} alias${f.aliases.length === 1 ? "" : "es"}, ${f.polyfills.length} polyfill${f.polyfills.length === 1 ? "" : "s"}`
-      : "none";
+    if (!f) return "none";
+    const parts: string[] = [];
+    if (f.aliases.length) parts.push(`${f.aliases.length} alias${f.aliases.length === 1 ? "" : "es"}`);
+    if (f.polyfills.length) parts.push(`${f.polyfills.length} polyfill${f.polyfills.length === 1 ? "" : "s"}`);
+    return parts.length ? parts.join(", ") : "none";
   };
   return (
     <div className="diff-meta muted">
@@ -108,7 +112,7 @@ function DiffMeta({ data, a, b }: { data: CorpusData; a: Side; b: Side }) {
         </span>
       )}
       {(aMeta.row?.facade || bMeta.row?.facade) && (
-        <span>{` · facade shims — A ${facadeText(aMeta.row)} / B ${facadeText(bMeta.row)}`}</span>
+        <span>{` · facade: ${facadeText(aMeta.row)} (A) / ${facadeText(bMeta.row)} (B)`}</span>
       )}
     </div>
   );
@@ -184,9 +188,13 @@ function ListableDiff({
   const noteText = note.length ? `filtering by ${note.join(" · ")}` : "";
 
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  // The drawer stages its two fields: Apply commits them, Clear resets them.
-  const [draftKind, setDraftKind] = useState("");
-  const [draftSearch, setDraftSearch] = useState("");
+  // The name field filters as you type, but a beat behind: the biggest diffs
+  // are thousands of rows, and filtering on every keystroke fights the typing.
+  const [draftSearch, setDraftSearch] = useState(search);
+  useEffect(() => {
+    const t = setTimeout(() => onSearch(draftSearch), 180);
+    return () => clearTimeout(t);
+  }, [draftSearch, onSearch]);
   // The three count chips are section switches: pressing one hides that whole
   // section, so the delta can be read one kind of change at a time.
   const [showRemoved, setShowRemoved] = useState(true);
@@ -199,17 +207,7 @@ function ListableDiff({
   // How many of the drawer's fields are doing something — the bar's count.
   const appliedFilters = (effKind ? 1 : 0) + (search.trim() ? 1 : 0);
 
-  const openFilter = () => {
-    setDraftKind(effKind);
-    setDraftSearch(search);
-    setIsFilterOpen(true);
-  };
-  const applyDraft = () => {
-    onKind(draftKind);
-    onSearch(draftSearch);
-  };
   const clearFilter = () => {
-    setDraftKind("");
     setDraftSearch("");
     onKind("");
     onSearch("");
@@ -247,7 +245,7 @@ function ListableDiff({
               className="filter-toggle mono"
               aria-expanded={isFilterOpen}
               aria-controls="changes-filter"
-              onClick={() => (isFilterOpen ? setIsFilterOpen(false) : openFilter())}
+              onClick={() => setIsFilterOpen((v) => !v)}
             >
               {`🔍 Filter${appliedFilters ? ` (${appliedFilters})` : ""}`}
             </button>
@@ -278,8 +276,8 @@ function ListableDiff({
                 <select
                   id="changes-filter-kind"
                   aria-label="filter delta rows by kind"
-                  value={draftKind}
-                  onChange={(e) => setDraftKind(e.target.value)}
+                  value={effKind}
+                  onChange={(e) => onKind(e.target.value)}
                 >
                   <option value="">all kinds</option>
                   {kindOptions.map((k) => (
@@ -304,11 +302,8 @@ function ListableDiff({
                   onChange={(e) => setDraftSearch(e.target.value)}
                 />
               </label>
-              <button id="changes-filter-clear" type="button" className="mono" onClick={clearFilter}>
+              <button id="changes-filter-clear" type="button" className="mono" hidden={!active} onClick={clearFilter}>
                 Clear
-              </button>
-              <button id="changes-filter-apply" type="button" className="mono" onClick={applyDraft}>
-                Apply
               </button>
               <span className="ff-note mono" id="changes-filter-note">
                 {noteText}
@@ -640,9 +635,10 @@ export function ChangesView({
       <div className="wrap">
         <div className="controls picker" id="changes-controls">
           <h1 className="changes-title">Changes</h1>
-          {/* One package while both sides diff one fork; looking at two forks
-              is a deliberate step (the row's fork control) or arrives as a
-              deep link — never two identical pickers side by side. */}
+          {/* Grouped by entity, not by field: everything for A on the left,
+              everything for B on the right, so each badge appears exactly
+              once. One package while both sides diff one fork; looking at two
+              is the fork toggle (or a deep link). */}
           <div className="pair">
             {sameFork ? (
               <span className="ctl-label mono" aria-hidden="true">
@@ -668,46 +664,49 @@ export function ChangesView({
                 ))}
               </select>
             </label>
-            <span className="diff-marker mono" aria-hidden="true" hidden={sameFork}>
-              B
+            {/* Each badge is welded to the chip it names: a wrap never leaves a
+                stray letter at the end of a row. */}
+            <span className="side">
+              {sameFork && (
+                <span className="diff-marker mono" aria-hidden="true">
+                  A
+                </span>
+              )}
+              <label className="ctl">
+                <select id="changes-a" aria-label="A · release" title={optionLabel(aRow ?? a.provider.versions[0])} value={a.vers} onChange={(e) => onAVers(e.target.value)}>
+                  {a.provider.versions.map((v) => (
+                    <option key={v.vers} value={v.vers}>
+                      {optionLabel(v)}
+                    </option>
+                  ))}
+                </select>
+              </label>
             </span>
-            <label className="ctl">
-              <select
-                id="changes-b-provider"
-                aria-label="B · fork"
-                title="B's fork"
-                hidden={sameFork}
-                value={b.provider.id}
-                onChange={(e) => onBProv(e.target.value)}
-              >
-                {manifest.providers.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {`${p.id}${p.package === p.id ? "" : ` (${p.package})`}`}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
-          <div className="pair">
-            <span className="diff-marker mono" aria-hidden="true">
-              A
-            </span>
-            <label className="ctl">
-              <select id="changes-a" aria-label="A · release" title={optionLabel(aRow ?? a.provider.versions[0])} value={a.vers} onChange={(e) => onAVers(e.target.value)}>
-                {a.provider.versions.map((v) => (
-                  <option key={v.vers} value={v.vers}>
-                    {optionLabel(v)}
-                  </option>
-                ))}
-              </select>
-            </label>
           </div>
           <button id="changes-swap" className="swap-btn mono" type="button" aria-label="swap A and B" title="swap A and B" onClick={swap}>
             ⇄
           </button>
           <div className="pair">
-            <span className="diff-marker mono" aria-hidden="true">
-              B
+            <span className="side">
+              <span className="diff-marker mono" aria-hidden="true">
+                B
+              </span>
+              <label className="ctl">
+                <select
+                  id="changes-b-provider"
+                  aria-label="B · fork"
+                  title="B's fork"
+                  hidden={sameFork}
+                  value={b.provider.id}
+                  onChange={(e) => onBProv(e.target.value)}
+                >
+                  {manifest.providers.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {`${p.id}${p.package === p.id ? "" : ` (${p.package})`}`}
+                    </option>
+                  ))}
+                </select>
+              </label>
             </span>
             <label className="ctl">
               <select id="changes-b" aria-label="B · release" title={optionLabel(bRow ?? b.provider.versions[0])} value={b.vers} onChange={(e) => onBVers(e.target.value)}>
@@ -727,7 +726,7 @@ export function ChangesView({
             title={forkScopeTitle}
             onClick={onForkScope}
           >
-            ⑂ Fork
+            {`⑂ Fork${pickForks ? " ✓" : ""}`}
           </button>
           {/* One step of the stream's stable backbone, both sides at once.
               Only where there is one: a cross-fork pair has no shared lineage
