@@ -285,8 +285,8 @@ describe("Alignment view renders the recorded stories (server render)", () => {
     // row each, and the policy is stated exactly once.
     expect(html).toContain('id="alignment-members"');
     expect(html).toContain("Member contract");
-    expect(html).toContain("consumer-visible pub members only");
-    expect(html).toContain("private/pub(crate) members never re-sign a type");
+    expect(html).toContain("public members only");
+    expect(html).toContain("private members never change a type&#x27;s hash");
     expect(occurrences(html, 'class="member-base-chip mono"')).toBe(4);
     // Nothing is selected until a base is chosen, so no chip is pressed.
     expect(occurrences(html, 'class="member-base-chip mono selected"')).toBe(0);
@@ -345,7 +345,7 @@ describe("Alignment view renders the recorded stories (server render)", () => {
     const html = renderAlignment({ item: "struct:accessibility::AccessibilityNode" });
     expect(html).toContain('id="alignment-members"');
     expect(html).toContain("Member contract");
-    expect(html).toContain("consumer-visible pub members only");
+    expect(html).toContain("public members only");
     // A non-member-bearing kind on the same path never renders it.
     const fnHtml = renderAlignment({ item: "fn:Window::blur" });
     expect(fnHtml).not.toContain('id="alignment-members"');
@@ -879,7 +879,7 @@ describe("T-42 digest variants render over the recorded stories (server render)"
     // neutral dot states moved to their own legend above the matrix
     expect(html).toContain('id="alignment-dot-legend"');
     expect(html).toContain('class="legend-info mono"');
-    expect(html).toContain('title="dot color = the measured digest it carries · a color change within a stream is a re-signature"');
+    expect(html).toContain('title="dot colour = the content hash that release carries · a colour change within a fork means the signature moved"');
   });
 
   test("a single-signature item keeps the deck to one card + the dot-state legend", () => {

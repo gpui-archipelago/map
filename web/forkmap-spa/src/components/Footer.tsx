@@ -17,11 +17,10 @@ export function Footer({ manifest, counts }: { manifest: ForkmapManifest; counts
       <div className="wrap">
         <p className="footer-tag mono">gpui-archipelago — every fork is an island. Here they can find each other.</p>
         <p id="footer-provenance">
-          Generated from the dataset by <code>cargo gocar export-fork-map</code> (boot manifest {manifest.schema} over
-          the {FORKMAP_SCHEMA} corpus bundle, data as of {manifest.dataset_synced_at ?? "an unsynced dataset"}).
-          {counts.providers} providers · {counts.versions} published versions · {counts.items.toLocaleString("en-US")}{" "}
-          measured item records across {counts.keys.toLocaleString("en-US")} item identities · {counts.facades} versions
-          carrying facade shim tables.
+          Built from the gocar dataset by <code>cargo gocar export-fork-map</code> — manifest {manifest.schema}, data
+          bundle {FORKMAP_SCHEMA}, synced {manifest.dataset_synced_at ?? "never"}. {counts.providers} forks ·{" "}
+          {counts.versions} releases · {counts.items.toLocaleString("en-US")} items measured across{" "}
+          {counts.keys.toLocaleString("en-US")} distinct names · {counts.facades} releases with facade shims.
         </p>
       </div>
     </footer>

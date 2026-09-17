@@ -378,7 +378,7 @@ function MatrixStream({
         <span className="muted">{` ${p.versions.length} releases`}</span>
         <span
           className={`arch-tag ${companion ? "post" : "pre"} mono`}
-          title={companion ? `post-split · companion ${companion.package} — this lineage split off and republishes under its own crates.io package` : "pre-split · self-contained — one lineage, published before the fork split"}
+          title={companion ? `split off and republished under its own crates.io package (${companion.package})` : "published before the fork split"}
         >
           {companion ? "post" : "pre"}
         </span>
@@ -605,7 +605,7 @@ export function VariantLegend({
               <span className="var-card-head">
                 <span className={`cell cell-dv${swatch}`} aria-hidden="true" />
                 <strong>{`Variant ${v.label}`}</strong>
-                <code className="var-digest mono" title={`blake3 64-hex: ${v.digest}`}>
+                <code className="var-digest mono" title={`blake3 hash: ${v.digest}`}>
                   {v.shortDigest}
                 </code>
               </span>
@@ -623,7 +623,7 @@ export function VariantLegend({
               })()}
               {count && (
                 <span className="var-card-stats">
-                  <span className="stat-pill mono" title="release rows whose measured surface carries this exact digest">
+                  <span className="stat-pill mono" title="releases carrying exactly this hash">
                     <svg aria-hidden="true" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4">
                       <path d="M2.5 5 8 2.5 13.5 5 8 7.5 2.5 5Z" />
                       <path d="M2.5 8 8 10.5 13.5 8" />
@@ -631,7 +631,7 @@ export function VariantLegend({
                     </svg>
                     {`${count.releases} release${count.releases === 1 ? "" : "s"}`}
                   </span>
-                  <span className="stat-pill mono" title="distinct forks carrying this exact digest">
+                  <span className="stat-pill mono" title="how many forks carry exactly this hash">
                     <svg aria-hidden="true" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4">
                       <circle cx="5" cy="3.5" r="1.6" />
                       <circle cx="11" cy="3.5" r="1.6" />
@@ -675,7 +675,7 @@ function memberStatLine(stat: VariantMemberStat, isBase: boolean) {
     return (
       <span
         className="var-members muted"
-        title="no single member set was measured for this digest — the releases carrying it are measured under more than one digest, so no one vector is honest"
+        title="no single member list was measured for this hash — the releases carrying it disagree, so no one list would be honest"
       >
         {"members —"}
       </span>
@@ -725,7 +725,7 @@ function MemberPanel({
       <div className="deck-head">
         <h3>Member contract</h3>
         <span className="deck-sub mono">
-          {"consumer-visible pub members only — doc comments and private/pub(crate) members never re-sign a type (honest rule 2)"}
+          {"public members only — doc comments and private members never change a type's hash"}
         </span>
       </div>
       {resolved.length === 0 ? (
@@ -854,7 +854,7 @@ function DotLegend() {
       <span className="legend-entry">
         <span
           className="arch-tag pre mono"
-          title="pre-split · self-contained — one lineage, published before the fork split"
+          title="published before the fork split"
         >
           pre
         </span>
@@ -863,7 +863,7 @@ function DotLegend() {
       <span className="legend-entry">
         <span
           className="arch-tag post mono"
-          title="post-split — this lineage republishes under its own crates.io package (the companion crate is named in the stream head tooltip)"
+          title="republished under its own crates.io package after the split (the package is named in the stream header)"
         >
           post
         </span>
@@ -872,7 +872,7 @@ function DotLegend() {
       <span
         className="legend-info mono"
         aria-hidden="true"
-        title="dot color = the measured digest it carries · a color change within a stream is a re-signature"
+        title="dot colour = the content hash that release carries · a colour change within a fork means the signature moved"
       >
         ?
       </span>
@@ -907,13 +907,13 @@ function ItemDocTitle({ itemKey, story }: { itemKey: string; story: ItemDocStory
     <div className="item-doc" id="alignment-item-doc">
       <p
         className="item-doc-text"
-        title={`the measured docstring of ${itemKey} — resolved from the item's payload fragment (schema gocar.forkmap.payload.v1; the doc-texts sidecar's rows projected per key)`}
+        title={`the recorded doc comment for ${itemKey}`}
       >
         {doc}
       </p>
       <p
         className="item-doc-cap mono"
-        title="docstrings are measured per release — an fn's doc change never re-signs (its digest excludes doc comments), so only these resolved bytes tell the doc story (rule 7)"
+        title="doc comments are recorded per release and never change a hash, so these lines are the only record of doc edits (rule 7)"
       >
         {cap}
       </p>
@@ -1174,7 +1174,7 @@ function ItemBoxBody({
         onToggle={(i) => setIsolated((cur) => (cur === i ? null : i))}
       />
       <div className="hero-stats" aria-label="item stats">
-        <span className="stat-pill mono" title="release rows whose measured surface includes this item — of the whole dataset">
+        <span className="stat-pill mono" title="releases that include this item">
           <svg aria-hidden="true" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4">
             <path d="M2.5 5 8 2.5 13.5 5 8 7.5 2.5 5Z" />
             <path d="M2.5 8 8 10.5 13.5 8" />
@@ -1182,7 +1182,7 @@ function ItemBoxBody({
           </svg>
           {`${rec.versions} of ${manifest.counts.versions} releases`}
         </span>
-        <span className="stat-pill mono" title="forks in the dataset — which of them carry it is the fork matrix below">
+        <span className="stat-pill mono" title="forks in the dataset — the ones carrying it are in the matrix below">
           <svg aria-hidden="true" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4">
             <circle cx="5" cy="3.5" r="1.6" />
             <circle cx="11" cy="3.5" r="1.6" />
@@ -1193,7 +1193,7 @@ function ItemBoxBody({
           </svg>
           {`${manifest.counts.providers} forks`}
         </span>
-        <span className="stat-pill mono" title="distinct measured digests of this item — α β γ… label them in first-measured order">
+        <span className="stat-pill mono" title="how many different hashes this item has had — α β γ… in the order they were first seen">
           <svg aria-hidden="true" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4">
             <circle cx="3.5" cy="3.5" r="1.3" />
             <circle cx="12.5" cy="3.5" r="1.3" />
@@ -1207,7 +1207,7 @@ function ItemBoxBody({
       {(fromRules.length > 0 || toRules.length > 0) && (
         <div
           className="rule-box"
-          title="a rule is a recipe, not an attestation — a human confirmed the successor; dataset vouching ≠ compile vouching (doc 09). The copy control puts the dataset payload (rule id + measured from/to keys + transition provenance) on your clipboard."
+          title="a rule is a recipe, not proof — a human confirmed the successor, which is not the same as the data vouching for it (doc 09). Copy puts the rule id, its before/after keys and where the change was measured on your clipboard."
         >
           <strong>Confirmed migration rules</strong>
           {fromRules.map((r) => (
@@ -1424,7 +1424,7 @@ export function AlignmentView({
       <div className="wrap">
         <div className="align-band">
           <div className="view-head">
-            <p className="view-eyebrow mono">{`fork map / alignment inspector · item index schema ${alignIndex.schema} (export-derived from gocar.forkmap.v1)`}</p>
+            <p className="view-eyebrow mono">{`fork map / alignment — search an item and see which forks carry it`}</p>
             <h1>Cross-Fork API Longevity &amp; Digest Parity</h1>
           </div>
 
@@ -1495,7 +1495,7 @@ export function AlignmentView({
               )}
             </div>
             <div className="preset-row" id="alignment-presets" hidden={presetKeys.length === 0}>
-              <span className="preset-label mono" title="recorded-story items">
+              <span className="preset-label mono" title="recorded examples">
                 presets
               </span>
               <span id="alignment-preset-chips" className="preset-chips">

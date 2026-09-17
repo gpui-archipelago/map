@@ -13,28 +13,28 @@ import { DocLink } from "./common";
 const SHORT_RULES: { strong: string; rest: string }[] = [
   {
     strong: "Rule 1 —",
-    rest: "no cross-fork “same generation” badges, ever — the cells and dots are the whole story; cross-fork Changes deltas are snapshot-surface differences, never changelogs, with rule rows informational only.",
+    rest: "two releases are only called the same within one fork; the dots and cells are the whole story. Comparing two different forks shows one snapshot beside another, never a changelog.",
   },
   {
     strong: "Rule 2 —",
-    rest: "items are kind:name with module paths where the corpus walks pub mod chains (root re-exports stay flat); fn digests are parameter-type; a type's digest covers its consumer-visible pub members only — doc comments and pub(crate)/private members never re-sign a type.",
+    rest: "items are named kind:name, with module paths where the source nests modules. A function's hash covers its parameter types; a type's covers its public members, so doc comments and private members never change it.",
   },
   {
     strong: "Rule 3 —",
-    rest: "methods and associated items of public types are measured (T-26); derives, trait-interface items, external-crate members and cfg evaluation are not — never inferred.",
+    rest: "methods and associated items on public types are measured; derives, trait items, members from other crates and cfg evaluation are not — and are never guessed at.",
   },
-  { strong: "Rule 4 —", rest: "null ≠ unchanged: unmeasured rows render “not measured”." },
+  { strong: "Rule 4 —", rest: "a missing row means “not measured”, not “unchanged”." },
   {
     strong: "Rule 5 —",
-    rest: "“compiles” badges only where the studies compiled real artifacts, each linked to its evidence.",
+    rest: "a compile badge only appears where a study compiled the real thing, and it links its evidence.",
   },
   {
     strong: "Rule 6 —",
-    rest: "yanked + prerelease rows are flagged; a prerelease is never a default choice.",
+    rest: "yanked and prerelease releases are shown and flagged; a prerelease is never the default choice.",
   },
   {
     strong: "Rule 7 —",
-    rest: "every claim traces to the dataset; nothing here is hand-edited.",
+    rest: "every number comes from the dataset; nothing here is typed in by hand.",
   },
 ];
 
@@ -45,10 +45,10 @@ export function AboutNote() {
           DOM for the id tripwires, one click (or Tab+Enter on the summary)
           away instead of pushing the page length. */}
       <details>
-        <summary>About the data — the honest display rules</summary>
+        <summary>About the data — what it will and will not claim</summary>
         <p className="subnote">
-          Seven rules shared with the CLI toolchain are code paths here (ids honest-rule-1…7 in the DOM and
-          RULE-1…7 in app.js).
+          Seven rules, the same ones the CLI follows. Each carries the same id here and in the code, so a reviewer
+          can find it in both.
         </p>
         <ol className="rules">
           {SHORT_RULES.map((r, i) => (

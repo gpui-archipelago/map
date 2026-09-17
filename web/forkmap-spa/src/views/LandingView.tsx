@@ -20,7 +20,7 @@ function CompileBadges({ providers }: { providers: ManifestProvider[] }) {
             <span className="badge-name">{p.package}</span>
             <span className="badge-vers">{m ? m.vers : "—"}</span>
             <span className="badge-evidence">
-              {m ? `compiled on rustc ${m.toolchain} — ` : "no compile study yet"}
+              {m ? `compiled on rustc ${m.toolchain} — ` : "no compile evidence yet"}
               {m && <StudyDocLink num={7} href={m.evidence} />}
             </span>
           </div>
@@ -54,7 +54,7 @@ export function LandingView({ manifest, counts }: { manifest: ForkmapManifest; c
       <div className="wrap">
         <div className="hero">
           <p className="hero-eyebrow mono">
-            crates.io cross-fork alignment &amp; empirical measurement — a dumb renderer over the gocar dataset
+            how the GPUI packages on crates.io differ — measured from source
           </p>
           <h1>The GPUI fork map</h1>
           <blockquote className="hero-quote">
@@ -62,10 +62,10 @@ export function LandingView({ manifest, counts }: { manifest: ForkmapManifest; c
             each other. Here they can.
           </blockquote>
           <p className="hero-intro">
-            Zed’s UI framework is republished on crates.io as six packages — <code>gpui</code>,{" "}
+            Zed’s UI framework is published on crates.io under six different package names — <code>gpui</code>,{" "}
             <code>gpui-ce</code>, <code>gpui-unofficial</code>, <code>gpui-pre</code>, <code>kael</code>,{" "}
-            <code>gpui-box</code> — under incomparable version numbers. This map answers the questions names
-            cannot:
+            <code>gpui-box</code> — with version numbers that do not line up. This map compares what is actually
+            inside them:
           </p>
 
           <div className="card-grid workflow">
@@ -76,9 +76,8 @@ export function LandingView({ manifest, counts }: { manifest: ForkmapManifest; c
               <span className="card-body">
                 <span className="card-title">What changed</span>
                 <span className="card-sub">
-                  The item-set delta between any two releases of any fork(s): added / removed / re-signed,
-                  computed here from the measured surfaces. Within a fork it is a changelog; across forks it is a
-                  snapshot-surface difference.
+                  What changed between any two releases: items added, removed, or given a new signature. Within one
+                  fork that is a changelog; across two forks it is just one snapshot beside another.
                 </span>
               </span>
             </a>
@@ -89,8 +88,8 @@ export function LandingView({ manifest, counts }: { manifest: ForkmapManifest; c
               <span className="card-body">
                 <span className="card-title">Who carries it</span>
                 <span className="card-sub">
-                  Type an item (<code>kind:name</code>) — per-fork presence / re-signature matrix with
-                  first-removal callouts and rule successors.
+                  Search for an item (like <code>struct:Window</code>) and see which forks carry it, when its
+                  signature changed, and where it was dropped.
                 </span>
               </span>
             </a>
@@ -101,8 +100,8 @@ export function LandingView({ manifest, counts }: { manifest: ForkmapManifest; c
               <span className="card-body">
                 <span className="card-title">Which fork to bind</span>
                 <span className="card-sub">
-                  Pick a fork (optionally an exact release) — copy the manifest + starter <code>main.rs</code>{" "}
-                  that <code>cargo gocar new</code> writes, byte-equal.
+                  Pick a fork — and a release, if you want — and copy the <code>Cargo.toml</code> and{" "}
+                  <code>main.rs</code> that <code>cargo gocar new</code> would write for it.
                 </span>
               </span>
             </a>
@@ -113,8 +112,7 @@ export function LandingView({ manifest, counts }: { manifest: ForkmapManifest; c
               <span className="card-body">
                 <span className="card-title">Release timeline</span>
                 <span className="card-sub">
-                  Every release of every fork in one continuous scroll — each entry is what that release changed
-                  against the release before it.
+                  Every release of every fork in one scroll, with what each release changed.
                 </span>
               </span>
             </a>
@@ -128,12 +126,12 @@ export function LandingView({ manifest, counts }: { manifest: ForkmapManifest; c
           </span>
           <span id="data-facts" className="data-facts">
             <span className="data-facts-counts">
-              {counts.providers} forks · {counts.versions} published versions · {counts.items} measured item
-              records across {counts.keys} item identities · {counts.facades} versions carry facade shim tables
+              {counts.providers} forks · {counts.versions} releases · {counts.items} items measured across{" "}
+              {counts.keys} distinct names · {counts.facades} releases carry facade shims
             </span>
             <span className="data-facts-claim">
-              In this data no two releases of different forks share an identical measured surface — cross-fork
-              comparisons are item-level claims only
+              No two releases from different forks match in this data, so comparisons between forks are always item
+              by item
             </span>
           </span>
         </div>
@@ -142,51 +140,51 @@ export function LandingView({ manifest, counts }: { manifest: ForkmapManifest; c
           <div className="col-main">
             <div className="panel">
               <div className="panel-head">
-                <h2>Three truth layers</h2>
-                <span className="panel-kicker mono">separation of attestation</span>
+                <h2>Where the data comes from</h2>
+                <span className="panel-kicker mono">three sources, kept separate</span>
               </div>
               <table className="layers">
                 <thead>
                   <tr>
-                    <th>Layer</th>
-                    <th>What the map shows</th>
-                    <th>Origin</th>
+                    <th>Source</th>
+                    <th>What it tells you</th>
+                    <th>Where it comes from</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
                     <td>
-                      <span className="tag tag-registry">Registry truth</span>
+                      <span className="tag tag-registry">crates.io</span>
                     </td>
                     <td>
-                      published versions, yanked / prerelease flags, declared <code>rust-version</code> (never an
-                      attestation)
+                      which versions exist, which are yanked or prerelease, and the <code>rust-version</code> each
+                      one declares (as declared, not verified)
                     </td>
-                    <td>live crates.io sync</td>
+                    <td>live from crates.io</td>
                   </tr>
                   <tr>
                     <td>
-                      <span className="tag tag-measured">Measured</span>
+                      <span className="tag tag-measured">Source code</span>
                     </td>
                     <td>
-                      per-version item surfaces (<code>kind:name</code> + digest), whole-surface hashes — every
-                      dot on this page
+                      the items each release exposes (<code>kind:name</code> plus a hash of each) and a hash of the
+                      whole set — this is what every dot on the page reads
                     </td>
                     <td>
-                      syn-level corpus analysis (<code>gocar-index</code>)
+                      parsed from the published source
                     </td>
                   </tr>
                   <tr>
                     <td>
-                      <span className="tag tag-stub">Not yet measured</span>
+                      <span className="tag tag-stub">Not measured yet</span>
                     </td>
                     <td>
-                      derives / trait-interface items / external-crate members, auto-traits, attested compiler
-                      floors, cfg <em>evaluation</em> — shown as <em>not measured</em>, never guessed (methods and
-                      assoc items of public types are measured since T-26; each entry carries its cfg gates as
-                      provenance)
+                      derives, trait-interface items, members pulled in from other crates, auto-traits, compiler
+                      floors, and cfg <em>evaluation</em> — shown as <em>not measured</em>, never guessed. (Methods
+                      and associated items on public types are measured, and each entry records the cfg gates that
+                      apply.)
                     </td>
-                    <td>awaits the compiler/rustdoc passes (phase 3)</td>
+                    <td>to come</td>
                   </tr>
                 </tbody>
               </table>
@@ -194,62 +192,53 @@ export function LandingView({ manifest, counts }: { manifest: ForkmapManifest; c
 
             <div className="panel">
               <div className="panel-head">
-                <h2>Honest display rules</h2>
-                <span className="panel-kicker mono">implemented as code paths, not prose</span>
+                <h2>What the map will not claim</h2>
+                <span className="panel-kicker mono">enforced in the code, not just here</span>
               </div>
               <p className="subnote">
-                Each rule carries the same id in the DOM you are reading and in <code>app.js</code>, so a reviewer
-                can find every rule in the UI and in the code.
+                Each rule carries the same id in this page and in the code, so a reviewer can find it in both.
               </p>
               <ol id="honest-rules" className="rules">
                 <li id="honest-rule-1">
-                  <strong>Epochs are exact-copy-only within a stream.</strong> No cross-fork “same generation”
-                  badges exist anywhere on this site — matrix cells and dots are the whole story. Equal
-                  whole-surface hashes occur only for within-stream byte-identical republishes, and equal surfaces
-                  never span two forks in this data. When the Changes view compares two <em>different</em> forks,
-                  it renders a snapshot-surface difference (never a changelog), and rule rows there are
-                  informational only.
+                  <strong>Two releases are only ever called the same within one fork.</strong> Nothing here badges
+                  two different forks as the same generation — the dots and cells are the whole story. Identical
+                  hashes only happen when a fork republishes its own release byte for byte, and no two forks match
+                  in this data. When Changes compares two <em>different</em> forks it shows one snapshot beside
+                  another, never a changelog.
                 </li>
                 <li id="honest-rule-2">
-                  <strong>Qualified item identity.</strong> Items are <code>kind:&lt;name&gt;</code> with module
-                  paths where the corpus walks <code>pub mod</code> chains (
-                  <code>fn:profiler::record_frame_event</code>); root re-exports stay flat (
-                  <code>struct:Window</code>). Fn digests are parameter-type level (a parameter rename never
-                  re-signs); doc comments are part of a type’s canonical text, so a doc-only change reads as a
-                  re-signature (a changed digest).
+                  <strong>Items are named <code>kind:name</code>.</strong> Module paths are included where the
+                  source has real module nesting (<code>fn:profiler::record_frame_event</code>); re-exports stay
+                  flat (<code>struct:Window</code>). A function’s hash covers its parameter types, so renaming a
+                  parameter does not count as a change. For types, doc comments are part of the text, so a
+                  doc-only edit does.
                 </li>
                 <li id="honest-rule-3">
-                  <strong>Out-of-model is stated, never inferred.</strong> Methods and associated items of public
-                  types are measured (T-26, 2026-09-07) and each entry carries its effective cfg gates as
-                  provenance; derives, trait-interface items, external-crate members and cfg evaluation are
-                  outside the measured item model. Views that touch them say so — the map never infers
-                  compatibility from a lack of deltas.
+                  <strong>What is not measured is labelled, not guessed.</strong> Methods and associated items on
+                  public types are measured, along with the cfg gates that apply. Derives, trait items, members
+                  pulled in from other crates, and cfg evaluation are not. Where that matters the view says so — a
+                  quiet row is never taken as proof the two agree.
                 </li>
                 <li id="honest-rule-4">
-                  <strong>
-                    <code>null</code> is not “unchanged”.
-                  </strong>{" "}
-                  An unmeasured row renders “not measured”, never as an absence or a non-change.
+                  <strong>A missing row means “not measured”, not “unchanged”.</strong> Unmeasured entries say so.
                 </li>
                 <li id="honest-rule-5">
-                  <strong>Badges need evidence.</strong> “Compile-verified” appears only where the studies
-                  compiled real artifacts, and each badge links its study (docs 07 / 12).
+                  <strong>Compile badges need evidence.</strong> A release is only marked compile-verified where a
+                  study compiled the real artifact, and the badge links to it (docs 07 and 12).
                 </li>
                 <li id="honest-rule-6">
-                  <strong>Flags are shown, not hidden.</strong> Yanked and prerelease rows are rendered and
-                  flagged; a prerelease is never presented as a stable choice.
+                  <strong>Yanked and prerelease versions are shown, and flagged.</strong> A prerelease is never
+                  presented as a safe choice.
                 </li>
                 <li id="honest-rule-7">
-                  <strong>Every claim traces to the dataset.</strong> One footer names the generating command and
-                  schema; every number on this page is derived from the dataset — the corpus counts ride the boot
-                  manifest, precomputed by the exporter from the same data the full bundle carries, never typed in.
+                  <strong>Every number comes from the dataset.</strong> The footer names the command and schema
+                  that produced it, and nothing on the page is typed in by hand.
                 </li>
               </ol>
               <p className="subnote">
-                The recorded studies behind the classes above: doc 08 (what the used-API report can prove on real
-                code), doc 09 (migrate + facade across the real 1.17.2 break), doc 12 (the alias-shim compile
-                evidence on both real kits), doc 13 (the two-kits field note). Study links also live on the{" "}
-                <a href="#/changes">Changes</a> and <a href="#/alignment">Alignment</a> views.
+                The studies behind these rules: 08 (what a used-API report can prove on real code), 09 (migrating
+                across the 1.17.2 break), 12 (the kit compile evidence) and 13 (the two-kits field note). They are
+                also linked from <a href="#/changes">Changes</a> and <a href="#/alignment">Alignment</a>.
               </p>
             </div>
           </div>
@@ -258,43 +247,44 @@ export function LandingView({ manifest, counts }: { manifest: ForkmapManifest; c
             <div className="panel">
               <div className="panel-head">
                 <h2>Verified compiles</h2>
-                <span className="panel-kicker mono island">rule-5 provenance</span>
+                <span className="panel-kicker mono island">evidence only</span>
               </div>
               <p className="subnote">
-                Only the studies that compiled real artifacts may badge a release: the six-provider scaffold
+                Only studies that compiled the real thing can mark a release as verified: the six-fork scaffold
                 matrix (<span id="landing-link-doc07">
                   <DocLink num={7} />
                 </span>
-                ) and the kit-rebase probes (<span id="landing-link-doc12">
+                ) and the kit checks (<span id="landing-link-doc12">
                   <DocLink num={12} />
                 </span>
-                ). Every badge below links its evidence. Nothing else on this page claims a compile.
+                ). Each badge below links its evidence, and nothing else here claims a compile.
               </p>
               <div id="compile-badges" className="badge-list">
                 <CompileBadges providers={manifest.providers} />
               </div>
-              <h3 className="panel-sub">Kit probes — the compile story behind the two kits</h3>
+              <h3 className="panel-sub">Kit checks — do the two kits actually compile?</h3>
               <div id="kit-probes">
                 <KitProbes manifest={manifest} />
               </div>
               <p className="subnote">
-                The same alignment answers a kit maintainer’s “which fork should a kit bind?” — the two-kits
-                story (<span id="landing-link-doc13">
+                The same data answers a kit maintainer’s question — which fork should a kit bind? (<span
+                  id="landing-link-doc13"
+                >
                   <DocLink num={13} />
                 </span>
-                ).
+                )
               </p>
             </div>
           </div>
         </div>
 
         <div className="panel">
-          <h2>Run the same questions in your terminal</h2>
+          <h2>Ask the same questions from the CLI</h2>
           <p>
-            The map is a read-only rendering of what <code>cargo gocar</code> measures and resolves. For one{" "}
-            <em>app’s</em> used slice — the per-symbol verdicts a fork chooser actually needs — use the CLI:{" "}
-            <code>report</code>, <code>plan</code>, <code>facade</code>, <code>migrate</code>,{" "}
-            <code>verify-env</code>. <span id="landing-link-cli">
+            This page is a read-only view of what <code>cargo gocar</code> measures. For verdicts about your own
+            code — which symbols your app uses, and which fork provides them — use the CLI: <code>report</code>,{" "}
+            <code>plan</code>, <code>facade</code>, <code>migrate</code>, <code>verify-env</code>.{" "}
+            <span id="landing-link-cli">
               <DocLink num="cli" />
             </span>
           </p>

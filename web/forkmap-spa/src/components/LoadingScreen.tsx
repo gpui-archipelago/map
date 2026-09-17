@@ -10,6 +10,9 @@
 // per-key fragment on selection, never the ~3.5 MB digest-state slice).
 // Loading a view's data is also a real state, never the failure box (a
 // failed load is an error, a slow one is not).
+//
+// The copy says what is loading, in plain words — never the file names,
+// schemas or export pipeline behind it.
 
 import type { LoadProgress } from "../bundle/useBundle";
 
@@ -34,69 +37,31 @@ export function LoadingScreen({
     determinate && progress.total !== null ? Math.min(100, Math.round((progress.loaded / progress.total) * 100)) : null;
   const title =
     kind === "rows"
-      ? "Loading the release-row data…"
+      ? "Loading the release history…"
       : kind === "alignment"
-        ? "Loading the item index…"
-        : "Loading the fork-map data…";
+        ? "Loading the item list…"
+        : "Loading the map…";
   const eyebrow =
     kind === "rows"
-      ? "this view renders measured item surfaces — the per-release row data is loading"
+      ? "this view reads every release, so it loads a little more data"
       : kind === "alignment"
-        ? "the Alignment type-ahead reads the export-derived item index — it is loading"
-        : "the data bundle is loading — this is not an error";
+        ? "item search needs the full item list, so it loads a little more data"
+        : "this is not an error — the map is loading its data";
   const phaseLine = (p: LoadProgress): string => {
-    if (kind === "rows") {
-      if (p.phase === "parse") return "Parsing the release-row data JSON…";
-      if (p.phase === "validate") {
-        return "Validating the release-row data (schemas gocar.forkmap.journal.v1 / gocar.forkmap.release.v1)…";
-      }
-      return "Downloading the release-row data…";
-    }
-    if (kind === "alignment") {
-      if (p.phase === "parse") return "Parsing the item index JSON…";
-      if (p.phase === "validate") return "Validating the item index (schema gocar.forkmap.alignindex.v1)…";
-      return p.total !== null
-        ? `Downloading the item index — ${mb(p.loaded)} of ${mb(p.total)} MB`
-        : "Downloading the item index…";
-    }
-    if (p.phase === "parse") return "Parsing the boot manifest JSON…";
-    if (p.phase === "validate") return "Validating the committed boot manifest (schema gocar.forkmap.manifest.v1)…";
-    return p.total !== null
-      ? `Downloading the fork-map data — ${mb(p.loaded)} of ${mb(p.total)} MB`
-      : "Downloading the fork-map data…";
+    if (p.phase === "parse") return "Reading the data…";
+    if (p.phase === "validate") return "Checking the data…";
+    return p.total !== null ? `Downloading — ${mb(p.loaded)} of ${mb(p.total)} MB` : "Downloading…";
   };
-  const note =
-    kind === "rows" ? (
-      <p className="subnote boot-note">
-        The map boots on the small committed manifest; a Changes/Journal view renders measured item surfaces (added /
-        removed / re-signed rows, the release timeline), which live in the export-derived per-release row data: the
-        journal story slice (<code>data/forkmap-journal.json</code>) plus one small per-release payload file (
-        <code>data/forkmap-release-*.json</code>) per compared release — never the ~35 MB corpus whole file. A diff
-        of two releases fetches exactly their two release files. A slow first read over plain HTTP is expected; if the
-        fetch or validation fails you will see the failure box instead of this screen.
-      </p>
-    ) : kind === "alignment" ? (
-      <p className="subnote boot-note">
-        The Alignment type-ahead reads the export-derived <code>data/forkmap-align-index.json</code> item index (every
-        measured item key + its release-row count — precomputed at export from the full corpus, schema
-        gocar.forkmap.alignindex.v1), never the ~35 MB corpus. A selected item's digest column arrives as one small
-        per-key fragment (<code>data/forkmap-column-*.json</code>) when the item is picked, and its resolved
-        signatures, docstrings and source locations as one per-key payload fragment
-        (<code>data/forkmap-payload-*.json</code>). A slow first read over plain HTTP is expected; if the fetch or
-        validation fails you will see the failure box instead of this screen.
-      </p>
-    ) : (
-      <p className="subnote boot-note">
-        Every view on this page boots from the committed <code>data/forkmap-manifest.json</code> (the fork-map bundle
-        minus the measured surfaces, with export-precomputed counts) — the same file the SPA's boot path always
-        The Changes/Journal views fetch the export-derived per-release row data lazily when opened (the journal
-        story slice + one small release file per compared release — the corpus whole file is never fetched), the
-        Alignment view fetches its export-derived item index plus one small per-key column fragment + payload
-        fragment per selected item. Nothing else is loaded at boot, and a slow first read over plain HTTP is
-        expected; if the
-        fetch or validation fails you will see the failure box instead of this screen.
-      </p>
-    );
+  const note = (
+    <p className="subnote boot-note">
+      {kind === "boot"
+        ? "The map loads its data on the first visit. Views that need more fetch it as you open them."
+        : kind === "rows"
+          ? "The release history is a bigger download than the first load. It is fetched once and kept."
+          : "The item list is fetched once, when you first search."}{" "}
+      A slow connection just means a longer wait — if a download fails, you will see an error instead of this screen.
+    </p>
+  );
   return (
     <section id="view-booting" className="view">
       <div className="wrap">
@@ -109,7 +74,7 @@ export function LoadingScreen({
           <div
             className="boot-track"
             role="progressbar"
-            aria-label="bundle load progress"
+            aria-label="load progress"
             aria-valuemin={0}
             aria-valuemax={100}
             aria-valuenow={pct ?? undefined}

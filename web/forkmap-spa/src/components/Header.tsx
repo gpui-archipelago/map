@@ -31,17 +31,17 @@ export function Header({ manifest, counts, view }: { manifest: ForkmapManifest; 
                 <span className="brand-aka">(the fork map)</span>
                 <span
                   className="brand-chip mono"
-                  title="the committed boot-manifest schema — see the footer provenance"
+                  title="the dataset schema this page was built from"
                 >
                   bundle <span id="header-schema">{manifest.schema}</span>
                 </span>
               </span>
-              <span className="brand-sub">every fork is an island · empirical cross-fork alignment</span>
+              <span className="brand-sub">every fork is an island</span>
             </span>
           </a>
         </div>
 
-        <div className="header-metrics mono" aria-label="dataset quick metrics">
+        <div className="header-metrics mono" aria-label="what the dataset contains">
           <span className="h-metric">
             <span className="h-dot" aria-hidden="true" />
             <span className="h-num" id="metric-providers">
@@ -61,11 +61,14 @@ export function Header({ manifest, counts, view }: { manifest: ForkmapManifest; 
           <span className="h-sep" aria-hidden="true">
             ·
           </span>
-          <span className="h-metric">
+          <span
+            className="h-metric"
+            title={`counted once per release that carries the item — ${counts.keys.toLocaleString("en-US")} distinct items in all`}
+          >
             <span className="h-num" id="metric-items">
               {counts.items.toLocaleString("en-US")}
             </span>
-            &nbsp;item records
+            &nbsp;items
           </span>
           <span className="h-sep" aria-hidden="true">
             ·
@@ -74,7 +77,7 @@ export function Header({ manifest, counts, view }: { manifest: ForkmapManifest; 
             <span className="h-num" id="metric-facades">
               {counts.facades}
             </span>
-            &nbsp;shim tables
+            &nbsp;facade shims
           </span>
         </div>
 
