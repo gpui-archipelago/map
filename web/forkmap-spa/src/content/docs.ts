@@ -40,10 +40,11 @@ export const DOCS: Record<string, { title: string; path: string }> = {
   },
 };
 
-/** The five study docs the in-app study reader (T-39 decision (a)-lite) can
- * open as an excerpt dialog: the docs the prototype report's study modal
- * names (07/08/09/12/13). DOC_NUMBERS keeps the pre-reader name for the same
- * list (AboutNote + the doc rows it feeds). */
+/** The five study docs the prototype report's study modal names
+ * (07/08/09/12/13) — the curated list AboutNote and the doc rows render.
+ * DOC_NUMBERS keeps the older name for the same list. This is now a
+ * *curation* set, not the reader's gate: the reader opens any published doc
+ * (see hasReader). */
 export const STUDY_DOC_NUMBERS = [7, 8, 9, 12, 13] as const;
 
 export const DOC_NUMBERS: readonly number[] = STUDY_DOC_NUMBERS;
@@ -54,4 +55,13 @@ const STUDY_DOC_KEYS = new Set<string>(STUDY_DOC_NUMBERS.map((n) => String(n)));
 
 export function isStudyDoc(num: number | string): boolean {
   return STUDY_DOC_KEYS.has(String(num));
+}
+
+/** Whether the in-app reader can open this doc (T-39 reader pass): every doc
+ * in the published set, not just the five studies. Docs 10/11 are linked
+ * exactly like the studies are, and "a plain click keeps you in the page"
+ * should not depend on which doc a link happens to name — the two used to
+ * behave differently for no reason a reader could see. */
+export function hasReader(num: number | string): boolean {
+  return Boolean(DOCS[String(num)]);
 }

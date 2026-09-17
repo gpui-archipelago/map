@@ -124,6 +124,10 @@ describe("Journal view renders the stream feed (server render)", () => {
     expect(html).toContain("compile-verified · rustc 1.97.1");
     expect(html).toContain("docs/04-user-docs/07-real-fork-compile-case-study.md");
     expect(html).toContain('id="journal-entry-kael-0.4.1"');
+    // The badge's evidence link opens the reader (T-39 reader pass): it was the
+    // one raw-markdown hop left in the app, bypassing StudyDocLink entirely.
+    const badge = html.slice(html.indexOf("compile-verified"), html.indexOf("compile-verified") + 400);
+    expect(badge).toContain('aria-haspopup="dialog"');
   });
 
   test("the journal honesty disclosure + honest-rule ids + every static-renderer-bound journal-* id exist", () => {

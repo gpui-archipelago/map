@@ -9,7 +9,9 @@ files into dist/forkmap/data, so every data fetch resolves inside the
 artifact, with no sibling web/forkmap
 tree served) — renders #/ + #/changes + #/alignment + #/configure +
 #/journal, and greps the serialized DOM for the honest-rule ids,
-bundle-driven numbers, and the nav.
+bundle-driven numbers, and the nav. It also fetches every study doc the
+reader loads (from the same served tree) and checks the served bytes are
+the doc's own.
 
 Run: python3 web/forkmap-spa/smoke.py
 """
@@ -22,6 +24,7 @@ import threading
 import time
 from http.server import ThreadingHTTPServer
 from pathlib import Path
+from urllib.request import urlopen
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent  # web/ — the source tree, oracle for the data-driven assertions
@@ -526,6 +529,25 @@ def main() -> int:
                 if w in page:
                     failures.append(f"{name}: unexpected {w!r}")
 
+        # The doc reader fetches each doc's markdown at runtime from the
+        # artifact's own docs/ mirror (docsCopy in vite.config.ts) and renders
+        # it in place: if a doc were missing from the served tree, every doc
+        # affordance in the app would dead-end. Data-driven (the expectation is
+        # the doc's own first line, read from the repo) and status-strict, so a
+        # fallback body that answers 200 with the wrong file cannot pass.
+        for doc in sorted((ROOT.parent / "docs" / "04-user-docs").glob("*.md")):
+            want = doc.read_text(encoding="utf-8").splitlines()[0].strip()
+            url = f"{base}docs/04-user-docs/{doc.name}"
+            try:
+                with urlopen(url, timeout=20) as res:  # noqa: S310 - smoke-local URL
+                    body = res.read().decode("utf-8", "replace")
+                    served = res.status
+            except Exception as exc:  # noqa: BLE001 - reported as a content failure
+                failures.append(f"doc reader source {doc.name}: fetch failed ({exc})")
+                continue
+            if served != 200 or want not in body:
+                failures.append(f"doc reader source {doc.name}: not served at {url} (status {served})")
+
         # The bundle-driven numbers must be real (RULE-7), not placeholders —
         # read them straight from the committed bundle and compare.
         bundle = bundle_data
@@ -543,6 +565,7 @@ def main() -> int:
             print("\n".join(f"  ✗ {f}" for f in failures))
             return 1
         print("  ✓ headless render: Overview + all five routes show their content, metrics are bundle-driven")
+        print("  ✓ doc reader: every published study doc is served from the artifact's own docs/ mirror")
         return 0
     finally:
         if server is not None:

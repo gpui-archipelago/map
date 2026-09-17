@@ -31,6 +31,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { AboutNote } from "../components/AboutNote";
+import { StudyDocLink } from "../components/StudyDocLink";
 import { ItemList, RemovedRowExtra, ResignedRowExtra } from "../components/rows";
 import { compileStatus, diffRows } from "../bundle/derive";
 import {
@@ -247,9 +248,9 @@ function EntryEl({
               title="RULE-5: badge only where docs/07 compiled the real artifact; each badge links its evidence"
             >
               {`compile-verified · rustc ${badge.marker.toolchain}`}
-              <a className="doc" href={badge.marker.evidence}>
+              <StudyDocLink num={7} href={badge.marker.evidence}>
                 {" evidence"}
-              </a>
+              </StudyDocLink>
             </span>
           )}
         </span>

@@ -1,14 +1,20 @@
-// T-39 — study-reader render parity (increment 5; design decision (a)-lite).
+// T-39 — doc-reader render parity (increment 5; decision (a)-lite, extended to
+// every published doc).
 //
 // Renders the actual study surfaces over the committed bundle and asserts the
-// reader's SSR shape: the open dialog's structure (role/aria, ids, the
-// verbatim excerpt, the outbound full-doc link + close), the trigger
-// affordance on the five study doc rows (aria-haspopup="dialog" on AboutNote,
-// the Landing doc rows + compile-badge/kit-probe evidence, the Alignment docs
-// panel, the Configure RULE-5 evidence), and that non-study doc links stay
-// plain outbound anchors. Interaction (click → open, Escape, focus
-// round-trip) is exercised by the manual by-ear/keyboard pass recorded in the
-// T-39 task Outcome; the smoke covers the affordance on the built artifact.
+// reader's SSR shape. The reader fetches a doc's markdown in a browser effect
+// and renders it in place (src/study/loader.ts + markdown.ts), so a server
+// render is the *pre-fetch* state: the dialog's role/aria/ids, the source path
+// and title, the diff-checked excerpt standing in where one exists, the
+// reading line where none does, and the raw-markdown link + close. Rendered doc
+// bodies are asserted directly in tests/markdown.test.ts (the rules) — and in
+// the browser by the CDP pass, since neither a server render nor `bun test`
+// can fetch or click.
+//
+// Also asserted here: the trigger affordance on every doc row (aria-
+// haspopup="dialog" on AboutNote, the Landing doc rows + compile-badge/
+// kit-probe evidence, the Alignment docs panel, the Configure RULE-5
+// evidence), and that a num outside the published set renders no dialog.
 
 import { describe, expect, test } from "bun:test";
 import { renderToString } from "react-dom/server";
@@ -65,10 +71,9 @@ function occurrences(haystack: string, needle: string): number {
   return n;
 }
 
-describe("the open study dialog (server render)", () => {
-  test("doc 07 renders the dialog role, ids, the verbatim excerpt and the outbound link", () => {
-    const href = DOCS["7"].path;
-    const html = text(renderToString(createElement(StudyModal, { num: "7", href, onClose: () => {} })));
+describe("the open reader (server render = the pre-fetch state)", () => {
+  test("doc 07 renders the dialog role, ids, source path, excerpt and raw link", () => {
+    const html = text(renderToString(createElement(StudyModal, { num: "7", onClose: () => {} })));
     expect(html).toContain('role="dialog"');
     expect(html).toContain('aria-modal="true"');
     expect(html).toContain('aria-labelledby="study-modal-title"');
@@ -77,23 +82,38 @@ describe("the open study dialog (server render)", () => {
     expect(html).toContain('id="study-modal"');
     expect(html).toContain('id="study-modal-kicker"');
     expect(html).toContain('id="study-modal-title"');
+    expect(html).toContain('id="study-modal-body"');
     expect(html).toContain('id="study-modal-excerpt"');
     expect(html).toContain('id="study-modal-note"');
     expect(html).toContain('id="study-modal-open"');
     expect(html).toContain('id="study-modal-close"');
-    expect(html).toContain("doc 7 · study excerpt");
+    // the dialog names the doc it is reading and where the doc comes from
+    expect(html).toContain('data-doc="7"');
+    expect(html).toContain('data-doc-status="loading"');
+    expect(html).toContain(DOCS["7"].path);
     expect(html).toContain(DOCS["7"].title);
-    // the excerpt is the doc's own opening (drift parity lives in study.test.ts)
+    // the excerpt is the doc's own opening, shown until the fetch lands
+    // (drift parity lives in study.test.ts)
     expect(html).toContain(STUDY_EXCERPTS["7"]);
     expect(html).toContain("never compiled");
-    // the full-doc anchor keeps the trigger's own href; Close is a button
-    expect(html).toContain(`href="${href}"`);
-    expect(html).toContain("Read the full doc");
+    expect(html).toContain("Rendered verbatim from the repo markdown");
+    // the raw doc keeps the doc's own href; Close is a button
+    expect(html).toContain(`href="${DOCS["7"].path}"`);
+    expect(html).toContain("Raw markdown");
     expect(html).toContain(">Close</button>");
   });
 
-  test("a modal for a doc outside the five is impossible (no excerpt → nothing renders)", () => {
-    const html = renderToString(createElement(StudyModal, { num: "10", href: "#", onClose: () => {} }));
+  test("a published doc without an excerpt opens too (the reading line stands in)", () => {
+    // docs 10/11 are published but are not among the five curated studies, so
+    // they have no excerpt snapshot — the reader still opens them.
+    const html = text(renderToString(createElement(StudyModal, { num: "10", onClose: () => {} })));
+    expect(html).toContain(DOCS["10"].title);
+    expect(html).toContain("Reading the doc…");
+    expect(html).not.toContain('id="study-modal-excerpt"');
+  });
+
+  test("a num outside the published set renders no dialog", () => {
+    const html = renderToString(createElement(StudyModal, { num: "99", onClose: () => {} }));
     expect(html).toBe("");
   });
 });
@@ -108,17 +128,20 @@ describe("the trigger affordance (study links announce the dialog; others stay p
     }
   });
 
-  test("a non-study DocLink renders exactly the plain anchor it always did", () => {
-    const html = renderToString(createElement(DocLink, { num: "10" }));
-    expect(html).toBe(`<a class="doc" href="${DOCS["10"].path}">${DOCS["10"].title}</a>`);
-    expect(html).not.toContain("aria-haspopup");
+  test("a published doc announces the dialog; an unpublished num renders nothing", () => {
+    for (const num of Object.keys(DOCS)) {
+      const html = renderToString(createElement(DocLink, { num }));
+      expect(html, `doc ${num} href`).toContain(`href="${DOCS[num].path}"`);
+      expect(html, `doc ${num} dialog`).toContain('aria-haspopup="dialog"');
+    }
+    expect(renderToString(createElement(DocLink, { num: "99" }))).toBe("");
   });
 
-  test("StudyDocLink keeps its class/href/text and announces only for study docs", () => {
+  test("StudyDocLink keeps its class/href/text and announces the dialog", () => {
     const study = text(renderToString(createElement(StudyDocLink, { num: 9 })));
     expect(study).toContain(`<a class="doc" href="${DOCS["9"].path}" aria-haspopup="dialog">`);
     expect(study).toContain(DOCS["9"].title);
-    expect(study).not.toContain("study-dialog"); // closed: no modal markup server-side
+    expect(study).not.toContain("study-dialog"); // closed: no dialog markup server-side
     const custom = text(renderToString(createElement(StudyDocLink, { num: 7, href: "docs/x.md" })));
     expect(custom).toContain('href="docs/x.md"');
   });

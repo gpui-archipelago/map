@@ -13,7 +13,7 @@ import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { DOCS, DOC_NUMBERS, STUDY_DOC_NUMBERS, isStudyDoc } from "../src/content/docs";
+import { DOCS, DOC_NUMBERS, STUDY_DOC_NUMBERS, hasReader, isStudyDoc } from "../src/content/docs";
 import {
   EXCERPT_DOC_NUMBERS,
   excerptFromDoc,
@@ -47,7 +47,7 @@ describe("the five study docs (07/08/09/12/13) are the reader's set", () => {
     }
   });
 
-  test("isStudyDoc is true only for the five (non-studies stay outbound links)", () => {
+  test("isStudyDoc is true only for the five (the curated list AboutNote renders)", () => {
     for (const num of STUDY_DOC_NUMBERS) {
       expect(isStudyDoc(num)).toBe(true);
       expect(isStudyDoc(String(num))).toBe(true);
@@ -55,6 +55,21 @@ describe("the five study docs (07/08/09/12/13) are the reader's set", () => {
     for (const not of ["10", "11", "99"]) {
       expect(isStudyDoc(not)).toBe(false);
     }
+  });
+
+  test("hasReader opens every published doc and nothing else (the reader's gate)", () => {
+    // The reader covers the whole published set, not just the curated five:
+    // docs 10/11 are linked exactly like the studies, and a plain click should
+    // not behave differently depending on which doc a link names.
+    for (const num of Object.keys(DOCS)) {
+      expect(hasReader(num), `doc ${num} has a reader`).toBe(true);
+    }
+    expect(hasReader(11)).toBe(true);
+    expect(hasReader("99")).toBe(false);
+    // Not a published doc — the landing's `DocLink num="cli"` resolves to
+    // nothing for this reason (recorded as a gap, not repaired here: there is
+    // no CLI doc in the published set to point it at).
+    expect(hasReader("cli")).toBe(false);
   });
 });
 
@@ -113,6 +128,7 @@ describe("study reader id-coverage tripwire", () => {
       "study-modal",
       "study-modal-kicker",
       "study-modal-title",
+      "study-modal-body",
       "study-modal-excerpt",
       "study-modal-note",
       "study-modal-open",
@@ -129,7 +145,14 @@ describe("study reader id-coverage tripwire", () => {
   test("every trigger-bearing view source announces the dialog on its study links", () => {
     // DocLink/StudyDocLink is the single choke point; the views that hand-build
     // study-title anchors must route them through it (aria-haspopup="dialog").
-    for (const file of ["views/LandingView.tsx", "views/AlignmentView.tsx", "views/ConfigureView.tsx"]) {
+    // JournalView is on the list because its RULE-5 badge evidence link was the
+    // one hand-built raw-markdown hop that bypassed the reader entirely.
+    for (const file of [
+      "views/LandingView.tsx",
+      "views/AlignmentView.tsx",
+      "views/ConfigureView.tsx",
+      "views/JournalView.tsx",
+    ]) {
       const src = readFileSync(join(SRC, file), "utf8");
       expect(src, `${file} uses StudyDocLink`).toContain("StudyDocLink");
     }
