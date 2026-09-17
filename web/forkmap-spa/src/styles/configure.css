@@ -95,23 +95,10 @@
     font-size: 0.9em;
   }
   .cfg-specs {
-    display: grid;
-    grid-template-columns: max-content 1fr;
-    gap: 6px 18px;
     margin: 0 0 4px;
-    font-size: 0.92em;
   }
-  .cfg-specs dt {
-    font-family: var(--font-mono);
-    font-size: 0.72rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--content-muted);
+  .spec-list dt {
     padding-top: 2px;
-  }
-  .cfg-specs dd {
-    margin: 0;
-    color: var(--color-ink-deep);
   }
 
   /* ---------- files: one card, a tab per file, one copy control ---------- */

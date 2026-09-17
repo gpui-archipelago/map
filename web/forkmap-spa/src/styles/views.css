@@ -40,32 +40,27 @@
 
   /* ---------- hero (landing) ---------- */
 
-  .hero-eyebrow {
-    margin: 0 0 6px;
-    font-size: 0.76rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--action);
-  }
   .hero h1 {
     margin: 0 0 8px;
     font-size: 2.2rem;
     line-height: 1.15;
     color: var(--content);
   }
-  .hero-quote {
-    margin: 0 0 14px;
-    padding: 0 0 0 18px;
-    border-left: 3px solid var(--color-sand);
-    color: var(--content-muted);
-    font-style: italic;
-    font-size: 1.02rem;
-    max-width: 760px;
-  }
   .hero-intro {
-    margin: 0 0 16px;
-    max-width: 860px;
+    margin: 0 0 18px;
+    max-width: 880px;
     font-size: 0.98rem;
+  }
+
+  /* A section label over a bare grid (the landing's tool cards). */
+  .section-head {
+    margin: 24px 0 0;
+    font-family: var(--font-mono);
+    font-size: 0.76rem;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--content-muted);
   }
 
   /* ---------- workflow cards ---------- */
@@ -126,98 +121,118 @@
     color: var(--content-muted);
     line-height: 1.45;
   }
-
-  /* ---------- data strip ---------- */
-
-  .data-strip {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px 18px;
-    align-items: baseline;
-    background: var(--color-sand-100);
-    border-color: var(--color-sand);
+  /* The card's own action line — the whole card is the link, so this is a
+     label, not a second anchor. */
+  .card-go {
+    margin-top: 8px;
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: var(--color-ocean);
   }
-  .data-strip-when {
-    font-size: 0.78rem;
-    color: var(--content);
-  }
-  .data-facts {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    font-size: 0.82rem;
-  }
-  .data-facts-counts {
-    color: var(--content);
-  }
-  .data-facts-claim {
-    color: var(--content-muted);
-    font-style: italic;
+  .card-cta:hover .card-go {
+    color: var(--action);
   }
 
-  /* ---------- landing columns ---------- */
+  /* ---------- the fork table (landing) ---------- */
 
-  .landing-cols {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 340px;
-    gap: 16px;
-    align-items: start;
+  .table-scroll {
+    overflow-x: auto;
   }
-  @media (max-width: 900px) {
-    .landing-cols {
-      grid-template-columns: 1fr;
-    }
-  }
-  .col-main {
-    min-width: 0;
-  }
-
-  /* ---------- truth layers table ---------- */
-
-  table.layers {
+  .fork-table {
     width: 100%;
-    table-layout: fixed;
+    /* Wide enough that the columns keep reading widths on a phone — the
+       container scrolls instead of squeezing them into vertical ribbons. */
+    min-width: 760px;
     border-collapse: collapse;
-    font-size: 0.88rem;
+    font-size: 0.9em;
   }
-  table.layers th {
+  .fork-table th {
     text-align: left;
+    padding: 0 16px 8px 0;
+    border-bottom: 1px solid var(--border-subtle);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--content-muted);
+    white-space: nowrap;
+  }
+  .fork-table td {
+    padding: 10px 16px 10px 0;
+    border-bottom: 1px solid #ece2d2;
+    vertical-align: top;
+  }
+  .fork-table tr:last-child td {
+    border-bottom: 0;
+  }
+  .fork-name {
+    display: block;
+    font-weight: 700;
+    color: var(--color-ink-deep);
+  }
+  .fork-desc {
+    display: block;
+    max-width: 34ch;
+    color: var(--content-muted);
+    font-size: 0.86em;
+    line-height: 1.35;
+  }
+  .fork-vers {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    color: var(--color-ink-deep);
+  }
+  .fork-note {
+    display: block;
+    margin-top: 3px;
+    color: var(--content-muted);
+    font-size: 0.8em;
+  }
+  .fork-actions,
+  .fork-actions-head {
+    text-align: right;
+    white-space: nowrap;
+    padding-right: 0;
+  }
+  .fork-action {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 3px 12px;
+    border: 1px solid var(--border-subtle);
+    border-radius: 999px;
+    background: var(--color-sand-50);
+    color: var(--content);
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+  }
+  .fork-action:hover {
+    text-decoration: none;
+    border-color: var(--border-accent);
+    color: var(--color-ocean);
+  }
+
+  /* ---------- the shared spec list (Configure's facts, the landing's
+     provenance rows): a label column and its value, one fact per row ---------- */
+
+  .spec-list {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 8px 18px;
+    margin: 0;
+    font-size: 0.92em;
+  }
+  .spec-list dt {
+    font-family: var(--font-mono);
     font-size: 0.72rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     color: var(--content-muted);
-    border-bottom: 1px solid var(--border-subtle);
-    padding: 6px 10px;
+    padding-top: 2px;
   }
-  table.layers td {
-    padding: 10px;
-    border-bottom: 1px solid #e9ecee;
-    vertical-align: top;
-    line-height: 1.5;
-  }
-  table.layers td:first-child {
-    width: 150px;
-  }
-
-  .tag {
-    display: inline-block;
-    font-size: 0.74rem;
-    font-weight: 600;
-    border-radius: 999px;
-    padding: 2px 10px;
-    white-space: nowrap;
-  }
-  .tag-registry {
-    background: rgba(55, 143, 189, 0.12);
-    color: var(--content);
-  }
-  .tag-measured {
-    background: rgba(125, 171, 89, 0.18);
-    color: var(--color-island-deep);
-  }
-  .tag-stub {
-    background: var(--color-sand);
-    color: var(--content-muted);
+  .spec-list dd {
+    margin: 0;
+    color: var(--color-ink-deep);
   }
 
   /* ---------- honest rules ---------- */
@@ -243,24 +258,25 @@
     text-underline-offset: 2px;
   }
 
-  /* ---------- compile badges + kit probes ---------- */
+  /* ---------- compile badges + kit probes (the provenance card) ---------- */
 
+  /* The verified rows read as a row of chips, not a stack of cards: the
+     provenance card is a summary, and each chip links its own evidence. */
   .badge-list {
     display: flex;
-    flex-direction: column;
+    flex-wrap: wrap;
     gap: 6px;
-    margin: 6px 0 4px;
+    margin: 8px 0;
   }
   .badge {
-    display: flex;
+    display: inline-flex;
     align-items: baseline;
-    gap: 8px;
-    flex-wrap: wrap;
+    gap: 6px;
     background: var(--color-sand-50);
     border: 1px solid var(--border-subtle);
-    border-radius: 8px;
-    padding: 6px 10px;
-    font-size: 0.84rem;
+    border-radius: 999px;
+    padding: 2px 12px;
+    font-size: 0.8rem;
   }
   .badge-name {
     font-weight: 700;
@@ -273,29 +289,15 @@
   }
   .badge-evidence {
     color: var(--content-muted);
-    font-size: 0.8rem;
+    font-size: 0.78rem;
   }
 
   .kit-probe {
-    background: var(--color-sand-50);
-    border: 1px solid var(--border-subtle);
+    margin: 6px 0 0;
+    padding: 0 0 0 12px;
     border-left: 3px solid var(--color-island);
-    border-radius: 8px;
-    padding: 8px 12px;
-    margin: 6px 0;
     font-size: 0.84rem;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-  .kit-probe-head {
-    font-weight: 700;
-    color: var(--content);
-    font-family: var(--font-mono);
-    font-size: 0.82rem;
-  }
-  .kit-probe-line {
-    line-height: 1.45;
+    line-height: 1.5;
   }
 
   /* ---------- kind chips (used by the delta/alignment rows) ---------- */
@@ -674,11 +676,15 @@
       white-space: normal;
       overflow-wrap: anywhere;
     }
-    /* the truth-layers table is fixed-layout: cell tokens wrap inside the
-       viewport instead of widening the table past its container */
-    table.layers th,
-    table.layers td {
+    /* the fork table scrolls inside its own container rather than widening
+       the page (the phone pass asserts zero document overflow), and the
+       registry descriptions step aside for the numbers */
+    .fork-table th,
+    .fork-table td {
       overflow-wrap: anywhere;
+    }
+    .fork-desc {
+      display: none;
     }
   }
 }

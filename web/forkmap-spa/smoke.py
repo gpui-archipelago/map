@@ -381,8 +381,12 @@ def main() -> int:
         )
 
         checks = [
-            ("landing hero", "#/", ["The GPUI fork map", "id=\"honest-rule-1\"", "id=\"honest-rule-7\"",
-                                    "id=\"data-layers\"", "id=\"compile-badges\"", "id=\"data-facts\""], []),
+            ("landing overview (fork table + tools + provenance)",
+             "#/", ["The GPUI fork map", "id=\"fork-table\"", "Latest stable", "Measured items",
+                     "id=\"landing-provenance\"", "id=\"data-layers\"", "id=\"compile-badges\"",
+                     "id=\"landing-about\"",
+                     "id=\"honest-rule-1\"", "id=\"honest-rule-7\""],
+             ["id=\"data-facts\"", "hero-quote"]),
             ("nav chrome", "#/", ["gpui-archipelago", "Changes", "Alignment", "Configure", "Journal",
                                   "header-schema"], []),
             ("changes route", "#/changes", ["id=\"view-changes\"", "id=\"changes-controls\"",
@@ -524,11 +528,12 @@ def main() -> int:
         bundle = bundle_data
         nprov = len(bundle["providers"])
         nvers = sum(len(p["versions"]) for p in bundle["providers"])
-        # Assert the numbers land in the page, not the prose around them: the
-        # labels are copy and change; the id and the rendered counts do not.
-        for w in [f"{nprov}</span>", f"{nvers}</span>", "data as of", "id=\"data-facts\""]:
+        # The header's counters (the landing's survey line) and the provenance
+        # card's freeze stamp: the labels are copy and change; the rendered
+        # counts and the ids carrying them do not.
+        for w in [f"{nprov}</span>", f"{nvers}</span>", "id=\"data-as-of\"", "id=\"data-bundle\""]:
             if w not in dom:
-                failures.append(f"bundle-driven header metrics: missing {w!r}")
+                failures.append(f"bundle-driven page facts: missing {w!r}")
 
         if failures:
             print("\n".join(f"  ✗ {f}" for f in failures))

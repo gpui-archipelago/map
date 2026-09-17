@@ -25,6 +25,7 @@ import { STUDY_EXCERPTS } from "../src/study/study-excerpts";
 import { AlignmentView } from "../src/views/AlignmentView";
 import { ConfigureView } from "../src/views/ConfigureView";
 import { LandingView } from "../src/views/LandingView";
+import { loadCorpusData } from "./fixtures/corpus-fixtures";
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -39,7 +40,9 @@ const ALIGN_INDEX_PATH = join(HERE, "..", "..", "forkmap", "data", "forkmap-alig
 
 const manifest: ForkmapManifest = validateManifest(JSON.parse(readFileSync(MANIFEST_PATH, "utf8")));
 const alignIndex = validateAlignIndex(JSON.parse(readFileSync(ALIGN_INDEX_PATH, "utf8")));
-const counts = manifest.counts;
+// The landing's measured-items column reads the corpus facts (the journal
+// slice), exactly as the runtime hook supplies them.
+const { data } = loadCorpusData();
 
 /** react-dom/server escapes text content (&quot;/&amp;/&#x27;/&lt;/&gt;) — decode so
  * assertions read like the rendered page. */
@@ -123,7 +126,7 @@ describe("the trigger affordance (study links announce the dialog; others stay p
 
 describe("the views render their study triggers over the committed bundle", () => {
   test("Landing: doc rows + compile-badge and kit-probe evidence announce the dialog", () => {
-    const html = text(renderToString(createElement(LandingView, { manifest, counts })));
+    const html = text(renderToString(createElement(LandingView, { manifest, data })));
     expect(html).toContain('id="landing-link-doc07"');
     expect(html).toContain('id="landing-link-doc12"');
     expect(html).toContain('id="landing-link-doc13"');

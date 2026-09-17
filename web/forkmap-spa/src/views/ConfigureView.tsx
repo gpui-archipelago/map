@@ -100,7 +100,9 @@ function StatusPanel({
           ) : null}
         </p>
       )}
-      <dl className="cfg-specs">
+      {/* The facts as a spec list (the shape the landing's provenance card
+          shares): one label, one value per row. */}
+      <dl className="spec-list cfg-specs">
         <dt>Platform binding</dt>
         <dd>
           {c

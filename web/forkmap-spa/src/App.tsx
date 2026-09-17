@@ -132,7 +132,7 @@ export function App() {
   const lightView =
     route.view === "landing" || route.view === "configure" ? (
       <Suspense fallback={null}>
-        {route.view === "landing" && <LandingView manifest={manifest} counts={counts} />}
+        {route.view === "landing" && <LandingView manifest={manifest} />}
         {route.view === "configure" && <ConfigureView manifest={manifest} params={route.params} />}
       </Suspense>
     ) : null;
