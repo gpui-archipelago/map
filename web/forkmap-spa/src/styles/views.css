@@ -392,6 +392,17 @@
     border-color: var(--border-accent);
     color: var(--color-ocean);
   }
+  /* A stepper with no neighbour that way is shown, not hidden: the stream's
+     ends stay legible and the row never reflows. */
+  .controls button:disabled {
+    cursor: default;
+    opacity: 0.45;
+    border-style: dashed;
+  }
+  .controls button:disabled:hover {
+    border-color: var(--border-subtle);
+    color: var(--content);
+  }
   .swap-btn {
     font-weight: 700;
   }

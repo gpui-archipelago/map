@@ -193,14 +193,17 @@
     box-shadow: 0 1px 3px rgba(23, 77, 104, 0.25);
   }
 
-  /* One line: A [fork] [version]  ⇄  B [fork] [version]  … presets. */
+  /* One line: A [fork] [version]  ⇄  B [fork] [version]  ‹ prev next ›. */
   .pair-side {
     align-self: center;
     margin-right: 2px;
     font-size: 0.72rem;
     color: var(--content-muted);
   }
-  #changes-presets {
+  .pair-steps {
+    display: inline-flex;
+    gap: 6px;
+    align-self: center;
     margin-left: auto;
   }
 
@@ -226,8 +229,12 @@
   }
 
   /* The pair picks are the pair display: one line of chips, which is also
-     the whole 'what am I looking at' statement on this view. */
+     the whole 'what am I looking at' statement on this view. The shared
+     `.ctl select` min-width (210px, sized for the labelled Configure form)
+     would push the swap/step controls onto a second row, so it is released
+     here: each chip sizes to its own widest label (rule-6 flags included). */
   .controls.picker .ctl select {
+    min-width: 0;
     font-family: var(--font-mono);
     font-size: 0.8rem;
     color: var(--content);
@@ -235,7 +242,6 @@
     border: 1px solid var(--border-subtle);
     border-radius: 999px;
     padding: 4px 10px;
-    max-width: 19ch;
   }
 
   /* The Changes pair drawer: the delta is the point, so the pickers collapse

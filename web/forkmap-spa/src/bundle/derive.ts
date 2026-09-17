@@ -204,6 +204,22 @@ export function branchBase<T extends { vers: string; prerelease: boolean }>(rows
   return best;
 }
 
+/**
+ * The stable backbone's next stable after `rows[idx]` — the inverse of
+ * `branchBase`: the least stable greater than it by semver, so a backport
+ * published after a newer line's preview never reorders the walk (a preview
+ * row itself steps on to the next stable of its line). Null at the last one.
+ */
+export function branchSuccessor<T extends { vers: string; prerelease: boolean }>(rows: T[], idx: number): T | null {
+  const v = rows[idx];
+  let best: T | null = null;
+  for (const r of rows) {
+    if (r.prerelease || r.vers === v.vers) continue;
+    if (semverLt(v.vers, r.vers) && (best === null || semverLt(r.vers, best.vers))) best = r;
+  }
+  return best;
+}
+
 export type CellState = "unknown" | "added" | "same" | "changed" | "removed" | "absent";
 
 /**

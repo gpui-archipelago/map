@@ -5,10 +5,11 @@
 // the static site's derivations until the static renderer retired — the
 // suite lives here now):
 //   - pair resolution (resolveChanges/changesSide/defaultPair) — the RULE-6
-//     contract the pickers, caption and deep links are built on;
-//   - the three recorded-story quick links resolve to real, non-identical
-//     deltas (RULE-1 semantics: same-fork stories stay changelogs, the
-//     cross-fork one stays a snapshot-surface difference);
+//     contract the pickers, caption and deep links are built on; the pair
+//     steppers walk the same stable backbone (stepPair/branchSuccessor);
+//   - the recorded-story deep links resolve to real, non-identical deltas
+//     (RULE-1 semantics: same-fork stories stay changelogs, the cross-fork one
+//     stays a snapshot-surface difference);
 //   - id coverage: every `changes-*`/`view-changes` id the static app.js
 //     binds must exist in the SPA's source, and honest-rule-1…7 must survive
 //     in the AboutNote the Changes view renders (ids move with care).
@@ -20,6 +21,7 @@ import {
   defaultPair,
   namedPair,
   resolveChanges,
+  stepPair,
 } from "../src/bundle/changes";
 import { parse } from "../src/bundle/query";
 import { changesLink } from "../src/routing";
@@ -179,6 +181,55 @@ describe("recorded-story quick links render real deltas on the committed bundle"
     expect(d.ok).toBe(true);
     if (!d.ok) return;
     expect(d.identical).toBe(true);
+  });
+});
+
+describe("the pair steppers walk a stream's stable backbone (stepPair/branchSuccessor)", () => {
+  const pm = providerMap(bundle);
+
+  test("gpui 0.2.1 → 0.2.2 steps back to 0.2.0 → 0.2.1 and no further forward", () => {
+    const gpui = pm["gpui"];
+    const pair = { a: "0.2.1", b: "0.2.2" };
+    expect(stepPair(gpui, pair, -1)).toEqual({ a: "0.2.0", b: "0.2.1" });
+    // The line's tip: nothing later to shift to.
+    expect(stepPair(gpui, pair, 1)).toBeNull();
+  });
+
+  test("uno: the walk is semver order over stables, never raw publish order", () => {
+    const uno = pm["gpui-unofficial"];
+    // Publish order runs 1.16.1, 1.17.0-pre, 1.16.2, 1.16.3, 1.17.2 — the
+    // backbone walks the stables, so 1.16.1's successor is 1.16.2.
+    expect(stepPair(uno, { a: "1.16.1", b: "1.16.3" }, 1)).toEqual({ a: "1.16.2", b: "1.17.2" });
+    expect(stepPair(uno, { a: "1.16.3", b: "1.17.2" }, -1)).toEqual({ a: "1.16.2", b: "1.16.3" });
+    // 1.12.0 was published after 1.13.1; it never enters a step from that line.
+    expect(stepPair(uno, { a: "1.18.0", b: "1.18.1" }, 1)).toEqual({ a: "1.18.1", b: "1.19.2" });
+    // A preview pair can have no single predecessor at all: both sides would
+    // land on 1.18.0 (1.19.0-pre's branch base is the stable published before
+    // it, 1.18.1's is the previous stable) — offered as no step, not a dead end.
+    expect(stepPair(uno, { a: "1.19.0-pre", b: "1.18.1" }, -1)).toBeNull();
+  });
+
+  test("a step is never a same-release pair, and the ends of a stream have none", () => {
+    for (const p of bundle.providers) {
+      const def = defaultPair(p);
+      // gpui-ce's latest stable has no smaller stable: no pair to step at all.
+      if (!def.a) continue;
+      const start = { a: def.a, b: def.b };
+      for (const dir of [-1, 1] as const) {
+        const next = stepPair(p, start, dir);
+        if (next) {
+          expect(next.a, `${p.id} ${dir}: sides differ`).not.toBe(next.b);
+          expect(row(p, next.a), `${p.id} ${dir}: A is a real row`).toBeTruthy();
+          expect(row(p, next.b), `${p.id} ${dir}: B is a real row`).toBeTruthy();
+        }
+      }
+      // One step forward then back is the pair we started from (stables only:
+      // a preview's branch base is defined by publish order, not by semver).
+      const forward = stepPair(p, start, 1);
+      if (forward && !row(p, start.a).prerelease && !row(p, start.b).prerelease) {
+        expect(stepPair(p, forward, -1), `${p.id} round trip`).toEqual(start);
+      }
+    }
   });
 });
 

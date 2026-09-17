@@ -8,8 +8,9 @@
 // same-fork stories render the changelog glyph + their item rows, the
 // cross-fork story renders the snapshot glyph, the identical pair renders
 // the exact-copy panel without the filter drawer, a same-release hash renders
-// the pick-a-different-releases hint, and the honest-rule ids + every
-// changes-* id app.js binds exist in the DOM output of the view.
+// the pick-a-different-releases hint, the pair steppers offer a step only
+// where the stream has one, and the honest-rule ids + every changes-* id
+// app.js binds exist in the DOM output of the view.
 
 import { describe, expect, test } from "bun:test";
 import { renderToString } from "react-dom/server";
@@ -29,7 +30,7 @@ function renderChanges(params: Record<string, string>): string {
 }
 
 describe("Changes view renders the recorded stories (server render)", () => {
-  test("same-fork quick-link story: uno 1.16.3 → 1.17.2 renders the changelog glyph + removed frame rows", () => {
+  test("recorded story: uno 1.16.3 → 1.17.2 renders the changelog glyph + removed frame rows", () => {
     const html = renderChanges({ a: "gpui-unofficial:1.16.3", b: "gpui-unofficial:1.17.2" });
     expect(html).toContain('id="view-changes"');
     expect(html).toContain("Changelog.");
@@ -55,14 +56,24 @@ describe("Changes view renders the recorded stories (server render)", () => {
     expect(html).toContain('id="changes-caption"');
   });
 
-  test("the cross-fork quick link names uno on the B side (per-side forks, T-35)", () => {
-    // Regression guard: the recorded story link must deep-link to ce 0.2.2 vs
-    // uno 1.18.1 — stamping gpui-ce on B (the single-provider form) would
-    // resolve to an unresolvable 1.18.1 and fall back to a same-release pair.
-    const html = renderChanges({});
-    expect(html).toContain("ce 0.2.2 vs uno 1.18.1 — cross-fork item-level comparison");
-    expect(html).toContain("b=gpui-unofficial%3A1.18.1");
-    expect(html).not.toContain("b=gpui-ce%3A1.18.1");
+  test("the pair steppers walk one stream's own history, and sit out elsewhere", () => {
+    // gpui 0.2.1 → 0.2.2 is the default pair, mid-line: it can step back, but
+    // it is the tip of that line, so there is nothing later to shift to.
+    const mid = renderChanges({ a: "gpui:0.2.1", b: "gpui:0.2.2" });
+    expect(mid).toContain('id="changes-step-prev"');
+    expect(mid).toContain('id="changes-step-next"');
+    expect(mid).not.toMatch(/id="changes-step-prev"[^>]*disabled/);
+    expect(mid).toMatch(/id="changes-step-next"[^>]*disabled/);
+    // The stream's first stable has no earlier pair to shift to (nor later).
+    const first = renderChanges({ a: "gpui:0.1.0", b: "gpui:0.2.0" });
+    expect(first).toMatch(/id="changes-step-prev"[^>]*disabled/);
+    expect(first).not.toMatch(/id="changes-step-next"[^>]*disabled/);
+    // A cross-fork pair has no shared lineage to walk: neither direction is
+    // offered, and both say why.
+    const cross = renderChanges({ a: "gpui-ce:0.2.2", b: "gpui-unofficial:1.18.1" });
+    expect(cross).toMatch(/id="changes-step-prev"[^>]*disabled/);
+    expect(cross).toMatch(/id="changes-step-next"[^>]*disabled/);
+    expect(cross).toContain("steps one fork");
   });
 
   test("a deep link without an unnamed-side fallback renders the linked caption", () => {

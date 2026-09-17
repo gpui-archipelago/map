@@ -18,7 +18,7 @@
 // the ConfigureSource precedent.
 
 import type { ManifestProvider, ManifestVersionRow, Side } from "./types";
-import { branchBase } from "./derive";
+import { branchBase, branchSuccessor } from "./derive";
 
 /** A pair-resolution source: the fork rows the pickers/resolver read —
  * satisfied by the full bundle and the boot manifest alike (Provider rows
@@ -49,6 +49,28 @@ export function defaultPair(provider: ManifestProvider): { a: string | null; b: 
   const bi = provider.versions.indexOf(b);
   const a = branchBase(provider.versions, bi);
   return { a: a ? a.vers : null, b: b.vers };
+}
+
+/**
+ * The pair shifted one step along its stream's stable backbone (both sides
+ * together — the same adjacency the Journal renders and `defaultPair` anchors
+ * on). Null when a side has no neighbour that way, or when the shift would
+ * name one release twice: the caller offers no step rather than a dead end.
+ */
+export function stepPair(
+  provider: ManifestProvider,
+  pair: { a: string; b: string },
+  dir: -1 | 1,
+): { a: string; b: string } | null {
+  const step = (vers: string): string | null => {
+    const i = provider.versions.findIndex((v) => v.vers === vers);
+    if (i < 0) return null;
+    const row = dir === -1 ? branchBase(provider.versions, i) : branchSuccessor(provider.versions, i);
+    return row ? row.vers : null;
+  };
+  const a = step(pair.a);
+  const b = step(pair.b);
+  return a && b && a !== b ? { a, b } : null;
 }
 
 /** Canonical side value ("<fork>:<vers>") for a Changes deep link. */

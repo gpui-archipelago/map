@@ -35,6 +35,7 @@ import {
   releaseFlags,
   resolveChanges,
   rowFor,
+  stepPair,
 } from "../bundle/changes";
 import { diffRows, kindRank, splitKey } from "../bundle/derive";
 import type { DiffOk } from "../bundle/derive";
@@ -47,7 +48,7 @@ import {
 } from "../bundle/corpus";
 import { useTypeMembers } from "../bundle/keyPayload";
 import type { FnTextsBundle, ForkmapManifest, ManifestVersionRow, Side, TypeMembersBundle, VersionRow } from "../bundle/types";
-import { changesLink, routeHash } from "../routing";
+import { routeHash } from "../routing";
 
 /** `<vers> (yanked, pre-release)` option label — RULE-6 flags shown, never
  * hidden. */
@@ -484,6 +485,25 @@ export function ChangesView({
   const swap = () =>
     go({ a: changesPairValue(b.provider.id, b.vers), b: changesPairValue(a.provider.id, a.vers) });
 
+  // Walking the stream's own history: both sides step together, one branch
+  // step at a time. A cross-fork pair has no shared lineage to walk, so the
+  // steppers sit out (and say so); so does a pair at either end of the stream.
+  const walkable = a.provider === b.provider ? a.provider : null;
+  const steps = walkable
+    ? { prev: stepPair(walkable, { a: a.vers, b: b.vers }, -1), next: stepPair(walkable, { a: a.vers, b: b.vers }, 1) }
+    : { prev: null, next: null };
+  const goStep = (next: { a: string; b: string } | null) => {
+    if (!next || !walkable) return;
+    go({ a: changesPairValue(walkable, next.a), b: changesPairValue(walkable, next.b) });
+  };
+  const stepTitle = (dir: -1 | 1, target: { a: string; b: string } | null) => {
+    const way = dir === -1 ? "earlier" : "later";
+    if (!walkable) return "steps one fork's own history — this pair spans two forks";
+    return target
+      ? `both sides ${way}: ${target.a} → ${target.b}`
+      : `no ${way} release pair in ${walkable.id}`;
+  };
+
   // The pair rows' diff body: loading/error states print the data layer's own
   // honest copy of what is fetched (the whole corpus is never part of this
   // path — T-33 increment 4).
@@ -605,31 +625,39 @@ export function ChangesView({
               </select>
             </label>
           </div>
-        <details className="pair-drawer" id="changes-presets">
-          <summary className="pair-drawer-summary">presets</summary>
-          <div className="ctl-hint" id="changes-hint">
-            <div className="quick">
-              <span className="muted">recorded stories: </span>
-              <a className="quick-link" href={changesLink("gpui-unofficial", "1.16.3", "1.17.2")}>
-                uno 1.16.3 → 1.17.2 removes the frame_trace_* fns
-              </a>
-              <a className="quick-link" href={changesLink("kael", "0.1.2", "0.2.0")}>
-                kael 0.1.2 → 0.2.0 re-signs AccessibilityNode
-              </a>
-              <a className="quick-link" href={changesLink("gpui-ce", "0.2.2", "1.18.1", "gpui-unofficial")}>
-                ce 0.2.2 vs uno 1.18.1 — cross-fork item-level comparison
-              </a>
-              <span className="muted"> — or pick any two releases of any forks below.</span>
-            </div>
-          </div>
-        </details>
+          {/* One step of the stream's stable backbone, both sides at once. Not
+              offered across forks (no shared lineage to walk) or at an end. */}
+          <span className="pair-steps">
+            <button
+              id="changes-step-prev"
+              type="button"
+              className="swap-btn mono"
+              disabled={!steps.prev}
+              title={stepTitle(-1, steps.prev)}
+              onClick={() => goStep(steps.prev)}
+            >
+              ‹ prev
+            </button>
+            <button
+              id="changes-step-next"
+              type="button"
+              className="swap-btn mono"
+              disabled={!steps.next}
+              title={stepTitle(1, steps.next)}
+              onClick={() => goStep(steps.next)}
+            >
+              next ›
+            </button>
+          </span>
         </div>
 
-        <p className="pair-caption mono visually-hidden" id="changes-caption" aria-live="polite">
-          {named
-            ? "Linked comparison — resolved from the deep link; an unnamed side falls back to resolver defaults (rule 6)."
-            : `Default pair — ${a.vers} is the release published before ${b.vers}, the latest stable of ${a.provider.id} (rule 6: never a prerelease). Pick any two releases to diff.`}
-        </p>
+        <div id="changes-hint">
+          <p className="pair-caption mono visually-hidden" id="changes-caption" aria-live="polite">
+            {named
+              ? "Linked comparison — resolved from the deep link; an unnamed side falls back to resolver defaults (rule 6)."
+              : `Default pair — ${a.vers} is the release published before ${b.vers}, the latest stable of ${a.provider.id} (rule 6: never a prerelease). Pick any two releases to diff.`}
+          </p>
+        </div>
 
 
 
