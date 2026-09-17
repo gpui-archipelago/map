@@ -193,21 +193,40 @@
     box-shadow: 0 1px 3px rgba(23, 77, 104, 0.25);
   }
 
-  /* One line: package [fork]  [A] [version]  ⇄  [B] [version]  [≠ fork]  ‹ prev next ›. */
-  .ctl-label,
-  .diff-marker {
-    align-self: center;
-    font-family: var(--font-mono);
-    color: var(--content-muted);
-    flex: none;
+  /* One line: Changes  package [fork]  [A] [version]  ⇄  [B] [version]  ⑂ Fork  ‹ prev next ›.
+     The page title rides the toolbar — the row is the view's own heading, not
+     a second one above it — over a hairline, with no card. */
+  #changes-controls {
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid var(--border-subtle);
+    padding: 0 0 10px;
+    margin: 10px 0 14px;
   }
+  .changes-title {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 1;
+    color: var(--content);
+  }
+  /* Field labels: the toolbar's package label, the filter drawer's fields. */
   .ctl-label {
+    font-family: var(--font-mono);
     font-size: 0.72rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
+    color: var(--content-muted);
+  }
+  #changes-controls .ctl-label {
+    align-self: center;
   }
   /* The A/B anchors: the letters read as badges, not as stray text. */
   .diff-marker {
+    align-self: center;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -216,20 +235,32 @@
     border-radius: 4px;
     background: var(--color-gray-200);
     color: var(--color-ink-deep);
+    font-family: var(--font-mono);
     font-weight: 700;
     font-size: 11px;
+    flex: none;
   }
-  .pair-steps {
-    display: inline-flex;
-    gap: 6px;
-    align-self: center;
-    margin-left: auto;
-  }
-  /* The fork-scope control: quieter than the pickers it sits beside. */
+  /* The fork-mode toggle is quieter than the pickers it sits beside, and
+     pressed when both fork pickers are on screen. */
   .fork-scope {
     font-weight: 400;
     font-size: 0.76rem;
     color: var(--content-muted);
+  }
+  .fork-scope[aria-pressed="true"] {
+    border-color: var(--border-accent);
+    color: var(--color-ocean);
+  }
+  /* The swap is an icon between the two sides, not a labelled control. */
+  #changes-swap {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border-radius: 8px;
+    font-size: 1.05rem;
   }
 
   /* The diff nature is a word, not a glyph (an icon read as a menu handle). */
@@ -255,34 +286,36 @@
     border: 0;
   }
 
-  /* The pair picks are the pair display: one line of chips, which is also
-     the whole 'what am I looking at' statement on this view. The shared
-     `.ctl select` min-width (210px, sized for the labelled Configure form)
-     would push the controls onto a second row, so it is released here, and
-     the chips get a cap: a flagged release label is the one that overflows,
-     and the closed chip states it in its title (the full option list always
-     reads verbatim). */
+  /* The package picker fits its own fork ids; the version chips clamp tight
+     and centre, so the pair reads as a pair. The shared `.ctl select`
+     min-width (210px, sized for the labelled Configure form) is released
+     here, or the row never fits one line. */
   .controls.picker .ctl select {
-    min-width: 0;
-    max-width: 28ch;
+    min-width: 96px;
+    max-width: 14ch;
+    text-align: center;
     font-family: var(--font-mono);
-    font-size: 0.8rem;
+    font-size: 0.86rem;
     color: var(--content);
     background: var(--surface);
     border: 1px solid var(--border-subtle);
     border-radius: 999px;
-    padding: 4px 10px;
+    /* Vertical padding only: the row stays one line while the chips grow into
+       comfortable touch targets. */
+    padding: 9px 10px;
   }
-  /* …and the row closes up: five controls, four chips and three badges have to
-     read as one line, so the gaps and pill padding are the picker's own. */
-  .controls.picker {
-    gap: 16px;
+  .controls.picker .ctl select[id$="-provider"] {
+    min-width: 140px;
+    max-width: 22ch;
+    text-align: left;
   }
+  /* …and the row closes up: the gaps and pill padding are the toolbar's own. */
   .controls.picker .pair {
     gap: 8px;
   }
   .controls.picker button {
-    padding: 5px 12px;
+    font-size: 0.82rem;
+    padding: 9px 12px;
   }
 
   /* The Changes pair drawer: the delta is the point, so the pickers collapse

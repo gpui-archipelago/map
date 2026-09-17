@@ -184,6 +184,9 @@ function ListableDiff({
   const noteText = note.length ? `filtering by ${note.join(" · ")}` : "";
 
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  // The drawer stages its two fields: Apply commits them, Clear resets them.
+  const [draftKind, setDraftKind] = useState("");
+  const [draftSearch, setDraftSearch] = useState("");
   // The three count chips are section switches: pressing one hides that whole
   // section, so the delta can be read one kind of change at a time.
   const [showRemoved, setShowRemoved] = useState(true);
@@ -193,6 +196,24 @@ function ListableDiff({
   const flagsPresent = releaseFlags(aRow).length > 0 || releaseFlags(bRow).length > 0;
 
   const hiddenCount = (showRemoved ? 0 : removed.length) + (showAdded ? 0 : added.length) + (showChanged ? 0 : resignedKeys.length);
+  // How many of the drawer's fields are doing something — the bar's count.
+  const appliedFilters = (effKind ? 1 : 0) + (search.trim() ? 1 : 0);
+
+  const openFilter = () => {
+    setDraftKind(effKind);
+    setDraftSearch(search);
+    setIsFilterOpen(true);
+  };
+  const applyDraft = () => {
+    onKind(draftKind);
+    onSearch(draftSearch);
+  };
+  const clearFilter = () => {
+    setDraftKind("");
+    setDraftSearch("");
+    onKind("");
+    onSearch("");
+  };
 
   const statusChip = (cls: string, n: number, label: string, on: boolean, toggle: () => void) => (
     <button
@@ -201,7 +222,10 @@ function ListableDiff({
       aria-pressed={on}
       title={`${on ? "hide" : "show"} ${label} rows`}
       onClick={toggle}
-    >{`${n} ${label}`}</button>
+    >
+      {`${n} ${label}`}
+      {on && <span aria-hidden="true"> ✓</span>}
+    </button>
   );
 
   const kindOptions = [...kinds].sort((x, y) => kindRank(x) - kindRank(y));
@@ -211,7 +235,7 @@ function ListableDiff({
         <DiffMeta data={data} a={a} b={b} />
         <div className="diff-stage-body">
           <p className="diff-summary">
-            <span>{`${vis} measured item differences between A and B${vis !== full ? ` (of ${full})` : ""}:`}</span>
+            <span>{`${vis} measured item differences${vis !== full ? ` (of ${full})` : ""}:`}</span>
             <span className="counts-bar">
               {statusChip("count-removed", removed.length, "removed", showRemoved, () => setShowRemoved((v) => !v))}
               {statusChip("count-added", added.length, "added", showAdded, () => setShowAdded((v) => !v))}
@@ -223,49 +247,73 @@ function ListableDiff({
               className="filter-toggle mono"
               aria-expanded={isFilterOpen}
               aria-controls="changes-filter"
-              onClick={() => setIsFilterOpen((v) => !v)}
+              onClick={() => (isFilterOpen ? setIsFilterOpen(false) : openFilter())}
             >
-              🔍 filter
+              {`🔍 Filter${appliedFilters ? ` (${appliedFilters})` : ""}`}
             </button>
           </p>
-          {/* The drawer opens under the row that toggles it, so the controls
-              arrive between the counts and the rows they filter instead of
-              above the pair facts — and it stays in the DOM either way (an id
-              the static renderer bound must never vanish). */}
+          {/* The drawer unrolls directly under the button that toggles it, so the
+              counts stay above their controls and the toolbar never moves — and
+              it stays in the DOM either way (an id the static renderer bound
+              must never vanish). */}
           <div className="panel diff-filter" id="changes-filter" hidden={!isFilterOpen}>
-            <input
-              id="changes-filter-search"
-              type="search"
-              placeholder="e.g. measure_all"
-              autoComplete="off"
-              spellCheck={false}
-              aria-label="filter delta rows by text"
-              value={search}
-              onChange={(e) => onSearch(e.target.value)}
-            />
-            <select id="changes-filter-kind" aria-label="filter delta rows by kind" value={effKind} onChange={(e) => onKind(e.target.value)}>
-              <option value="">all kinds</option>
-              {kindOptions.map((k) => (
-                <option key={k} value={k}>
-                  {k}
-                </option>
-              ))}
-            </select>
-            <button
-              id="changes-filter-clear"
-              type="button"
-              className="mono"
-              hidden={!active}
-              onClick={() => {
-                onSearch("");
-                onKind("");
-              }}
-            >
-              clear filter
-            </button>
-            <span className="ff-note mono" id="changes-filter-note">
-              {noteText}
-            </span>
+            <div className="ff-head">
+              <span className="ff-title mono">filter identifiers</span>
+              <button
+                id="changes-filter-close"
+                type="button"
+                className="ff-x mono"
+                aria-label="close the filter"
+                title="close the filter"
+                onClick={() => setIsFilterOpen(false)}
+              >
+                ✕
+              </button>
+            </div>
+            <div className="ff-body">
+              <label className="ctl">
+                <span className="ctl-label mono" aria-hidden="true">
+                  kind
+                </span>
+                <select
+                  id="changes-filter-kind"
+                  aria-label="filter delta rows by kind"
+                  value={draftKind}
+                  onChange={(e) => setDraftKind(e.target.value)}
+                >
+                  <option value="">all kinds</option>
+                  {kindOptions.map((k) => (
+                    <option key={k} value={k}>
+                      {k}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="ctl">
+                <span className="ctl-label mono" aria-hidden="true">
+                  match name / symbol
+                </span>
+                <input
+                  id="changes-filter-search"
+                  type="search"
+                  placeholder="e.g. measure_all"
+                  autoComplete="off"
+                  spellCheck={false}
+                  aria-label="filter delta rows by name"
+                  value={draftSearch}
+                  onChange={(e) => setDraftSearch(e.target.value)}
+                />
+              </label>
+              <button id="changes-filter-clear" type="button" className="mono" onClick={clearFilter}>
+                Clear
+              </button>
+              <button id="changes-filter-apply" type="button" className="mono" onClick={applyDraft}>
+                Apply
+              </button>
+              <span className="ff-note mono" id="changes-filter-note">
+                {noteText}
+              </span>
+            </div>
           </div>
           {vis === 0 ? (
             <p className="empty-hint">
@@ -501,7 +549,7 @@ export function ChangesView({
     else onBProv(a.provider.id);
   };
   const forkScopeTitle = !sameFork
-    ? `compare one fork again — B returns to ${a.provider.id}'s default pair`
+    ? `two forks on screen — press to compare one fork again (B returns to ${a.provider.id}'s default pair)`
     : splitFork
       ? "hide the second fork picker"
       : "compare a different fork — a snapshot difference, never a changelog";
@@ -590,13 +638,8 @@ export function ChangesView({
   return (
     <section id="view-changes" className="view">
       <div className="wrap">
-        <div className="view-head">
-          <h1>
-            Changes
-          </h1>
-        </div>
-
-        <div className="controls panel picker" id="changes-controls">
+        <div className="controls picker" id="changes-controls">
+          <h1 className="changes-title">Changes</h1>
           {/* One package while both sides diff one fork; looking at two forks
               is a deliberate step (the row's fork control) or arrives as a
               deep link — never two identical pickers side by side. */}
@@ -659,8 +702,8 @@ export function ChangesView({
               </select>
             </label>
           </div>
-          <button id="changes-swap" className="swap-btn mono" type="button" title="swap A and B" onClick={swap}>
-            ⇄ swap
+          <button id="changes-swap" className="swap-btn mono" type="button" aria-label="swap A and B" title="swap A and B" onClick={swap}>
+            ⇄
           </button>
           <div className="pair">
             <span className="diff-marker mono" aria-hidden="true">
@@ -680,22 +723,22 @@ export function ChangesView({
             id="changes-fork-scope"
             type="button"
             className="fork-scope mono"
-            aria-pressed={pickForks && sameFork}
+            aria-pressed={pickForks}
             title={forkScopeTitle}
             onClick={onForkScope}
           >
-            {sameFork ? "≠ fork" : "= fork"}
+            ⑂ Fork
           </button>
           {/* One step of the stream's stable backbone, both sides at once.
               Only where there is one: a cross-fork pair has no shared lineage
               to walk, so the steppers are absent rather than dead, and a pair
               at either end of a stream shows that direction disabled. */}
           {walkable && (
-            <span className="pair-steps">
+            <span className="stepper-group" role="group" aria-label="step the pair through the stream">
               <button
                 id="changes-step-prev"
                 type="button"
-                className="swap-btn mono"
+                className="mono"
                 disabled={!steps.prev}
                 title={stepTitle(-1, steps.prev)}
                 onClick={() => goStep(steps.prev)}
@@ -705,7 +748,7 @@ export function ChangesView({
               <button
                 id="changes-step-next"
                 type="button"
-                className="swap-btn mono"
+                className="mono"
                 disabled={!steps.next}
                 title={stepTitle(1, steps.next)}
                 onClick={() => goStep(steps.next)}

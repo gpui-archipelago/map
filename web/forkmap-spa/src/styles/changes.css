@@ -21,49 +21,81 @@
     max-width: 100%;
   }
 
-  /* ---------- T-38 delta filter bar (inside the diff block) ---------- */
+  /* ---------- T-38 delta filter drawer (inside the diff block) ---------- */
 
-  /* Opens between the summary row and the rows it filters, so the reading
-     flow never has controls arriving above the pair facts. */
+  /* Unrolls between the facts line and the counts, so the toolbar above never
+     moves: a titled drawer with labelled fields, not a bare row of inputs. */
   .diff-filter {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-wrap: wrap;
+    display: block;
     background: var(--color-sand-100);
     border-color: rgba(55, 143, 189, 0.32);
     padding: 10px 16px;
-    margin: 0 0 6px;
+    margin: 0 0 12px;
   }
   .diff-filter[hidden] {
     display: none;
   }
-  .ff-label {
+  .ff-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+  .ff-title {
     font-size: 0.72rem;
     text-transform: uppercase;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.05em;
     color: var(--content-muted);
-    font-family: var(--font-mono);
   }
-  .diff-filter input[type="search"] {
-    flex: 1 1 220px;
-    min-width: 180px;
-    /* Inline in the diff block the drawer is a bar, not a full-width field. */
-    max-width: 520px;
-    font: inherit;
-    font-size: 0.88rem;
-    padding: 5px 11px;
+  .ff-x {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
     border: 1px solid var(--border-subtle);
     border-radius: 999px;
+    background: #fff;
+    color: var(--content-muted);
+    font-size: 0.9rem;
+    line-height: 1;
+    padding: 0;
+    cursor: pointer;
+  }
+  .ff-x:hover {
+    color: var(--color-ocean);
+  }
+  .ff-body {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .ff-note {
+    font-size: 0.76rem;
+    color: var(--content-muted);
+    margin-left: auto;
+  }
+  .diff-filter input[type="search"] {
+    flex: 0 1 auto;
+    min-width: 240px;
+    /* Inline in the diff block the drawer is a bar, not a full-width field. */
+    max-width: 420px;
+    font: inherit;
+    font-size: 0.92rem;
+    padding: 9px 11px;
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
     background: #fff;
     color: var(--color-ink-deep);
   }
   .diff-filter select {
     font: inherit;
-    font-size: 0.88rem;
-    padding: 5px 10px;
+    font-size: 0.92rem;
+    padding: 9px 10px;
     border: 1px solid var(--border-subtle);
-    border-radius: 999px;
+    border-radius: 8px;
     background: #fff;
     color: var(--color-ink-deep);
   }
@@ -75,22 +107,80 @@
   }
   .diff-filter button {
     font: inherit;
-    font-size: 0.82rem;
+    font-size: 0.88rem;
     border: 1px solid var(--border-subtle);
     background: #fff;
     color: var(--content);
-    border-radius: 999px;
-    padding: 3px 13px;
+    border-radius: 8px;
+    padding: 9px 16px;
     cursor: pointer;
   }
   .diff-filter button:hover {
     border-color: var(--border-accent);
     color: var(--color-ocean);
   }
-  .ff-note {
-    font-size: 0.76rem;
-    color: var(--content-muted);
+
+  /* The stepper: one segmented control, so the pair's history reads as a
+     single instrument rather than two buttons that might step different
+     things. */
+  .stepper-group {
+    display: inline-flex;
+    align-self: center;
     margin-left: auto;
+    border: 1px solid var(--border-subtle);
+    border-radius: 6px;
+    overflow: hidden;
+    background: #fff;
+  }
+  .stepper-group button {
+    border: 0;
+    border-radius: 0;
+    background: #fff;
+    padding: 9px 12px;
+    font-size: 0.82rem;
+    color: var(--content);
+    cursor: pointer;
+  }
+  .stepper-group button + button {
+    border-left: 1px solid var(--border-subtle);
+  }
+  .stepper-group button:hover:not(:disabled) {
+    background: var(--color-sand-100);
+    color: var(--color-ocean);
+  }
+  /* A direction with no neighbour stays visible but muted — the shared
+     button:disabled dashed border would look broken inside the group. */
+  .stepper-group button:disabled {
+    border: 0;
+    cursor: default;
+    opacity: 0.45;
+  }
+  .stepper-group button + button:disabled {
+    border-left: 1px solid var(--border-subtle);
+  }
+
+  /* Touch widths: on a phone the same controls get a real finger target (the
+     horizontal sizes are unchanged, so nothing reflows that did not already). */
+  @media (max-width: 640px) {
+    .controls.picker .ctl select,
+    .controls.picker button,
+    .diff-filter input[type="search"],
+    .diff-filter select,
+    .diff-filter button,
+    .count-chip,
+    .filter-toggle,
+    .stepper-group button {
+      padding-top: 12px;
+      padding-bottom: 12px;
+    }
+    #changes-swap {
+      width: 44px;
+      height: 44px;
+    }
+    .ff-x {
+      width: 40px;
+      height: 40px;
+    }
   }
 
   /* ---------- diff stage ---------- */
@@ -131,7 +221,7 @@
   }
   .count-chip {
     border-radius: 999px;
-    padding: 2px 13px;
+    padding: 5px 14px;
     font-size: 0.92em;
     font-weight: 700;
   }
@@ -150,8 +240,8 @@
     background: rgba(168, 98, 20, 0.13);
     border: 1px solid rgba(168, 98, 20, 0.35);
   }
-  /* The chips are the status switches: pressed = that section is shown, so a
-     released chip reads as switched off rather than as a different count. */
+  /* The chips are the status switches: pressed = that section is shown (and
+     says so with a check); released = dimmed and greyscale. */
   button.count-chip {
     font: inherit;
     font-size: 0.92em;
@@ -162,22 +252,21 @@
     filter: brightness(0.97);
   }
   .count-chip[aria-pressed="false"] {
-    background: transparent;
-    border-style: dashed;
-    color: var(--content-muted);
+    opacity: 0.45;
+    filter: grayscale(1);
   }
   /* The filter drawer is opt-in: the delta is the point, so the summary row
      carries the toggle and #changes-filter stays in the DOM, hidden. */
   .filter-toggle {
     margin-left: auto;
     font: inherit;
-    font-size: 0.78rem;
+    font-size: 0.82rem;
     font-weight: 400;
     background: #fff;
     color: var(--content);
     border: 1px solid var(--border-subtle);
     border-radius: 999px;
-    padding: 3px 13px;
+    padding: 5px 14px;
     cursor: pointer;
   }
   .filter-toggle:hover {

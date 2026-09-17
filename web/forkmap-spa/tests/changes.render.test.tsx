@@ -45,7 +45,7 @@ describe("Changes view renders the recorded stories (server render)", () => {
     const html = renderChanges({ a: "gpui-ce:0.2.2", b: "gpui-unofficial:1.18.1" });
     expect(html).toContain("Snapshot comparison.");
     expect(html).not.toContain("Changelog.");
-    expect(html).toContain("measured item differences between A and B");
+    expect(html).toContain("measured item differences");
   });
 
   test("the default pair (empty hash) renders a diffable default with the RULE-6 caption", () => {
@@ -115,11 +115,11 @@ describe("Changes view renders the recorded stories (server render)", () => {
     expect(one).toMatch(/id="changes-b-provider"[^>]*hidden/);
     expect(one).toContain('class="diff-marker mono"');
     expect(one).not.toContain('class="pair-side mono"');
-    expect(one).toContain("≠ fork");
-    // A cross-fork pair keeps both fork pickers (and says how to fold back).
+    expect(one).toContain("⑂ Fork");
+    // A cross-fork pair keeps both fork pickers (and the toggle says so).
     const two = renderChanges({ a: "gpui-ce:0.2.2", b: "gpui-unofficial:1.18.1" });
     expect(two).not.toMatch(/id="changes-b-provider"[^>]*hidden/);
-    expect(two).toContain("= fork");
+    expect(two).toMatch(/id="changes-fork-scope"[^>]*aria-pressed="true"/);
   });
 
   test("the yanked/pre-release flags ride the release pickers", () => {

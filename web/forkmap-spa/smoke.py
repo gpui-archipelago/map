@@ -356,7 +356,7 @@ def main() -> int:
             ("changes story (same-fork changelog)",
              "#/changes?a=gpui-unofficial:1.16.3&b=gpui-unofficial:1.17.2",
              ["Changelog.", "profiler::record_frame_timing", "frame_trace_enabled",
-              "measured item differences between A and B", "id=\"changes-filter\""],
+              "measured item differences", "id=\"changes-filter\""],
              ["Snapshot comparison."]),
             ("changes story (cross-fork snapshot, never a changelog — RULE-1)",
              "#/changes?a=gpui-ce:0.2.2&b=gpui-unofficial:1.18.1",
