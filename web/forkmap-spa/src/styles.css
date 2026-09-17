@@ -193,6 +193,45 @@
     box-shadow: 0 1px 3px rgba(23, 77, 104, 0.25);
   }
 
+  /* The pair picks are the pair display: one line of chips, which is also
+     the whole 'what am I looking at' statement on this view. */
+  .controls.picker .ctl select {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--content);
+    background: var(--surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: 999px;
+    padding: 4px 10px;
+    max-width: 19ch;
+  }
+
+  /* The Changes pair drawer: the delta is the point, so the pickers collapse
+     behind a summary and the always-visible line names the pair. */
+  .pair-line {
+    margin: 6px 0 18px;
+    font-size: 0.86rem;
+  }
+  .pair-arrow {
+    color: var(--content-muted);
+  }
+  .pair-drawer {
+    margin: 0 0 16px;
+  }
+  .pair-drawer-summary {
+    cursor: pointer;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--content-muted);
+    padding: 4px 0;
+  }
+  .pair-drawer-summary:hover {
+    color: var(--content);
+  }
+  .pair-drawer[open] > .pair-drawer-summary {
+    margin-bottom: 10px;
+  }
+
   /* The nav's one outbound link (back to the main site): a hairline sets it
      apart from the in-app views without breaking the pill hover shape. */
   .site-nav .nav-back {

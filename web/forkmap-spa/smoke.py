@@ -351,7 +351,7 @@ def main() -> int:
                                     "id=\"data-layers\"", "id=\"compile-badges\"", "id=\"data-facts\""], []),
             ("nav chrome", "#/", ["gpui-archipelago", "Changes", "Alignment", "Configure", "Journal",
                                   "header-schema"], []),
-            ("changes route", "#/changes", ["id=\"view-changes\"", "item-set deltas between releases",
+            ("changes route", "#/changes", ["id=\"view-changes\"", "id=\"changes-controls\"",
                                              changes_default_caption], []),
             ("changes story (same-fork changelog)",
              "#/changes?a=gpui-unofficial:1.16.3&b=gpui-unofficial:1.17.2",

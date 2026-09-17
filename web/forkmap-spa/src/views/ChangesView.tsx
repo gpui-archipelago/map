@@ -200,9 +200,6 @@ function ListableDiff({
   return (
     <>
       <div className="panel diff-filter" id="changes-filter">
-        <span className="ff-label mono" aria-hidden="true">
-          filter delta
-        </span>
         <input
           id="changes-filter-search"
           type="search"
@@ -537,23 +534,15 @@ export function ChangesView({
     <section id="view-changes" className="view">
       <div className="wrap">
         <div className="view-head">
-          <p className="view-eyebrow mono">what changed between any two releases of any fork(s)</p>
           <h1>
-            Changes <span className="view-tag mono">item-set deltas between releases</span>
+            Changes
           </h1>
-          <p className="lede">
-            Every measured item added, removed or changed between the two releases you pick. Same fork: a stream
-            changelog. Different forks: a <strong>snapshot-surface difference</strong> (no lineage edge — labeled as
-            such; rule rows informational only, never “the successor”). The caption below the pickers names how the
-            pair was chosen; each row links into the Alignment view.
-          </p>
         </div>
 
         <div className="controls panel picker" id="changes-controls">
           <div className="pair">
             <label className="ctl">
-              <span>A · fork</span>
-              <select id="changes-a-provider" value={a.provider.id} onChange={(e) => onAProv(e.target.value)}>
+              <select id="changes-a-provider" aria-label="A · fork" value={a.provider.id} onChange={(e) => onAProv(e.target.value)}>
                 {manifest.providers.map((p) => (
                   <option key={p.id} value={p.id}>
                     {`${p.id} (${p.package})`}
@@ -562,8 +551,7 @@ export function ChangesView({
               </select>
             </label>
             <label className="ctl">
-              <span>A · release</span>
-              <select id="changes-a" value={a.vers} onChange={(e) => onAVers(e.target.value)}>
+              <select id="changes-a" aria-label="A · release" value={a.vers} onChange={(e) => onAVers(e.target.value)}>
                 {a.provider.versions.map((v) => (
                   <option key={v.vers} value={v.vers}>
                     {optionLabel(v)}
@@ -577,8 +565,7 @@ export function ChangesView({
           </button>
           <div className="pair">
             <label className="ctl">
-              <span>B · fork</span>
-              <select id="changes-b-provider" value={b.provider.id} onChange={(e) => onBProv(e.target.value)}>
+              <select id="changes-b-provider" aria-label="B · fork" value={b.provider.id} onChange={(e) => onBProv(e.target.value)}>
                 {manifest.providers.map((p) => (
                   <option key={p.id} value={p.id}>
                     {`${p.id} (${p.package})`}
@@ -587,8 +574,7 @@ export function ChangesView({
               </select>
             </label>
             <label className="ctl">
-              <span>B · release</span>
-              <select id="changes-b" value={b.vers} onChange={(e) => onBVers(e.target.value)}>
+              <select id="changes-b" aria-label="B · release" value={b.vers} onChange={(e) => onBVers(e.target.value)}>
                 {b.provider.versions.map((v) => (
                   <option key={v.vers} value={v.vers}>
                     {optionLabel(v)}
@@ -620,6 +606,9 @@ export function ChangesView({
             : `Default pair — ${a.vers} is the release published before ${b.vers}, the latest stable of ${a.provider.id} (rule 6: never a prerelease). Pick any two releases to diff.`}
         </p>
 
+        {/* The fork facts collapse; the chips above are the pair display. */}
+        <details className="pair-drawer" id="changes-pair-drawer">
+          <summary className="pair-drawer-summary">fork facts</summary>
         <div className="panel release-panel" id="changes-release-detail">
           {a.provider !== b.provider ? (
             <div className="provider-lines">
@@ -636,6 +625,8 @@ export function ChangesView({
             <ProviderLine provider={a.provider} />
           )}
         </div>
+        </details>
+
 
         {rowsBody}
 
