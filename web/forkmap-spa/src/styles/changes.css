@@ -178,7 +178,8 @@
       padding-top: 12px;
       padding-bottom: 12px;
     }
-    #changes-swap {
+    #changes-swap,
+    #changes-fork-scope {
       width: 44px;
       height: 44px;
     }

@@ -109,17 +109,27 @@ describe("Changes view renders the recorded stories (server render)", () => {
     expect(html).toContain("records (api: ");
   });
 
-  test("each A/B badge appears exactly once, whichever fork mode the pair is in", () => {
-    // Grouped by entity: one badge per side, even when both fork pickers are
-    // on screen.
+  test("each A/B badge appears exactly once, and visible, whichever fork mode the pair is in", () => {
+    const split = renderChanges({ a: "gpui-unofficial:1.16.3", b: "gpui-unofficial:1.17.2" }, true);
+    // Grouped by entity: one badge per side, on screen in every mode — a
+    // hidden marker is not a badge the reader can see (asserting DOM presence
+    // alone let exactly that ship once).
     const same = renderChanges({ a: "gpui-unofficial:1.16.3", b: "gpui-unofficial:1.17.2" });
     const cross = renderChanges({ a: "gpui-ce:0.2.2", b: "gpui-unofficial:1.18.1" });
-    const badges = (html: string) => html.match(/class="diff-marker mono"/g)?.length ?? 0;
-    expect(badges(same)).toBe(2);
-    expect(badges(cross)).toBe(2);
-    expect(same).toContain("⑂ Fork");
-    expect(same).not.toContain("⑂ Fork ✓");
-    expect(cross).toContain("⑂ Fork ✓");
+    const shownBadges = (html: string) =>
+      (html.match(/class="diff-marker mono"(?![^>]*\shidden=)/g) ?? []).length;
+    expect(shownBadges(same)).toBe(2);
+    expect(shownBadges(split)).toBe(2);
+    expect(shownBadges(cross)).toBe(2);
+    // The fork control sits beside the swap, icon-only, and is pressed exactly
+    // when B's fork picker is on screen.
+    expect(same.indexOf('id="changes-swap"')).toBeLessThan(same.indexOf('id="changes-fork-scope"'));
+    expect(same).toMatch(/id="changes-fork-scope"[^>]*aria-pressed="false"/);
+    expect(split).toMatch(/id="changes-fork-scope"[^>]*aria-pressed="true"/);
+    expect(cross).toMatch(/id="changes-fork-scope"[^>]*aria-pressed="true"/);
+    // …and it is the fork *select* that comes and goes, never B's badge.
+    expect(same).toMatch(/id="changes-b-provider"[^>]*hidden/);
+    expect(split).not.toMatch(/id="changes-b-provider"[^>]*hidden/);
   });
 
   test("one package picker while both sides diff one fork, two when they do not", () => {
@@ -129,12 +139,14 @@ describe("Changes view renders the recorded stories (server render)", () => {
     expect(one).toMatch(/id="changes-b-provider"[^>]*hidden/);
     expect(one).toContain('class="diff-marker mono"');
     expect(one).not.toContain('class="pair-side mono"');
-    expect(one).toContain("⑂ Fork");
-    expect(one).not.toContain("⑂ Fork ✓");
+    expect(one).not.toContain("⑂ Fork");
+    expect(one).toMatch(/id="changes-fork-scope"[^>]*aria-pressed="false"/);
+    expect(one).toContain('aria-label="add the second fork picker"');
     // A cross-fork pair keeps both fork pickers (and the toggle says so).
     const two = renderChanges({ a: "gpui-ce:0.2.2", b: "gpui-unofficial:1.18.1" });
     expect(two).not.toMatch(/id="changes-b-provider"[^>]*hidden/);
-    expect(two).toContain("⑂ Fork ✓");
+    expect(two).toMatch(/id="changes-fork-scope"[^>]*aria-pressed="true"/);
+    expect(two).toContain('aria-label="compare one fork again"');
   });
 
   test("the fork control's split state really shows B's fork picker", () => {
@@ -142,7 +154,8 @@ describe("Changes view renders the recorded stories (server render)", () => {
     // visibility must read it — a pressed control over a hidden picker is a
     // button that does nothing (T-38 regression: it shipped that way once).
     const split = renderChanges({ a: "gpui-unofficial:1.16.3", b: "gpui-unofficial:1.17.2" }, true);
-    expect(split).toContain("⑂ Fork ✓");
+    expect(split).toMatch(/id="changes-fork-scope"[^>]*aria-pressed="true"/);
+    expect(split).toContain('aria-label="hide the second fork picker"');
     expect(split).not.toMatch(/id="changes-b-provider"[^>]*hidden/);
     // B's badge joins the picker, and A's is still the shared package picker.
     expect(split).toContain('aria-label="B · fork"');

@@ -240,18 +240,26 @@
     font-size: 11px;
     flex: none;
   }
-  /* The fork-mode toggle is quieter than the pickers it sits beside — until it
-     is on, when it says so the same way the status chips do. */
+  /* The fork control is the swap's twin: a square icon button beside it, with
+     the words in its accessible name and tooltip. */
+  #changes-fork-scope {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border-radius: 8px;
+    font-size: 1.2rem;
+  }
+  /* Quieter than the pickers it sits between — until it is on. */
   .fork-scope {
-    font-weight: 400;
-    font-size: 0.76rem;
     color: var(--content-muted);
   }
   .fork-scope[aria-pressed="true"] {
     background: rgba(55, 143, 189, 0.12);
     border-color: var(--border-accent);
     color: var(--color-ocean-deep);
-    font-weight: 600;
   }
   /* The swap is an icon between the two sides, not a labelled control. */
   #changes-swap {

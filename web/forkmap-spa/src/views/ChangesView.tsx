@@ -555,13 +555,19 @@ export function ChangesView({
   const swap = () =>
     go({ a: changesPairValue(b.provider.id, b.vers), b: changesPairValue(a.provider.id, a.vers) });
 
-  // ≠ fork reveals the second fork picker (the snapshot comparison is a
-  // deliberate act); = fork folds a cross-fork pair back to one stream — B
-  // takes A's fork at that stream's default pair, so the result stays diffable.
+  // ⑂ adds B's own fork picker (the snapshot comparison is a deliberate act);
+  // pressing it again on a one-fork pair takes the picker away, and on a
+  // two-fork pair it folds them back to one — B takes A's fork at that
+  // stream's default pair, so the result stays diffable.
   const onForkScope = () => {
     if (sameFork) setSplitFork((v) => !v);
     else onBProv(a.provider.id);
   };
+  const forkScopeLabel = !sameFork
+    ? "compare one fork again"
+    : splitFork
+      ? "hide the second fork picker"
+      : "add the second fork picker";
   const forkScopeTitle = !sameFork
     ? `two forks on screen — press to compare one fork again (B returns to ${a.provider.id}'s default pair)`
     : splitFork
@@ -705,9 +711,22 @@ export function ChangesView({
           <button id="changes-swap" className="swap-btn mono" type="button" aria-label="swap A and B" title="swap A and B" onClick={swap}>
             ⇄
           </button>
+          {/* Beside the swap, between the two sides: the one control that adds
+              B's own fork picker (or folds a two-fork pair back to one). */}
+          <button
+            id="changes-fork-scope"
+            type="button"
+            className="fork-scope mono"
+            aria-pressed={pickForks}
+            aria-label={forkScopeLabel}
+            title={forkScopeTitle}
+            onClick={onForkScope}
+          >
+            ⑂
+          </button>
           <div className="pair">
             <span className="side">
-              <span className="diff-marker mono" aria-hidden="true" hidden={!pickForks}>
+              <span className="diff-marker mono" aria-hidden="true">
                 B
               </span>
               <label className="ctl">
@@ -737,16 +756,6 @@ export function ChangesView({
               </select>
             </label>
           </div>
-          <button
-            id="changes-fork-scope"
-            type="button"
-            className="fork-scope mono"
-            aria-pressed={pickForks}
-            title={forkScopeTitle}
-            onClick={onForkScope}
-          >
-            {`⑂ Fork${pickForks ? " ✓" : ""}`}
-          </button>
           {/* One step of the stream's stable backbone, both sides at once.
               Only where there is one: a cross-fork pair has no shared lineage
               to walk, so the steppers are absent rather than dead, and a pair
