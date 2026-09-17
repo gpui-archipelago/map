@@ -60,7 +60,7 @@ describe("ResignedRowExtra renders the measured signature change (T-34)", () => 
     const a = side(uno, "1.18.1");
     const b = side(uno, "1.19.0-pre");
     const html = renderNote("fn:Window::blur", row(uno, a.vers), a, row(uno, b.vers), b);
-    expect(html).toContain("re-signature — measured signature changed:");
+    expect(html).toContain("changed signature:");
     expect(html).toContain("fn Window::blur(&amp; mut self)</code>");
     expect(html).toContain("fn Window::blur(&amp; mut self, &amp; mut App)</code>");
     expect(html).toContain("sig-change");
@@ -73,10 +73,10 @@ describe("ResignedRowExtra renders the measured signature change (T-34)", () => 
     const b = side(uno, "1.17.2");
     const key = "fn:profiler::FrameTiming::draw_duration";
     const html = renderNote(key, row(uno, a.vers), a, row(uno, b.vers), b);
-    expect(html).toContain("the measured signature text is unchanged");
+    expect(html).toContain("the text is the same");
     expect(html).toContain("fn profiler::FrameTiming::draw_duration(&amp; self)-&gt; Duration");
     expect(html).toContain("cfg (feature = &quot;profiler&quot;)");
-    expect(html).toContain("provenance, never evaluation");
+    expect(html).toContain("recorded under");
   });
 
   test("a re-signed member-bearing type rows the measured pub-member delta (T-47 2b)", () => {
@@ -93,8 +93,8 @@ describe("ResignedRowExtra renders the measured signature change (T-34)", () => 
     const b = side(kael, "0.2.0");
     const key = "struct:accessibility::AccessibilityNode";
     const html = renderNote(key, row(kael, a.vers), a, row(kael, b.vers), b, anchor);
-    expect(html).toContain("measured pub members that moved");
-    expect(html).toContain("consumer-visible members only");
+    expect(html).toContain("these public members moved");
+    expect(html).toContain("(public members only)");
     expect(html).toContain("member-delta");
     expect(html).not.toContain("sig-change");
     // At least one segment moved on one side, and every rendered segment is
@@ -118,9 +118,9 @@ describe("ResignedRowExtra renders the measured signature change (T-34)", () => 
     const a = side(kael, "0.1.1");
     const b = side(kael, "0.2.0");
     const html = renderNote("struct:accessibility::AccessibilityNode", row(kael, a.vers), a, row(kael, b.vers), b, null);
-    expect(html).toContain("digest changed");
-    expect(html).toContain("consumer-visible pub members only");
-    expect(html).toContain("private/pub(crate) members never re-sign");
+    expect(html).toContain("the hash moved");
+    expect(html).toContain("public members only");
+    expect(html).toContain("private members never change it");
     expect(html).not.toContain("sig-change");
     expect(html).not.toContain("member-delta");
   });
@@ -153,7 +153,7 @@ describe("ResignedRowExtra renders the measured signature change (T-34)", () => 
       row(uno, b.vers),
       b,
     );
-    expect(html).toContain("multiple signatures in one of the compared releases");
+    expect(html).toContain("more than one signature in one of the releases");
     expect(html).not.toContain("sig-change");
   });
 
@@ -167,7 +167,7 @@ describe("ResignedRowExtra renders the measured signature change (T-34)", () => 
     const a = side(uno, "1.18.0");
     const b = side(uno, "1.19.0-pre");
     const html = renderNote(key, row(uno, a.vers), a, row(uno, b.vers), b, anchor);
-    expect(html).toContain("measured pub members that moved");
+    expect(html).toContain("these public members moved");
     expect(html).toContain("momentum_decay_per_ms : f32");
     expect(html).toContain("scroll_physics : ScrollPhysics");
     // Removal and addition are distinguished, not just listed.

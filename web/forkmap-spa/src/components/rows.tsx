@@ -99,7 +99,7 @@ export function NoSuccessorNote() {
 function DigestOnlyNote({ why }: { why?: string }) {
   return (
     <span className="muted">
-      {`re-signature — digest changed (fn digests are parameter-type; a type's digest covers its consumer-visible pub members only — doc comments and private/pub(crate) members never re-sign it${why ? `, ${why}` : ""}). `}
+      {`changed signature — the hash moved (function hashes cover parameter types; a type's covers its public members only, so doc comments and private members never change it${why ? `, ${why}` : ""}). `}
     </span>
   );
 }
@@ -111,14 +111,14 @@ function DigestOnlyNote({ why }: { why?: string }) {
 function MemberDeltaNote({ removed, added }: { removed: string[]; added: string[] }) {
   return (
     <span className="row-extra member-delta">
-      <span className="muted">{"re-signature — measured pub members that moved: "}</span>
+      <span className="muted">{"changed signature — these public members moved: "}</span>
       {removed.map((seg) => (
         <code className="member-seg member-removed" key={`-${seg}`}>{`− ${seg}`}</code>
       ))}
       {added.map((seg) => (
         <code className="member-seg member-added" key={`+${seg}`}>{`+ ${seg}`}</code>
       ))}
-      <span className="muted">{" (consumer-visible members only — honest rule 2)"}</span>
+      <span className="muted">{" (public members only)"}</span>
     </span>
   );
 }
@@ -161,8 +161,8 @@ export function ResignedRowExtra({
       <span className="row-extra sig-change">
         <span className="muted">
           {changed
-            ? "re-signature — measured signature changed: "
-            : "re-signature — the measured signature text is unchanged; the re-signature is the recorded cfg gate change: "}
+            ? "changed signature: "
+            : "changed signature — the text is the same; only the cfg gate changed: "}
         </span>
         {changed ? (
           <>
@@ -177,11 +177,11 @@ export function ResignedRowExtra({
         )}
         {gates.length > 0 && (
           <span className="muted">
-            {` — measured under ${gates.join(" · ")} (provenance, never evaluation)`}
+            {` — recorded under ${gates.join(" · ")}`}
           </span>
         )}
         <span className="muted">
-          {" (measured canonical text — parameter types, never names; honest rule 2)"}
+          {" (parameter types, never names)"}
         </span>
       </span>
     );
@@ -196,7 +196,7 @@ export function ResignedRowExtra({
     return (
       <span className="row-extra">
         <span className="muted">
-          {"re-signature — digest changed (this key is measured under multiple signatures in one of the compared releases, so no single before/after is drawn; fn digests are parameter-type — honest rule 2). "}
+          {"changed signature — the hash moved (this key has more than one signature in one of the releases, so no single before/after is drawn). "}
         </span>
       </span>
     );

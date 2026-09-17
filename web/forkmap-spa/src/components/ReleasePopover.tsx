@@ -282,7 +282,7 @@ export function ReleasePopover({
       {present && letters.length > 0 && (
         <p className="release-variants mono">
           {changed && prevLetters.length > 0
-            ? `${prevLetters.join("+")} → ${letters.join("+")} — digest re-signed here; the measured signatures are on the variant cards`
+            ? `${prevLetters.join("+")} → ${letters.join("+")} — the signature changed here; both signatures are on the variant cards`
             : `digest variant ${letters.join("+")} — measured signature on the variant card`}
         </p>
       )}
@@ -298,25 +298,25 @@ export function ReleasePopover({
           <span className="release-label mono">members</span>
           <span className="release-members-delta mono">
             {memberDelta.removed.map((seg) => (
-              <span className="member-seg member-removed" key={`-${seg}`} title="measured pub member removed (or re-typed) at this release">
+              <span className="member-seg member-removed" key={`-${seg}`} title="member removed or retyped in this release">
                 {`− ${seg}`}
               </span>
             ))}
             {memberDelta.added.map((seg) => (
-              <span className="member-seg member-added" key={`+${seg}`} title="measured pub member added (or re-typed) at this release">
+              <span className="member-seg member-added" key={`+${seg}`} title="member added or retyped in this release">
                 {`+ ${seg}`}
               </span>
             ))}
           </span>
           <span className="muted release-members-note">
-            {" — the measured consumer-visible member segments that moved (pub members only; honest rule 2)"}
+            {" — the public members that moved"}
           </span>
         </p>
       )}
       {changed && !memberDelta && splitKey(itemKey)[0] !== "fn" && (
         <p className="release-members" id="release-popover-members">
           <span className="muted release-members-note">
-            {"re-signature — a type's digest covers its consumer-visible pub members only; doc comments and private/pub(crate) members never re-sign it (honest rule 2). The moved member is not named here (the measured member vector is not resolved for this key)."}
+            {"changed signature — a type's hash covers its public members only, so doc comments and private members never change it. The moved member is not named here for this key."}
           </span>
         </p>
       )}

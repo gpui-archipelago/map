@@ -32,18 +32,18 @@ describe("Changes view renders the recorded stories (server render)", () => {
   test("same-fork quick-link story: uno 1.16.3 → 1.17.2 renders the changelog banner + removed frame rows", () => {
     const html = renderChanges({ a: "gpui-unofficial:1.16.3", b: "gpui-unofficial:1.17.2" });
     expect(html).toContain('id="view-changes"');
-    expect(html).toContain("Same-stream changelog.");
+    expect(html).toContain("Changelog.");
     expect(html).toContain("Removed (");
     // The removed rows render their kind chips with measured identities.
     expect(html).toContain("profiler::record_frame_timing");
     expect(html).toContain("frame_trace_enabled");
-    expect(html).not.toContain("Snapshot difference — not a changelog.");
+    expect(html).not.toContain("Snapshot comparison.");
   });
 
   test("cross-fork story: ce 0.2.2 vs uno 1.18.1 renders the snapshot banner, never a changelog (RULE-1)", () => {
     const html = renderChanges({ a: "gpui-ce:0.2.2", b: "gpui-unofficial:1.18.1" });
-    expect(html).toContain("Snapshot difference — not a changelog.");
-    expect(html).not.toContain("Same-stream changelog.");
+    expect(html).toContain("Snapshot comparison.");
+    expect(html).not.toContain("Changelog.");
     expect(html).toContain("measured item differences between A and B");
   });
 

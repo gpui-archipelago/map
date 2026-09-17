@@ -82,7 +82,7 @@ function StoryLine({ provider, facts, prevFacts }: { provider: ManifestProvider;
         <span>{" · "}</span>
         {mk(c.ad, "count-added", "added")}
         <span>{" · "}</span>
-        {mk(c.rs, "count-resigned", "re-signed")}
+        {mk(c.rs, "count-resigned", "changed")}
       </span>
       <a className="doc" href={changesLink(provider.id, prevFacts?.vers ?? "", facts.vers)}>
         open this diff in Changes
@@ -141,7 +141,7 @@ function EntryItems({
   return (
     <div className="je-items">
       <p className="subnote">
-        Added / removed / re-signed item rows vs the previous published release. A digest change is a re-signature
+        Added, removed or changed item rows vs the previous published release. A hash change means the signature moved
         of the measured contract (fn rows render the measured signature change where the key is a single signature
         on both sides; a member-bearing type row renders the measured pub members that moved — doc comments and
         private/pub(crate) members never re-sign a type, rule 2; a type alias and multi-signature fn keys stay
@@ -168,7 +168,7 @@ function EntryItems({
       )}
       {diff.resigned.length > 0 && (
         <div className="delta-sec resigned">
-          <h4 className="item-kind-head">{`re-signed — ${diff.resigned.length}`}</h4>
+          <h4 className="item-kind-head">{`changed — ${diff.resigned.length}`}</h4>
           <ItemList
             keys={diff.resigned.map((r) => r.key)}
             cssClass="resigned-row"
@@ -380,7 +380,7 @@ export function JournalView({
             release’s measured story against its branch predecessor — the previous stable for a stable release (so a
             backport published after a newer line’s preview is diffed against its own line), the newest stable it
             previews for a pre-release. Or “identical measured surface” for a within-stream exact-copy republish.
-            Entries expand to the item rows themselves (added / removed / re-signed), each linking into Alignment.
+            Entries expand to the item rows themselves (added, removed or changed), each linking into Alignment.
           </p>
           <p className="lede muted">
             Honesty notes: the bundle carries no publish dates, so streams are never interleaved by time — the

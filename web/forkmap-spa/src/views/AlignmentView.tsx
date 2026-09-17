@@ -189,7 +189,7 @@ const DOC_BLURBS: string[] = ["8", "9", "12", "13"];
 
 const LEGEND: [string, string][] = [
   ["same", "present (unchanged)"],
-  ["changed", "re-signed (digest changed)"],
+  ["changed", "signature changed"],
   ["added", "appears here"],
   ["removed", "removed here"],
   ["absent", "absent"],

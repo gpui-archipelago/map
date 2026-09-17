@@ -205,7 +205,7 @@ describe("Alignment view renders the recorded stories (server render)", () => {
     // counts all computed from the loaded bundle).
     const legendSegment = html.slice(html.indexOf('id="alignment-variants"'), html.indexOf('class="matrix-stage"'));
     expect(legendSegment).not.toContain("present (unchanged)");
-    expect(legendSegment).not.toContain("re-signed (digest changed)");
+    expect(legendSegment).not.toContain("signature changed");
     expect(html).toContain('id="alignment-variants"');
     // one deck card per measured digest — α…last, first-measured order (RULE-7)
     expect(occurrences(html, 'class="var-card"')).toBe(variants.length);
@@ -365,7 +365,7 @@ describe("Alignment view renders the recorded stories (server render)", () => {
     // rendered separately and is not a step of the stable run.
     expect(html).toContain("✕ first removed at 1.17.2");
     expect(html).not.toContain("✕ first removed at 1.17.0-pre");
-    expect(html).not.toContain("~ first re-signed at 1.7.2");
+    expect(html).not.toContain("~ first changed at 1.7.2");
     // return chip (T-38 round-trip from a Journal deep link)
     expect(html).toContain('class="back-chip mono"');
     expect(html).toContain("← return to Journal — gpui-unofficial 1.17.2");
@@ -537,7 +537,7 @@ describe("T-44 release popover renders a pinned cell's record (server render)", 
       st === "same"
         ? "present (unchanged)"
         : st === "changed"
-          ? "re-signed (digest changed)"
+          ? "signature changed"
           : st === "added"
             ? "appears here"
             : st === "removed"
@@ -590,7 +590,7 @@ describe("T-44 release popover renders a pinned cell's record (server render)", 
     expect(html).toContain("pre-release — not a stable release (rule 6)");
     // the stream-transition status names the branch predecessor
     expect(html).toContain('id="release-popover-status"');
-    expect(html).toContain("re-signed (digest changed)");
+    expect(html).toContain("signature changed");
     expect(html).toContain("branch predecessor 1.18.0");
     // the variant transition names α → β without re-printing the 64-hex
     // digests or the signatures (the deck owns them — the duplication trap)
@@ -685,7 +685,7 @@ describe("T-44 the popover names a changed cell's transition without re-printing
       vers: row.vers,
       flagTxt: row.prerelease ? "pre-release" : "stable",
       state: st,
-      phrase: "re-signed (digest changed)",
+      phrase: "signature changed",
       digests: [...digestsOf(row.surface, key)!].sort(),
       prevVers: prev!.vers,
       prevDigests: [...digestsOf(prev!.surface, key)!].sort(),
@@ -713,7 +713,7 @@ describe("T-44 the popover names a changed cell's transition without re-printing
     const html = popoverHtml(key, cell);
     // the transition is named in deck vocabulary (letters, no hex/no text)
     expect(html).toContain("α → β");
-    expect(html).toContain("the measured signatures are on the variant cards");
+    expect(html).toContain("both signatures are on the variant cards");
     // the T-34 measured signature texts themselves render nowhere in the
     // popover — the deck cards own them (duplication-trap readout gone);
     // rule 2's type-text guard needs no digest-only fallback here because
@@ -733,7 +733,7 @@ describe("T-44 the popover names a changed cell's transition without re-printing
     const html = popoverHtml(key, cell);
     // the state context names the previous published row — never a call
     // shape, never a doc-text dump (the review's cited literals stay out)
-    expect(html).toContain("re-signed (digest changed)");
+    expect(html).toContain("signature changed");
     expect(html).toContain("branch predecessor 0.1.2");
     expect(html).toContain("α → β");
     expect(html).not.toContain("Bounds<Pixels>");
@@ -783,7 +783,7 @@ describe("T-45 a stable uno cell renders the upstream github source anchor besid
       st === "same"
         ? "present (unchanged)"
         : st === "changed"
-          ? "re-signed (digest changed)"
+          ? "signature changed"
           : "appears here";
     return {
       providerId: p.id,
@@ -918,7 +918,7 @@ describe("T-42 digest variants render over the recorded stories (server render)"
       vers: row.vers,
       flagTxt: "pre-release",
       state: st,
-      phrase: "re-signed (digest changed)",
+      phrase: "signature changed",
       digests,
       prevVers: prev!.vers,
       prevDigests,

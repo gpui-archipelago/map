@@ -42,7 +42,7 @@ describe("Journal view renders the stream feed (server render)", () => {
     expect(html).toContain(`vs 0.1.2: `);
     if (c.rm) expect(html).toContain(`${c.rm} removed`);
     if (c.ad) expect(html).toContain(`${c.ad} added`);
-    if (c.rs) expect(html).toContain(`${c.rs} re-signed`);
+    if (c.rs) expect(html).toContain(`${c.rs} changed`);
     // the item rows stay collapsed until expand (no je-items yet)
     expect(html).toContain(`show item rows (${total})`);
     expect(html).not.toContain('class="je-items"');

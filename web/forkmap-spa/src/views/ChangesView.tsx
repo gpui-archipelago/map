@@ -79,13 +79,13 @@ function DiffHead({ a, b, aRow, bRow, crossFork }: { a: Side; b: Side; aRow: Man
 function DiffBanner({ a, b, crossFork }: { a: Side; b: Side; crossFork: boolean }) {
   return crossFork ? (
     <div className="diff-kind-note snapshot">
-      <strong>Snapshot difference — not a changelog. </strong>
-      {`Release A (${a.provider.id}) and release B (${b.provider.id}) are different forks with no lineage edge between these releases, so this delta is a snapshot-surface difference: each row compares the two snapshots' measured items as-is. Within-stream changelogs (and confirmed rule successors) live in the Journal and in diffs of two releases of one fork.`}
+      <strong>Snapshot comparison. </strong>
+      {`Two different forks — ${a.provider.id} and ${b.provider.id} — with no shared lineage, so each row just compares the two releases item by item. For a fork's own history, see the Journal.`}
     </div>
   ) : (
     <div className="diff-kind-note changelog">
-      <strong>Same-stream changelog. </strong>
-      {"Release A and release B are two releases of one fork, so this delta reads as this stream's measured history (the same adjacency the Journal renders) and a confirmed successor may be claimed where the rule store has one."}
+      <strong>Changelog. </strong>
+      {`Two releases of ${a.provider.id}, so this is that fork's own history — the same adjacency the Journal renders.`}
     </div>
   );
 }
@@ -247,7 +247,7 @@ function ListableDiff({
             <span className="counts-bar">
               <span className="count-chip count-removed">{`${removed.length} removed`}</span>
               <span className="count-chip count-added">{`${added.length} added`}</span>
-              <span className="count-chip count-resigned">{`${resignedKeys.length} re-signed`}</span>
+              <span className="count-chip count-resigned">{`${resignedKeys.length} changed`}</span>
             </span>
           </p>
           {vis === 0 ? (
@@ -285,9 +285,9 @@ function ListableDiff({
               )}
               {resignedKeys.length > 0 && (
                 <div className="delta-sec resigned">
-                  <h3>{`Re-signed (${resignedKeys.length})`}</h3>
+                  <h3>{`Changed (${resignedKeys.length})`}</h3>
                   <p className="subnote">
-                    {"Re-signed = the identity survived while its measured contract changed. fn-like rows render the measured signature change where the key is a single signature on both sides (texts resolved from the dataset's recorded emissions); a member-bearing type row renders the measured pub members that moved (struct/enum/union/trait — private/pub(crate) members and doc comments never re-sign a type, honest rule 2); a type alias and multi-signature fn keys stay digest-only."}
+                    {"Changed means the name is still there but its signature moved. Function rows show the before and after signature when there is exactly one of each; a type row lists the public members that moved. Doc comments and private members never count as a change."}
                   </p>
                   <ItemList
                     keys={resignedKeys}
@@ -542,7 +542,7 @@ export function ChangesView({
             Changes <span className="view-tag mono">item-set deltas between releases</span>
           </h1>
           <p className="lede">
-            Every measured item added, removed or re-signed between the two releases you pick. Same fork: a stream
+            Every measured item added, removed or changed between the two releases you pick. Same fork: a stream
             changelog. Different forks: a <strong>snapshot-surface difference</strong> (no lineage edge — labeled as
             such; rule rows informational only, never “the successor”). The caption below the pickers names how the
             pair was chosen; each row links into the Alignment view.
