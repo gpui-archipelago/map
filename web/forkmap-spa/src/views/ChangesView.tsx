@@ -77,15 +77,17 @@ function DiffHead({ a, b, aRow, bRow, crossFork }: { a: Side; b: Side; aRow: Man
 /** The two delta-nature banners (RULE-1): cross-fork = snapshot-surface
  * difference (no lineage edge), same-stream = changelog with a lineage edge. */
 function DiffBanner({ a, b, crossFork }: { a: Side; b: Side; crossFork: boolean }) {
-  return crossFork ? (
-    <div className="diff-kind-note snapshot">
-      <strong>Snapshot comparison. </strong>
-      {`Two different forks — ${a.provider.id} and ${b.provider.id} — with no shared lineage, so each row just compares the two releases item by item. For a fork's own history, see the Journal.`}
-    </div>
-  ) : (
-    <div className="diff-kind-note changelog">
-      <strong>Changelog. </strong>
-      {`Two releases of ${a.provider.id}, so this is that fork's own history — the same adjacency the Journal renders.`}
+  // The pair is one fork or two; that is the whole claim, so it is a glyph with
+  // the claim in its accessible name and tooltip rather than a banner sentence
+  // (RULE-1: cross-fork deltas are never called a changelog).
+  const note = crossFork
+    ? `Snapshot comparison. Two different forks — ${a.provider.id} and ${b.provider.id} — with no shared lineage, so each row just compares the two releases item by item. For a fork's own history, see the Journal.`
+    : `Changelog. Two releases of ${a.provider.id}, so this is that fork's own history — the same adjacency the Journal renders.`;
+  return (
+    <div className={crossFork ? "diff-kind-note snapshot" : "diff-kind-note changelog"}>
+      <span className="diff-kind-glyph mono" role="img" aria-label={note} title={note}>
+        {crossFork ? "⇌" : "≡"}
+      </span>
     </div>
   );
 }
@@ -541,11 +543,14 @@ export function ChangesView({
 
         <div className="controls panel picker" id="changes-controls">
           <div className="pair">
+            <span className="pair-side mono" aria-hidden="true">
+              A
+            </span>
             <label className="ctl">
               <select id="changes-a-provider" aria-label="A · fork" value={a.provider.id} onChange={(e) => onAProv(e.target.value)}>
                 {manifest.providers.map((p) => (
                   <option key={p.id} value={p.id}>
-                    {`${p.id} (${p.package})`}
+                    {`${p.id}${p.package === p.id ? "" : ` (${p.package})`}`}
                   </option>
                 ))}
               </select>
@@ -564,11 +569,14 @@ export function ChangesView({
             ⇄ swap
           </button>
           <div className="pair">
+            <span className="pair-side mono" aria-hidden="true">
+              B
+            </span>
             <label className="ctl">
               <select id="changes-b-provider" aria-label="B · fork" value={b.provider.id} onChange={(e) => onBProv(e.target.value)}>
                 {manifest.providers.map((p) => (
                   <option key={p.id} value={p.id}>
-                    {`${p.id} (${p.package})`}
+                    {`${p.id}${p.package === p.id ? "" : ` (${p.package})`}`}
                   </option>
                 ))}
               </select>
@@ -583,6 +591,8 @@ export function ChangesView({
               </select>
             </label>
           </div>
+        <details className="pair-drawer" id="changes-presets">
+          <summary className="pair-drawer-summary">presets</summary>
           <div className="ctl-hint" id="changes-hint">
             <div className="quick">
               <span className="muted">recorded stories: </span>
@@ -598,14 +608,22 @@ export function ChangesView({
               <span className="muted"> — or pick any two releases of any forks below.</span>
             </div>
           </div>
+        </details>
         </div>
 
-        <p className="pair-caption mono" id="changes-caption" aria-live="polite">
+        <p className="pair-caption mono visually-hidden" id="changes-caption" aria-live="polite">
           {named
             ? "Linked comparison — resolved from the deep link; an unnamed side falls back to resolver defaults (rule 6)."
             : `Default pair — ${a.vers} is the release published before ${b.vers}, the latest stable of ${a.provider.id} (rule 6: never a prerelease). Pick any two releases to diff.`}
         </p>
 
+
+
+        {rowsBody}
+
+        <div className="about-note" id="changes-about">
+          <AboutNote />
+        </div>
         {/* The fork facts collapse; the chips above are the pair display. */}
         <details className="pair-drawer" id="changes-pair-drawer">
           <summary className="pair-drawer-summary">fork facts</summary>
@@ -626,13 +644,6 @@ export function ChangesView({
           )}
         </div>
         </details>
-
-
-        {rowsBody}
-
-        <div className="about-note" id="changes-about">
-          <AboutNote />
-        </div>
       </div>
     </section>
   );

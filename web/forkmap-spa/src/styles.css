@@ -193,6 +193,38 @@
     box-shadow: 0 1px 3px rgba(23, 77, 104, 0.25);
   }
 
+  /* One line: A [fork] [version]  ⇄  B [fork] [version]  … presets. */
+  .pair-side {
+    align-self: center;
+    margin-right: 2px;
+    font-size: 0.72rem;
+    color: var(--content-muted);
+  }
+  #changes-presets {
+    margin-left: auto;
+  }
+
+  /* The diff nature is a glyph, not a sentence. */
+  .diff-kind-glyph {
+    display: inline-block;
+    font-size: 1.05rem;
+    color: var(--content-muted);
+    cursor: help;
+  }
+
+  /* Present for screen readers (and the smoke), invisible on screen. */
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+
   /* The pair picks are the pair display: one line of chips, which is also
      the whole 'what am I looking at' statement on this view. */
   .controls.picker .ctl select {
