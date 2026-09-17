@@ -19,6 +19,9 @@ import { STATIC_RENDERER_IDS } from "./fixtures/static-renderer-ids";
 const manifest = loadManifest();
 const { data } = loadCorpusData();
 
+/** Thousands-separated counts (JournalView.num). */
+const num = (v: number) => v.toLocaleString("en-US");
+
 function renderJournal(params: Record<string, string>): string {
   return renderToString(createElement(JournalView, { manifest, data, params }));
 }
@@ -27,8 +30,8 @@ describe("Journal view renders the stream feed (server render)", () => {
   test("the kael stream renders its entries with counts and deep links (0.2.0 story)", () => {
     const html = renderJournal({ s: "kael" });
     expect(html).toContain('id="view-journal"');
-    // hint names the filtered stream
-    expect(html).toContain(`1 stream · ${manifest.providers.find((p) => p.id === "kael")!.versions.length} releases, oldest-recorded first.`);
+    // hint names the filtered stream and the feed's own count
+    expect(html).toContain(`>${manifest.providers.find((p) => p.id === "kael")!.versions.length} releases in kael</span>`);
     // the 0.2.0 entry exists with its deep-link anchor
     expect(html).toContain('id="journal-entry-kael-0.2.0"');
     expect(html).toContain('href="#/journal?s=kael&amp;v=0.2.0"');
@@ -39,48 +42,81 @@ describe("Journal view renders the stream feed (server render)", () => {
     const kaelFacts = data.streams.find((s) => s.id === "kael")!.facts;
     const c = kaelFacts.find((f) => f.vers === "0.2.0")!.counts!;
     const total = c.rm + c.ad + c.rs;
-    expect(html).toContain(`vs 0.1.2: `);
-    if (c.rm) expect(html).toContain(`${c.rm} removed`);
-    if (c.ad) expect(html).toContain(`${c.ad} added`);
-    if (c.rs) expect(html).toContain(`${c.rs} changed`);
+    expect(html).toContain(">vs 0.1.2:</span>");
+    if (c.rm) expect(html).toContain(`−${num(c.rm)} removed`);
+    if (c.ad) expect(html).toContain(`+${num(c.ad)} added`);
+    if (c.rs) expect(html).toContain(`${num(c.rs)} changed`);
     // the item rows stay collapsed until expand (no je-items yet)
-    expect(html).toContain(`show item rows (${total})`);
+    expect(html).toContain(`▾ ${num(total)} items`);
     expect(html).not.toContain('class="je-items"');
+    // the entry's two tiers: identity + facts above, delta + actions below
+    expect(html).toContain('class="je-head"');
+    expect(html).toContain('class="je-foot"');
+    expect(html).toContain(`>#${kaelFacts.length} of ${kaelFacts.length}</span>`);
   });
 
   test("the same-fork feed only renders the filtered stream", () => {
     const html = renderJournal({ s: "kael" });
-    expect(html).toContain(">kael (kael)</option>");
+    expect(html).toContain(">kael</option>");
     expect(html).not.toContain("1.18.1");
     // other providers are still options in the select
     for (const p of manifest.providers) {
-      expect(html).toContain(`>${p.id} (${p.package})</option>`);
+      expect(html).toContain(`>${p.id}</option>`);
     }
+    // …and the all-streams option carries the corpus's fork count
+    expect(html).toContain(`>all streams (${manifest.providers.length})</option>`);
   });
 
   test("all-streams renders every stream with the bundle hint", () => {
     const html = renderJournal({});
     const nvers = manifest.providers.reduce((n, p) => n + p.versions.length, 0);
-    expect(html).toContain(`All ${manifest.providers.length} streams · ${nvers} releases, oldest-recorded first.`);
+    expect(html).toContain(`>${num(nvers)} releases across ${manifest.providers.length} forks</span>`);
     for (const p of manifest.providers) {
       expect(html).toContain(`<strong class="stream-name">${p.id}</strong>`);
     }
+    // the stream head is a rule: name, hairline, facts — no id/package stutter
+    expect(html).toContain('class="stream-rule"');
+    expect(html).not.toContain("</strong> gpui ·");
+    // one explanatory line under the feed, not an essay above it
+    expect(html).toContain(
+      "Releases are ordered chronologically within each stream and diffed against their stream predecessor.",
+    );
+  });
+
+  test("the stable-only filter hides the previews without re-basing a diff", () => {
+    const all = renderJournal({ s: "gpui-unofficial" });
+    const stable = renderJournal({ s: "gpui-unofficial", st: "stable" });
+    const uno = manifest.providers.find((p) => p.id === "gpui-unofficial")!;
+    const previews = uno.versions.filter((r) => r.prerelease).map((r) => r.vers);
+    const stables = uno.versions.filter((r) => !r.prerelease);
+    expect(previews.length).toBeGreaterThan(0);
+    for (const vers of previews) {
+      expect(all).toContain(`id="journal-entry-gpui-unofficial-${vers}"`);
+      expect(stable).not.toContain(`id="journal-entry-gpui-unofficial-${vers}"`);
+    }
+    // the stables stay, with their own (unfiltered) stream position
+    expect(stable).toContain(`id="journal-entry-gpui-unofficial-${stables[stables.length - 1].vers}"`);
+    expect(stable).toContain(`>${num(stables.length)} of ${num(uno.versions.length)} releases in gpui-unofficial · stable only</span>`);
+    // the 1.18.0 → 1.18.1 branch diff is untouched by the filter
+    expect(stable).toContain('href="#/changes?a=gpui-unofficial%3A1.18.0&amp;b=gpui-unofficial%3A1.18.1"');
   });
 
   test("exact-copy and first-release stories render their honest lines", () => {
     const html = renderJournal({ s: "kael" });
     // 0.1.1 is the first recorded release (no self-diff link)
-    expect(html).toContain("first recorded release of this stream");
+    expect(html).toContain("First recorded release of this stream");
     expect(html).toContain('id="journal-entry-kael-0.1.1"');
     // 0.1.1 → 0.1.2 carries the identical measured surface
     expect(html).toContain("identical measured surface to 0.1.1 — a within-stream exact-copy republish");
   });
 
-  test("a flagged release renders its flag and the meta line carries the measured count", () => {
+  test("a flagged release renders its flag badges and the measured-record fact", () => {
     const html = renderJournal({ s: "gpui" });
     expect(html).toContain('id="journal-entry-gpui-0.1.0-test"');
-    expect(html).toContain("yanked · pre-release");
-    expect(html).toContain("0 item records (measured empty)");
+    // the flags are their own chips, in the site's order
+    expect(html).toContain('class="je-flag je-flag-pre">pre-release</span>');
+    expect(html).toContain('class="je-flag je-flag-yanked">yanked</span>');
+    expect(html).toContain("0 items (empty)");
   });
 
   test("compile-verified entries render the RULE-5 badge with its evidence link", () => {
@@ -114,8 +150,8 @@ describe("Journal view diff bases follow branches, not publish history", () => {
     expect(html).toContain('href="#/changes?a=gpui-unofficial%3A1.18.0&amp;b=gpui-unofficial%3A1.18.1"');
     expect(html).not.toContain('a=gpui-unofficial%3A1.19.0-pre&amp;b=gpui-unofficial%3A1.18.1');
     // And the story line names the stable base.
-    expect(html).toContain(">vs 1.18.0: ");
-    expect(html).not.toContain(">vs 1.19.0-pre: ");
+    expect(html).toContain(">vs 1.18.0:</span>");
+    expect(html).not.toContain(">vs 1.19.0-pre:</span>");
   });
 
   test("uno 1.18.0 (stable) is diffed against the prior stable 1.17.2, not its byte-identical preview", () => {
@@ -129,6 +165,6 @@ describe("Journal view diff bases follow branches, not publish history", () => {
     // 1.19.0-pre previews 1.19; the line it was cut from is the newest stable
     // published before it, 1.18.0.
     expect(html).toContain('href="#/changes?a=gpui-unofficial%3A1.18.0&amp;b=gpui-unofficial%3A1.19.0-pre"');
-    expect(html).toContain(">vs 1.18.0: ");
+    expect(html).toContain(">vs 1.18.0:</span>");
   });
 });
