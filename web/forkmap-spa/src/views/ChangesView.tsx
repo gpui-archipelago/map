@@ -31,6 +31,7 @@ import {
   changesPairValue,
   defaultPair,
   namedPair,
+  packagePair,
   providerFor,
   releaseFlags,
   resolveChanges,
@@ -515,7 +516,17 @@ export function ChangesView({
 
   const onAProv = (value: string) => {
     const prov = providerFor(manifest, value);
-    if (!prov) return;
+    if (!prov || prov.id === a.provider.id) return;
+    // While both sides diff one fork this picker *is* the pair's fork, so
+    // switching packages re-pairs the whole comparison inside the new fork.
+    // Moving A alone here would strand B on the old fork — and that is the only
+    // thing that used to make B's own picker appear uninvited. Once the sides
+    // differ (the fork control added B's picker), it is A's fork and A's alone.
+    if (sameFork) {
+      const pair = packagePair(prov);
+      go({ a: changesPairValue(prov, pair.a), b: changesPairValue(prov, pair.b) });
+      return;
+    }
     const def = defaultPair(prov);
     // Converging on the other side's fork at its default latest → take its
     // branch base, so the pair stays diffable (RULE-6 default pair).

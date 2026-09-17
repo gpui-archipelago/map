@@ -52,6 +52,16 @@ export function defaultPair(provider: ManifestProvider): { a: string | null; b: 
 }
 
 /**
+ * The pair a package pick means: B is that fork's default release and A its
+ * branch base (RULE-6) — the same pair an unnamed route resolves to, so picking
+ * a package reads exactly like arriving at that fork's default comparison.
+ */
+export function packagePair(provider: ManifestProvider): { a: string; b: string } {
+  const def = defaultPair(provider);
+  return { a: def.a ?? def.b, b: def.b };
+}
+
+/**
  * The pair shifted one step along its stream's stable backbone (both sides
  * together — the same adjacency the Journal renders and `defaultPair` anchors
  * on). Null when a side has no neighbour that way, or when the shift would
@@ -117,8 +127,8 @@ export function resolveChanges(
   let a = changesSide(params.a, source, stream?.id);
   let b = changesSide(params.b, source, stream?.id);
   const anchor = a?.provider ?? b?.provider ?? stream ?? source.providers[0];
-  const def = defaultPair(anchor);
-  if (!a) a = { provider: anchor, vers: def.a ?? def.b };
+  const def = packagePair(anchor);
+  if (!a) a = { provider: anchor, vers: def.a };
   if (!b) b = { provider: anchor, vers: def.b };
   return { a, b };
 }

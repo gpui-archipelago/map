@@ -20,6 +20,7 @@ import {
   changesSide,
   defaultPair,
   namedPair,
+  packagePair,
   resolveChanges,
   stepPair,
 } from "../src/bundle/changes";
@@ -229,6 +230,22 @@ describe("the pair steppers walk a stream's stable backbone (stepPair/branchSucc
       if (forward && !row(p, start.a).prerelease && !row(p, start.b).prerelease) {
         expect(stepPair(p, forward, -1), `${p.id} round trip`).toEqual(start);
       }
+    }
+  });
+});
+
+describe("the package picker re-pairs both sides (packagePair)", () => {
+  test("a package change lands on the pair an unnamed route resolves to", () => {
+    // Picking a package must read exactly like arriving at that fork's default
+    // comparison: B is its latest stable, A its branch base — never A moved
+    // alone, which is what would strand B on the previous fork.
+    for (const p of bundle.providers) {
+      const pair = packagePair(p);
+      const { a, b } = resolveChanges({ providers: [p] }, {});
+      expect(pair.a, `${p.id} A`).toBe(a.vers);
+      expect(pair.b, `${p.id} B`).toBe(b.vers);
+      expect(pair.b, `${p.id} B is the latest stable`).toBe(p.latest_stable!);
+      expect(row(p, pair.a).vers, `${p.id} A is a real row`).toBe(pair.a);
     }
   });
 });
