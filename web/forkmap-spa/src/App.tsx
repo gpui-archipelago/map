@@ -144,7 +144,7 @@ export function App() {
       <a className="skip" href="#main">
         skip to content
       </a>
-      <Header manifest={manifest} counts={counts} view={route.view} />
+      <Header counts={counts} view={route.view} />
       <main id="main">{body}</main>
       <Footer manifest={manifest} />
       <noscript>

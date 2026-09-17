@@ -129,7 +129,7 @@ describe("the landing renders the forks, the tools and the provenance (server re
     expect(html).toContain('id="compile-badges"');
     expect(html).toContain('id="kit-probes"');
     expect(html).toContain('id="data-bundle"');
-    expect(html).toContain(`<code>${manifest.schema}</code>`);
+    expect(html).toContain(`<code id="data-schema">${manifest.schema}</code>`);
     expect(html).toContain(manifest.dataset_synced_at!);
     expect(html).toContain('id="landing-link-doc07"');
     expect(html).toContain('id="landing-link-doc12"');

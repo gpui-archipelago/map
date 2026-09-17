@@ -259,9 +259,11 @@ export function LandingView({ manifest, data: injected }: { manifest: ForkmapMan
             </dd>
             <dt>Bundle</dt>
             <dd id="data-bundle">
-              <code>{manifest.schema}</code> · data frozen{" "}
-              <span id="data-as-of">{manifest.dataset_synced_at ?? "(unsynced dataset)"}</span> · no two releases from
-              different forks match in this data, so comparing forks is always item by item
+              <code id="data-schema">{manifest.schema}</code> · data frozen{" "}
+              <span id="data-as-of">{manifest.dataset_synced_at ?? "(unsynced dataset)"}</span> ·{" "}
+              {num(manifest.counts.items)} item records across {num(manifest.counts.keys)} distinct names ·{" "}
+              {manifest.counts.facades} releases carry facade shims · no two releases from different forks match in this
+              data, so comparing forks is always item by item
             </dd>
           </dl>
           <p className="subnote" id="landing-link-cli">

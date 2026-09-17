@@ -52,7 +52,8 @@
     padding: 0 20px;
   }
 
-  /* ---------- header / chrome (sticky, island-branded) ---------- */
+  /* ---------- header / chrome (one row, sticky) ----------
+   * Brand · nav · the dataset's head-line counts and the repository link. */
 
   .site-header {
     position: sticky;
@@ -66,16 +67,17 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 14px;
+    gap: 18px;
     flex-wrap: wrap;
-    padding-top: 10px;
-    padding-bottom: 8px;
+    min-height: 52px;
+    padding-top: 6px;
+    padding-bottom: 6px;
   }
 
   .brand-lockup {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
     color: inherit;
   }
   .brand-lockup:hover {
@@ -84,65 +86,36 @@
 
   /* The map's own mark: the crab-machine logo squared into the tile. */
   .brand-tile {
-    width: 38px;
-    height: 38px;
-    border-radius: 10px;
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
     border: 1px solid rgba(55, 143, 189, 0.35);
     box-shadow: 0 1px 3px rgba(23, 77, 104, 0.12);
     object-fit: cover;
     display: block;
     flex: none;
   }
-
-  .brand-text {
-    display: flex;
-    flex-direction: column;
-    line-height: 1.25;
-  }
-  .brand-line {
-    display: flex;
-    align-items: baseline;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
   .brand-mark {
     font-family: var(--font-mono);
     font-weight: 700;
-    font-size: 1.04rem;
+    font-size: 1rem;
     letter-spacing: -0.02em;
     color: var(--content);
-  }
-  .brand-aka {
-    color: var(--content-muted);
-    font-size: 0.74rem;
-  }
-  .brand-chip {
-    font-size: 0.66rem;
-    color: var(--content-muted);
-    background: var(--color-sand-100);
-    border: 1px solid var(--border-subtle);
-    border-radius: 999px;
-    padding: 1px 9px;
     white-space: nowrap;
   }
-  .brand-sub {
-    font-family: var(--font-mono);
-    font-size: 0.66rem;
-    color: var(--content-muted);
-    letter-spacing: 0.03em;
-    text-transform: uppercase;
-  }
 
+  /* The right edge: the counts as plain muted text, then the repo link. */
+  .header-side {
+    display: inline-flex;
+    align-items: center;
+    gap: 18px;
+  }
   .header-metrics {
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 0.74rem;
+    font-size: 0.78rem;
     color: var(--content-muted);
-    background: var(--color-sand-100);
-    border: 1px solid var(--border-subtle);
-    border-radius: 999px;
-    padding: 5px 14px;
     white-space: nowrap;
   }
   .h-metric {
@@ -164,6 +137,16 @@
   }
   .h-sep {
     color: var(--color-gray-200);
+  }
+  .nav-github {
+    color: var(--content-muted);
+    font-size: 0.84rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .nav-github:hover {
+    color: var(--color-ocean);
+    text-decoration: none;
   }
 
   .site-nav {
@@ -394,46 +377,22 @@
 
   /* The nav's one outbound link (back to the main site): a hairline sets it
      apart from the in-app views without breaking the pill hover shape. */
-  .site-nav .nav-back {
-    margin-left: 6px;
-  }
-  .site-nav .nav-back::before {
-    content: "";
-    display: inline-block;
-    width: 1px;
-    height: 0.85em;
-    margin-right: 12px;
-    vertical-align: -0.08em;
-    background: var(--border-subtle);
-  }
-
   /* ---------- header / chrome — narrow screens ----------
-   * The metrics pill is one nowrap line of mono text (~470 px) and would
-   * overflow a phone viewport, dragging the whole page wide. Below 900px the
-   * header stacks (brand / metrics / nav) and the pill wraps at chip
-   * boundaries — each chip stays whole ("42,137 item records" never splits),
-   * and every metric after the first carries its own separator dot (::before)
-   * so a wrapped line never starts or ends with a stray "·". The radius drops
-   * from a pill to a card so a two-row phone bar isn't a lopsided capsule.
-   * Header behavior verified at the 390px viewport (the gate in
-   * target/t39-shots/cdp-pass.ts; see that pass's notes for the two
-   * pre-existing content overflows it still flags on Landing/Alignment). */
+   * One row cannot hold the brand, five tabs and the counts on a phone: the
+   * bar stacks into the brand, the tabs, then the counts + repo link. */
 
   @media (max-width: 900px) {
     .site-header .wrap {
       flex-direction: column;
       align-items: flex-start;
-      gap: 10px;
+      gap: 8px;
+      min-height: 0;
+      padding-top: 8px;
+      padding-bottom: 8px;
     }
-    .header-metrics {
+    .header-side {
+      gap: 14px;
       flex-wrap: wrap;
-      row-gap: 3px;
-      white-space: normal;
-      max-width: 100%;
-      border-radius: 12px;
-    }
-    .h-metric {
-      white-space: nowrap;
     }
     .h-sep {
       display: none;
