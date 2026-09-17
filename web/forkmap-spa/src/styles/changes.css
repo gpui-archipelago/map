@@ -178,10 +178,12 @@
       padding-top: 12px;
       padding-bottom: 12px;
     }
-    #changes-swap,
-    #changes-fork-scope {
+    #changes-swap {
       width: 44px;
       height: 44px;
+    }
+    .fused-package-picker .picker-toggle {
+      width: 44px;
     }
     .ff-x {
       width: 40px;

@@ -179,12 +179,16 @@ describe("Changes view renders the recorded stories (server render)", () => {
     expect(one).toContain('class="diff-marker mono"');
     expect(one).not.toContain('class="pair-side mono"');
     expect(one).toMatch(/id="changes-fork-scope"[^>]*aria-pressed="false"/);
-    expect(one).toContain('aria-label="add the second fork picker"');
+    expect(one).toContain('aria-label="compare against a different fork"');
+    // The picker and its toggle are one control (one border, one divider).
+    expect(one).toMatch(
+      /<div class="fused-package-picker">[\s\S]*?id="changes-a-provider"[\s\S]*?id="changes-fork-scope"[\s\S]*?<\/div>/,
+    );
     // A cross-fork pair keeps both fork pickers (and the toggle says so).
     const two = renderChanges({ a: "gpui-ce:0.2.2", b: "gpui-unofficial:1.18.1" });
     expect(two).not.toMatch(/id="changes-b-provider"[^>]*hidden/);
     expect(two).toMatch(/id="changes-fork-scope"[^>]*aria-pressed="true"/);
-    expect(two).toContain('aria-label="compare one fork again"');
+    expect(two).toContain('aria-label="merge back to a single package"');
   });
 
   test("the fork control's split state really shows B's fork picker", () => {
@@ -193,7 +197,7 @@ describe("Changes view renders the recorded stories (server render)", () => {
     // button that does nothing (T-38 regression: it shipped that way once).
     const split = renderChanges({ a: "gpui-unofficial:1.16.3", b: "gpui-unofficial:1.17.2" }, true);
     expect(split).toMatch(/id="changes-fork-scope"[^>]*aria-pressed="true"/);
-    expect(split).toContain('aria-label="hide the second fork picker"');
+    expect(split).toContain('aria-label="merge back to a single package"');
     expect(split).not.toMatch(/id="changes-b-provider"[^>]*hidden/);
     // B's badge joins the picker, and A's is still the shared package picker.
     expect(split).toContain('aria-label="B · fork"');

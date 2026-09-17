@@ -581,16 +581,12 @@ export function ChangesView({
     setSplitFork(next.split);
     if (next.fold) onBProv(a.provider.id);
   };
-  const forkScopeLabel = !sameFork
-    ? "compare one fork again"
-    : splitFork
-      ? "hide the second fork picker"
-      : "add the second fork picker";
+  const forkScopeLabel = pickForks ? "merge back to a single package" : "compare against a different fork";
   const forkScopeTitle = !sameFork
-    ? `two forks on screen — press to compare one fork again (B returns to ${a.provider.id}'s default pair)`
+    ? `merge back to a single package — B returns to ${a.provider.id}'s default pair`
     : splitFork
-      ? "hide the second fork picker"
-      : "compare a different fork — a snapshot difference, never a changelog";
+      ? "merge back to a single package"
+      : "compare against a different fork — a snapshot difference, never a changelog";
 
   // Walking the stream's own history: both sides step together, one branch
   // step at a time. A cross-fork pair has no shared lineage to walk, so it gets
@@ -683,18 +679,18 @@ export function ChangesView({
               once. One package while both sides diff one fork; looking at two
               is the fork toggle (or a deep link). */}
           <div className="pair">
-            {/* Scope group: the fork(s) this comparison reads, and the control
-                that splits them. No visible 'package' label — a crate name in a
-                dropdown says what it is — and no toggle inside the A ⇄ B
-                equation: ⑂ sits next to the picker it acts on. */}
+            {/* Scope group: the fork both sides read, with the control that
+                splits it fused into the same pill — so ⑂ reads as an action on
+                the package, not an operator in the A ⇄ B equation. */}
             {!sameFork && (
               <span className="diff-marker mono" aria-hidden="true">
                 A
               </span>
             )}
-            <label className="ctl">
+            <div className="fused-package-picker">
               <select
                 id="changes-a-provider"
+                className="picker-select"
                 aria-label={sameFork ? "package — both sides diff this fork" : "A · fork"}
                 title={sameFork ? "both sides diff this fork" : "A's fork"}
                 value={a.provider.id}
@@ -706,18 +702,18 @@ export function ChangesView({
                   </option>
                 ))}
               </select>
-            </label>
-            <button
-              id="changes-fork-scope"
-              type="button"
-              className="fork-scope mono"
-              aria-pressed={pickForks}
-              aria-label={forkScopeLabel}
-              title={forkScopeTitle}
-              onClick={onForkScope}
-            >
-              ⑂
-            </button>
+              <button
+                id="changes-fork-scope"
+                type="button"
+                className="picker-toggle mono"
+                aria-pressed={pickForks}
+                aria-label={forkScopeLabel}
+                title={forkScopeTitle}
+                onClick={onForkScope}
+              >
+                ⑂
+              </button>
+            </div>
             {/* Each badge is welded to the chip it names: a wrap never leaves a
                 stray letter at the end of a row. */}
             <span className="side">

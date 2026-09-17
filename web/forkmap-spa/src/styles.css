@@ -193,7 +193,7 @@
     box-shadow: 0 1px 3px rgba(23, 77, 104, 0.25);
   }
 
-  /* One line: Changes  [fork] [⑂]  [A] [version]  ⇄  [B] [version]  ‹ prev next ›.
+  /* One line: Changes  [fork | ⑂]  [A] [version]  ⇄  [B] [version]  ‹ prev next ›.
      The page title rides the toolbar — the row is the view's own heading, not
      a second one above it — over a hairline, with no card. */
   #changes-controls {
@@ -240,32 +240,63 @@
     font-size: 11px;
     flex: none;
   }
-  /* The fork control is part of the scope group: a square icon button beside
-     the picker it acts on, with its words in the accessible name and tooltip. */
-  #changes-fork-scope {
+  /* ---------- the fused scope pill (fork picker + ⑂) ---------- */
+
+  /* One control: the fork both sides read, and the toggle that splits them.
+     The divider is the only seam, so ⑂ reads as an action on the package. */
+  .fused-package-picker {
+    display: inline-flex;
+    align-items: stretch;
+    align-self: center;
+    border: 1px solid var(--border-subtle);
+    border-radius: 999px;
+    background: var(--surface);
+    overflow: hidden;
+  }
+  .fused-package-picker:focus-within {
+    border-color: var(--border-accent);
+    box-shadow: 0 0 0 2px rgba(55, 143, 189, 0.18);
+  }
+  /* The select supplies the pill's height and padding; the pill owns the rest. */
+  .fused-package-picker select {
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    padding-right: 26px;
+  }
+  /* Nothing to focus here: the ring is the pill's (focus-within). */
+  .fused-package-picker select:focus {
+    outline: none;
+    box-shadow: none;
+  }
+  .fused-package-picker .picker-toggle {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     width: 40px;
-    height: 40px;
     padding: 0;
-    border-radius: 8px;
-    font-size: 1.2rem;
-  }
-  /* Off: a plain icon, quieter than the pickers it sits between. On: filled,
-     so it is obvious why a second fork picker has appeared. */
-  .fork-scope {
+    border: 0;
+    border-left: 1px solid var(--border-subtle);
+    border-radius: 0;
+    background: transparent;
     color: var(--content-muted);
+    font-size: 1.2rem;
+    cursor: pointer;
   }
-  .fork-scope[aria-pressed="true"] {
+  .fused-package-picker .picker-toggle:hover {
+    background: var(--color-sand-100);
+    color: var(--color-ocean);
+  }
+  /* On: filled, so it is obvious why a second fork picker has appeared. */
+  .fused-package-picker .picker-toggle[aria-pressed="true"] {
     background: var(--color-ink);
-    border-color: var(--color-ink);
     color: #f4f8fa;
   }
-  .fork-scope[aria-pressed="true"]:hover {
+  .fused-package-picker .picker-toggle[aria-pressed="true"]:hover {
     background: var(--color-ink-deep);
     color: #f4f8fa;
   }
+
   /* The swap is an icon between the two sides, not a labelled control. */
   #changes-swap {
     display: inline-flex;
@@ -299,7 +330,7 @@
      and centre, so the pair reads as a pair. The shared `.ctl select`
      min-width (210px, sized for the labelled Configure form) is released
      here, or the row never fits one line. */
-  .controls.picker .ctl select {
+  .controls.picker select {
     min-width: 96px;
     text-align: left;
     font-family: var(--font-mono);
@@ -313,7 +344,7 @@
        gone the labels are short enough to size to their own content. */
     padding: 9px 10px;
   }
-  .controls.picker .ctl select[id$="-provider"] {
+  .controls.picker select[id$="-provider"] {
     min-width: 140px;
     max-width: 22ch;
   }
