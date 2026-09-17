@@ -143,7 +143,7 @@ export function LandingView({ manifest, counts }: { manifest: ForkmapManifest; c
                 <h2>Where the data comes from</h2>
                 <span className="panel-kicker mono">three sources, kept separate</span>
               </div>
-              <table className="layers">
+              <table id="data-layers" className="layers">
                 <thead>
                   <tr>
                     <th>Source</th>

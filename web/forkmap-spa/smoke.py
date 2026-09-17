@@ -348,7 +348,7 @@ def main() -> int:
 
         checks = [
             ("landing hero", "#/", ["The GPUI fork map", "id=\"honest-rule-1\"", "id=\"honest-rule-7\"",
-                                    "Registry truth", "Verified compiles", "id=\"data-facts\""], []),
+                                    "id=\"data-layers\"", "id=\"compile-badges\"", "id=\"data-facts\""], []),
             ("nav chrome", "#/", ["gpui-archipelago", "Changes", "Alignment", "Configure", "Journal",
                                   "header-schema"], []),
             ("changes route", "#/changes", ["id=\"view-changes\"", "item-set deltas between releases",
@@ -479,7 +479,9 @@ def main() -> int:
         bundle = bundle_data
         nprov = len(bundle["providers"])
         nvers = sum(len(p["versions"]) for p in bundle["providers"])
-        for w in [f"{nprov}</span>", f"{nvers}</span>", "data as of", f"{nprov} forks · {nvers} published versions"]:
+        # Assert the numbers land in the page, not the prose around them: the
+        # labels are copy and change; the id and the rendered counts do not.
+        for w in [f"{nprov}</span>", f"{nvers}</span>", "data as of", "id=\"data-facts\""]:
             if w not in dom:
                 failures.append(f"bundle-driven header metrics: missing {w!r}")
 
