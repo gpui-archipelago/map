@@ -115,9 +115,3 @@ export function releaseFlags(v: { yanked?: boolean; prerelease?: boolean }): str
   if (v.prerelease) parts.push("pre-release");
   return parts;
 }
-
-/** " (flag, flag)" suffix for a release chip, or "" when unflagged. */
-export function releaseFlagsSuffix(v: { yanked?: boolean; prerelease?: boolean }): string {
-  const flags = releaseFlags(v);
-  return flags.length ? ` (${flags.join(", ")})` : "";
-}

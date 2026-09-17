@@ -5,9 +5,9 @@
 // pair's rows injected from the committed per-release files — the same
 // logical data the runtime resolves via the data-access layer, T-33 increment
 // 4) for the recorded-story deep links and asserts the rendered markup: the
-// same-fork stories render the changelog banner + their item rows, the
-// cross-fork story renders the snapshot banner, the identical pair renders
-// the exact-copy panel without the filter bar, a same-release hash renders
+// same-fork stories render the changelog glyph + their item rows, the
+// cross-fork story renders the snapshot glyph, the identical pair renders
+// the exact-copy panel without the filter drawer, a same-release hash renders
 // the pick-a-different-releases hint, and the honest-rule ids + every
 // changes-* id app.js binds exist in the DOM output of the view.
 
@@ -29,7 +29,7 @@ function renderChanges(params: Record<string, string>): string {
 }
 
 describe("Changes view renders the recorded stories (server render)", () => {
-  test("same-fork quick-link story: uno 1.16.3 → 1.17.2 renders the changelog banner + removed frame rows", () => {
+  test("same-fork quick-link story: uno 1.16.3 → 1.17.2 renders the changelog glyph + removed frame rows", () => {
     const html = renderChanges({ a: "gpui-unofficial:1.16.3", b: "gpui-unofficial:1.17.2" });
     expect(html).toContain('id="view-changes"');
     expect(html).toContain("Changelog.");
@@ -40,7 +40,7 @@ describe("Changes view renders the recorded stories (server render)", () => {
     expect(html).not.toContain("Snapshot comparison.");
   });
 
-  test("cross-fork story: ce 0.2.2 vs uno 1.18.1 renders the snapshot banner, never a changelog (RULE-1)", () => {
+  test("cross-fork story: ce 0.2.2 vs uno 1.18.1 renders the snapshot glyph, never a changelog (RULE-1)", () => {
     const html = renderChanges({ a: "gpui-ce:0.2.2", b: "gpui-unofficial:1.18.1" });
     expect(html).toContain("Snapshot comparison.");
     expect(html).not.toContain("Changelog.");
@@ -70,7 +70,7 @@ describe("Changes view renders the recorded stories (server render)", () => {
     expect(html).toContain("Linked comparison — resolved from the deep link");
   });
 
-  test("an exact-copy pair renders the identical panel and hides the filter bar", () => {
+  test("an exact-copy pair renders the identical panel and no filter drawer", () => {
     const html = renderChanges({ a: "gpui-unofficial:1.16.1", b: "gpui-unofficial:1.16.2" });
     expect(html).toContain("No measured item differences — these two releases carry the identical measured surface.");
     expect(html).not.toContain('id="changes-filter"');
@@ -81,8 +81,25 @@ describe("Changes view renders the recorded stories (server render)", () => {
     expect(html).toContain("Pick two different releases to diff.");
   });
 
-  test("the yanked/pre-release flags ride the release chips and options", () => {
-    // gpui 0.1.0-test is prerelease+yanked: the B release chip must flag it.
+  test("a same-fork pair renders the filter drawer collapsed and the count chips as switches", () => {
+    const html = renderChanges({ a: "gpui-unofficial:1.16.3", b: "gpui-unofficial:1.17.2" });
+    // The drawer keeps its id (the static renderer bound it) but starts hidden,
+    // and the summary row's toggle is what opens it.
+    expect(html).toMatch(/id="changes-filter"[^>]*hidden/);
+    expect(html).toContain('id="changes-filter-toggle"');
+    expect(html).toContain('aria-expanded="false"');
+    // The three counts are pressable section switches, all shown by default.
+    expect(html).toContain('class="count-chip count-removed"');
+    expect(html).toContain('aria-pressed="true"');
+    // No banner box: the delta's nature is a glyph on the facts line, with the
+    // pair's counts and api hashes on that same line.
+    expect(html).not.toContain("diff-kind-note");
+    expect(html).toContain("diff-kind-glyph");
+    expect(html).toContain("records (api ");
+  });
+
+  test("the yanked/pre-release flags ride the release pickers", () => {
+    // gpui 0.1.0-test is prerelease+yanked: its picker option must flag it.
     const html = renderChanges({ a: "gpui:0.1.0", b: "gpui:0.1.0-test" });
     expect(html).toContain("(yanked, pre-release)");
   });

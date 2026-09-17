@@ -98,57 +98,11 @@
     margin: 10px 0;
   }
 
-  .diff-head {
-    font-weight: 700;
-    margin: 4px 0 12px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-wrap: wrap;
-  }
-  .release-chip {
-    display: inline-block;
-    background: var(--color-ink);
-    color: #f2f6f8;
-    border-radius: 999px;
-    padding: 3px 14px;
-    font-family: var(--font-mono);
-    font-size: 0.9em;
-  }
-  .diff-head > span:not(.release-chip) {
-    color: var(--content-muted);
-  }
-
-  /* the two delta-nature banners: cross-fork = amber (snapshot, no lineage),
-     same-stream = ocean (changelog with a lineage edge) */
-  .diff-kind-note {
-    margin: 14px 0 10px;
-    padding: 12px 16px;
-    border-radius: 8px;
-    font-size: 0.93em;
-    border: 1px solid;
-    line-height: 1.5;
-  }
-  .diff-kind-note.snapshot {
-    background: rgba(168, 98, 20, 0.13);
-    border-color: rgba(168, 98, 20, 0.35);
-    color: #5c3405;
-  }
-  .diff-kind-note.snapshot strong {
-    color: var(--warning);
-  }
-  .diff-kind-note.changelog {
-    background: rgba(55, 143, 189, 0.1);
-    border-color: rgba(55, 143, 189, 0.32);
-    color: #1e4a63;
-  }
-  .diff-kind-note.changelog strong {
-    color: #1d5f85;
-  }
-
+  /* The facts line: the delta's nature glyph, then each side's count + hash. */
   .diff-meta {
     display: flex;
-    gap: 4px 20px;
+    align-items: center;
+    gap: 4px 8px;
     flex-wrap: wrap;
     font-size: 0.88em;
     margin: 0 0 14px;
@@ -191,6 +145,40 @@
     color: var(--color-changed);
     background: rgba(168, 98, 20, 0.13);
     border: 1px solid rgba(168, 98, 20, 0.35);
+  }
+  /* The chips are the status switches: pressed = that section is shown, so a
+     released chip reads as switched off rather than as a different count. */
+  button.count-chip {
+    font: inherit;
+    font-size: 0.92em;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  button.count-chip:hover {
+    filter: brightness(0.97);
+  }
+  .count-chip[aria-pressed="false"] {
+    background: transparent;
+    border-style: dashed;
+    color: var(--content-muted);
+  }
+  /* The filter drawer is opt-in: the delta is the point, so the summary row
+     carries the toggle and #changes-filter stays in the DOM, hidden. */
+  .filter-toggle {
+    margin-left: auto;
+    font: inherit;
+    font-size: 0.78rem;
+    font-weight: 400;
+    background: #fff;
+    color: var(--content);
+    border: 1px solid var(--border-subtle);
+    border-radius: 999px;
+    padding: 3px 13px;
+    cursor: pointer;
+  }
+  .filter-toggle:hover {
+    border-color: var(--border-accent);
+    color: var(--color-ocean);
   }
 
   .delta-identical {

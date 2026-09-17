@@ -33,7 +33,6 @@ import {
   namedPair,
   providerFor,
   releaseFlags,
-  releaseFlagsSuffix,
   resolveChanges,
   rowFor,
 } from "../bundle/changes";
@@ -62,40 +61,24 @@ function backTarget(a: Side, b: Side): string {
   return `changes?a=${changesPairValue(a.provider.id, a.vers)}&b=${changesPairValue(b.provider.id, b.vers)}`;
 }
 
-function DiffHead({ a, b, aRow, bRow, crossFork }: { a: Side; b: Side; aRow: ManifestVersionRow; bRow: ManifestVersionRow; crossFork: boolean }) {
-  const chip = (side: string, sideObj: Side, row: ManifestVersionRow) =>
-    `${side} · ${crossFork ? sideObj.provider.id + " " : ""}${row.vers}${releaseFlagsSuffix(row)}`;
-  return (
-    <div className="diff-head">
-      <span className="release-chip">{chip("A", a, aRow)}</span>
-      <span> → </span>
-      <span className="release-chip">{chip("B", b, bRow)}</span>
-    </div>
-  );
-}
-
-/** The two delta-nature banners (RULE-1): cross-fork = snapshot-surface
- * difference (no lineage edge), same-stream = changelog with a lineage edge. */
-function DiffBanner({ a, b, crossFork }: { a: Side; b: Side; crossFork: boolean }) {
-  // The pair is one fork or two; that is the whole claim, so it is a glyph with
-  // the claim in its accessible name and tooltip rather than a banner sentence
-  // (RULE-1: cross-fork deltas are never called a changelog).
+function DiffNature({ a, b, crossFork }: { a: Side; b: Side; crossFork: boolean }) {
+  // Whether the pair is one fork or two is the whole claim (RULE-1: cross-fork
+  // deltas are snapshot comparisons, never changelogs), so it is a glyph with
+  // the claim in its accessible name and tooltip rather than a banner sentence.
   const note = crossFork
     ? `Snapshot comparison. Two different forks — ${a.provider.id} and ${b.provider.id} — with no shared lineage, so each row just compares the two releases item by item. For a fork's own history, see the Journal.`
     : `Changelog. Two releases of ${a.provider.id}, so this is that fork's own history — the same adjacency the Journal renders.`;
   return (
-    <div className={crossFork ? "diff-kind-note snapshot" : "diff-kind-note changelog"}>
-      <span className="diff-kind-glyph mono" role="img" aria-label={note} title={note}>
-        {crossFork ? "⇌" : "≡"}
-      </span>
-    </div>
+    <span className="diff-kind-glyph mono" role="img" aria-label={note} title={note}>
+      {crossFork ? "⇌" : "≡"}
+    </span>
   );
 }
 
-/** The per-side count line of the compared pair. The measuredness class +
- * item-record count come from the per-release row facts (the manifest does
- * not carry them); the flags/api_hash/facade text come from the manifest's
- * own release rows (metadata — never the corpus). */
+/** The pair's facts line: the delta's nature glyph, then each side's measured
+ * item count with its api hash. The count comes from the per-release row facts
+ * (the manifest does not carry them); the api_hash/facade text come from the
+ * manifest's own release rows (metadata — never the corpus). */
 function DiffMeta({ data, a, b }: { data: CorpusData; a: Side; b: Side }) {
   const metaOf = (side: Side): { row: ManifestVersionRow | null; m: number; n: number } => ({
     row: rowFor(side.provider, side.vers),
@@ -104,24 +87,27 @@ function DiffMeta({ data, a, b }: { data: CorpusData; a: Side; b: Side }) {
   });
   const aMeta = metaOf(a);
   const bMeta = metaOf(b);
-  const countText = (m: number, n: number) => (m === 0 ? "not measured" : `${n} item records`);
-  const facadeText = (side: Side, row: ManifestVersionRow | null) => {
+  const sideFact = (side: "A" | "B", row: ManifestVersionRow | null, m: number, n: number) =>
+    `${side}: ${m === 0 ? "not measured" : `${n.toLocaleString()} records`}${
+      row?.api_hash ? ` (api ${row.api_hash.slice(0, 6)}…)` : ""
+    }`;
+  const facadeText = (row: ManifestVersionRow | null) => {
     const f = row?.facade;
     return f
-      ? `${side.vers}: ${f.aliases.length} alias${f.aliases.length === 1 ? "" : "es"}, ${f.polyfills.length} polyfill${f.polyfills.length === 1 ? "" : "s"} in its facade table`
-      : `${side.vers}: none`;
+      ? `${f.aliases.length} alias${f.aliases.length === 1 ? "" : "es"}, ${f.polyfills.length} polyfill${f.polyfills.length === 1 ? "" : "s"}`
+      : "none";
   };
   return (
     <div className="diff-meta muted">
-      <span>{`A: ${countText(aMeta.m, aMeta.n)} · B: ${countText(bMeta.m, bMeta.n)}`}</span>
+      <DiffNature a={a} b={b} crossFork={a.provider !== b.provider} />
+      <span>{`${sideFact("A", aMeta.row, aMeta.m, aMeta.n)} · ${sideFact("B", bMeta.row, bMeta.m, bMeta.n)}`}</span>
       {(aMeta.row?.rust_version || bMeta.row?.rust_version) && (
         <span>
           {` · declared rust-version: A ${aMeta.row?.rust_version ?? "—"} / B ${bMeta.row?.rust_version ?? "—"} (declared, not an attestation)`}
         </span>
       )}
-      <span>{` · api_hash A ${(aMeta.row?.api_hash ?? "").slice(0, 12)}… / B ${(bMeta.row?.api_hash ?? "").slice(0, 12)}…`}</span>
       {(aMeta.row?.facade || bMeta.row?.facade) && (
-        <span>{` · facade shims — ${facadeText(a, aMeta.row)} / ${facadeText(b, bMeta.row)}`}</span>
+        <span>{` · facade shims — A ${facadeText(aMeta.row)} / B ${facadeText(bMeta.row)}`}</span>
       )}
     </div>
   );
@@ -196,16 +182,37 @@ function ListableDiff({
   if (search.trim()) note.push(`text: “${search.trim()}”`);
   const noteText = note.length ? `filtering by ${note.join(" · ")}` : "";
 
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  // The three count chips are section switches: pressing one hides that whole
+  // section, so the delta can be read one kind of change at a time.
+  const [showRemoved, setShowRemoved] = useState(true);
+  const [showAdded, setShowAdded] = useState(true);
+  const [showChanged, setShowChanged] = useState(true);
+
   const flagsPresent = releaseFlags(aRow).length > 0 || releaseFlags(bRow).length > 0;
+
+  const hiddenCount = (showRemoved ? 0 : removed.length) + (showAdded ? 0 : added.length) + (showChanged ? 0 : resignedKeys.length);
+
+  const statusChip = (cls: string, n: number, label: string, on: boolean, toggle: () => void) => (
+    <button
+      type="button"
+      className={`count-chip ${cls}`}
+      aria-pressed={on}
+      title={`${on ? "hide" : "show"} ${label} rows`}
+      onClick={toggle}
+    >{`${n} ${label}`}</button>
+  );
 
   const kindOptions = [...kinds].sort((x, y) => kindRank(x) - kindRank(y));
   return (
     <>
-      <div className="panel diff-filter" id="changes-filter">
+      {/* In the DOM whether or not it is open — the summary row's toggle just
+          unhides it (an id the static renderer bound must never vanish). */}
+      <div className="panel diff-filter" id="changes-filter" hidden={!isFilterOpen}>
         <input
           id="changes-filter-search"
           type="search"
-          placeholder="search item identities — kind:name or a name fragment"
+          placeholder="e.g. measure_all"
           autoComplete="off"
           spellCheck={false}
           aria-label="filter delta rows by text"
@@ -224,6 +231,7 @@ function ListableDiff({
           id="changes-filter-clear"
           type="button"
           className="mono"
+          hidden={!active}
           onClick={() => {
             onSearch("");
             onKind("");
@@ -237,17 +245,25 @@ function ListableDiff({
       </div>
 
       <div className="panel diff-stage" id="changes-diff">
-        <DiffHead a={a} b={b} aRow={aRow} bRow={bRow} crossFork={crossFork} />
-        <DiffBanner a={a} b={b} crossFork={crossFork} />
         <DiffMeta data={data} a={a} b={b} />
         <div className="diff-stage-body">
           <p className="diff-summary">
             <span>{`${vis} measured item differences between A and B${vis !== full ? ` (of ${full})` : ""}:`}</span>
             <span className="counts-bar">
-              <span className="count-chip count-removed">{`${removed.length} removed`}</span>
-              <span className="count-chip count-added">{`${added.length} added`}</span>
-              <span className="count-chip count-resigned">{`${resignedKeys.length} changed`}</span>
+              {statusChip("count-removed", removed.length, "removed", showRemoved, () => setShowRemoved((v) => !v))}
+              {statusChip("count-added", added.length, "added", showAdded, () => setShowAdded((v) => !v))}
+              {statusChip("count-resigned", resignedKeys.length, "changed", showChanged, () => setShowChanged((v) => !v))}
             </span>
+            <button
+              id="changes-filter-toggle"
+              type="button"
+              className="filter-toggle mono"
+              aria-expanded={isFilterOpen}
+              aria-controls="changes-filter"
+              onClick={() => setIsFilterOpen((v) => !v)}
+            >
+              🔍 filter
+            </button>
           </p>
           {vis === 0 ? (
             <p className="empty-hint">
@@ -255,9 +271,11 @@ function ListableDiff({
                 ? "no rows match the filter — clear it to see the full delta."
                 : "no measured item differences to list."}
             </p>
+          ) : hiddenCount === vis ? (
+            <p className="empty-hint">{"every row is hidden by the chips above — press one to show its rows."}</p>
           ) : (
             <>
-              {removed.length > 0 && (
+              {showRemoved && removed.length > 0 && (
                 <div className="delta-sec removed">
                   <h3>{`Removed (${removed.length})`}</h3>
                   <ItemList
@@ -276,17 +294,17 @@ function ListableDiff({
                   />
                 </div>
               )}
-              {added.length > 0 && (
+              {showAdded && added.length > 0 && (
                 <div className="delta-sec added">
                   <h3>{`Added (${added.length})`}</h3>
                   <ItemList keys={added} cssClass="added-row" back={back} />
                 </div>
               )}
-              {resignedKeys.length > 0 && (
+              {showChanged && resignedKeys.length > 0 && (
                 <div className="delta-sec resigned">
                   <h3>{`Changed (${resignedKeys.length})`}</h3>
                   <p className="subnote">
-                    {"Changed means the name is still there but its signature moved. Function rows show the before and after signature when there is exactly one of each; a type row lists the public members that moved. Doc comments and private members never count as a change."}
+                    {"Changed means the name is still there but its signature moved — doc comments and private members don't count."}
                   </p>
                   <ItemList
                     keys={resignedKeys}
@@ -311,9 +329,9 @@ function ListableDiff({
     </>
   );
 }
-/** The resolved pair's diff outcome area: the delta head/banner/meta, then
- * the honest outcome — identical, or the filterable list (a measured pair is
- * always diffable; RULE-4 unmeasured pairs never reach here). */
+/** The resolved pair's diff outcome area: the facts line, then the honest
+ * outcome — identical, or the filterable list (a measured pair is always
+ * diffable; RULE-4 unmeasured pairs never reach here). */
 function DiffReady({
   manifest,
   data,
@@ -349,8 +367,6 @@ function DiffReady({
   if (diff.identical) {
     return (
       <div className="panel diff-stage" id="changes-diff">
-        <DiffHead a={a} b={b} aRow={aRow} bRow={bRow} crossFork={crossFork} />
-        <DiffBanner a={a} b={b} crossFork={crossFork} />
         <DiffMeta data={data} a={a} b={b} />
         <div className="delta-identical">
           {crossFork ? (
@@ -503,8 +519,6 @@ export function ChangesView({
       // m = 0); the pair is never presented as an empty diff.
       return (
         <div className="panel diff-stage" id="changes-diff">
-          <DiffHead a={a} b={b} aRow={aRow} bRow={bRow} crossFork={a.provider !== b.provider} />
-          <DiffBanner a={a} b={b} crossFork={a.provider !== b.provider} />
           <DiffMeta data={data} a={a} b={b} />
           <div className="delta-unmeasured">
             <p>{pairState.reason ?? "An unmeasured release cannot be diffed."}</p>

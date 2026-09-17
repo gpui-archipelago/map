@@ -85,7 +85,7 @@ export function RuleLine({ rule, context, copy }: { rule: Rule; context: string;
 export function NoSuccessorNote() {
   return (
     <span className="muted">
-      {"no confirmed successor in the rule store — a break a human must map (derives, trait-interface items, external-crate members and cfg evaluation stay outside the measured model); "}
+      {"no confirmed successor — a break to map by hand; not every kind of change is measured here (rule 3). "}
       <DocLink num={9} />
     </span>
   );
