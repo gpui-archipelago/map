@@ -467,6 +467,7 @@ export function ChangesView({
   data,
   params,
   pair,
+  forks,
 }: {
   manifest: ForkmapManifest;
   data: CorpusData;
@@ -474,6 +475,10 @@ export function ChangesView({
   /** Test seam (increment 4): a pre-resolved pair state — the render tests
    * feed release-file-built rows; the runtime view never passes it. */
   pair?: PairState;
+  /** Test seam: start with the fork control split. The runtime view starts on
+   * one package picker and the control splits it — a click the server-render
+   * suite cannot make, so this is how the split row gets asserted at all. */
+  forks?: boolean;
 }) {
   // Filter state is local UI state: it survives pair changes within the view
   // (static site behavior) and resets when the view remounts.
@@ -481,7 +486,7 @@ export function ChangesView({
   const [kind, setKind] = useState("");
   // The fork pickers are one package until asked otherwise: revealing the
   // second one is how a snapshot comparison (two forks) is built by hand.
-  const [splitFork, setSplitFork] = useState(false);
+  const [splitFork, setSplitFork] = useState(Boolean(forks));
 
   const go = (next: Record<string, string>) => {
     const hash = routeHash("changes", next);
@@ -494,8 +499,11 @@ export function ChangesView({
   const bRow = rowFor(b.provider, b.vers);
   const sameRelease = a.provider === b.provider && a.vers === b.vers;
   const sameFork = a.provider === b.provider;
-  // Cross-fork pairs (deep links, or the fork control below) always show both
-  // fork pickers; same-fork pairs show the one package picker until split.
+  // One source of truth for the row's shape: B's fork picker is on screen
+  // exactly when this is true, and it is what the fork control's pressed state
+  // reports — so the control can never be pressed while the picker sits hidden.
+  // Cross-fork pairs always show both pickers; same-fork pairs show the one
+  // package picker until the control splits them.
   const pickForks = splitFork || !sameFork;
   const back = backTarget(a, b);
   const loaded = useDiffPair(
@@ -699,7 +707,7 @@ export function ChangesView({
           </button>
           <div className="pair">
             <span className="side">
-              <span className="diff-marker mono" aria-hidden="true">
+              <span className="diff-marker mono" aria-hidden="true" hidden={!pickForks}>
                 B
               </span>
               <label className="ctl">
@@ -707,7 +715,7 @@ export function ChangesView({
                   id="changes-b-provider"
                   aria-label="B · fork"
                   title="B's fork"
-                  hidden={sameFork}
+                  hidden={!pickForks}
                   value={b.provider.id}
                   onChange={(e) => onBProv(e.target.value)}
                 >

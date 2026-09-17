@@ -23,9 +23,9 @@ import { STATIC_RENDERER_IDS } from "./fixtures/static-renderer-ids";
 const manifest = loadManifest();
 const { data } = loadCorpusData();
 
-function renderChanges(params: Record<string, string>): string {
+function renderChanges(params: Record<string, string>, forks = false): string {
   return renderToString(
-    createElement(ChangesView, { manifest, data, params, pair: readyPairFor(manifest, params) }),
+    createElement(ChangesView, { manifest, data, params, pair: readyPairFor(manifest, params), forks }),
   );
 }
 
@@ -130,10 +130,26 @@ describe("Changes view renders the recorded stories (server render)", () => {
     expect(one).toContain('class="diff-marker mono"');
     expect(one).not.toContain('class="pair-side mono"');
     expect(one).toContain("⑂ Fork");
+    expect(one).not.toContain("⑂ Fork ✓");
     // A cross-fork pair keeps both fork pickers (and the toggle says so).
     const two = renderChanges({ a: "gpui-ce:0.2.2", b: "gpui-unofficial:1.18.1" });
     expect(two).not.toMatch(/id="changes-b-provider"[^>]*hidden/);
-    expect(two).toMatch(/id="changes-fork-scope"[^>]*aria-pressed="true"/);
+    expect(two).toContain("⑂ Fork ✓");
+  });
+
+  test("the fork control's split state really shows B's fork picker", () => {
+    // The control sets one flag; both the pressed state and the picker's
+    // visibility must read it — a pressed control over a hidden picker is a
+    // button that does nothing (T-38 regression: it shipped that way once).
+    const split = renderChanges({ a: "gpui-unofficial:1.16.3", b: "gpui-unofficial:1.17.2" }, true);
+    expect(split).toContain("⑂ Fork ✓");
+    expect(split).not.toMatch(/id="changes-b-provider"[^>]*hidden/);
+    // B's badge joins the picker, and A's is still the shared package picker.
+    expect(split).toContain('aria-label="B · fork"');
+    expect(split).toContain("package — both sides diff this fork");
+    // Still two badges: the pair is one fork, so A's picker stays the shared
+    // package and only the badges on the chips remain.
+    expect((split.match(/class="diff-marker mono"/g) ?? []).length).toBe(2);
   });
 
   test("the yanked/pre-release flags ride the release pickers", () => {
