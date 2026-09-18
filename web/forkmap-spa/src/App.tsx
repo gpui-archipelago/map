@@ -40,6 +40,7 @@ const ChangesView = lazy(() => import("./views/ChangesView").then((m) => ({ defa
 const AlignmentView = lazy(() => import("./views/AlignmentView").then((m) => ({ default: m.AlignmentView })));
 const ConfigureView = lazy(() => import("./views/ConfigureView").then((m) => ({ default: m.ConfigureView })));
 const JournalView = lazy(() => import("./views/JournalView").then((m) => ({ default: m.JournalView })));
+const DocsIndexView = lazy(() => import("./views/DocsIndexView").then((m) => ({ default: m.DocsIndexView })));
 
 /** The views that render measured item rows — the only ones that need the
  * export-derived per-release row data (T-33 increment 4: the journal story
@@ -47,6 +48,12 @@ const JournalView = lazy(() => import("./views/JournalView").then((m) => ({ defa
  * Alignment view renders per-key digest state from the item index + per-key
  * column fragments instead (T-33 increment 5). */
 const CORPUS_VIEWS = new Set(["changes", "journal"]);
+
+/** Every route this build renders. Anything else is a typo, or a link from
+ * elsewhere in the suite to a route that has not shipped here yet (#/docs
+ * before the documents index landed, say) — the landing stands in rather than
+ * an empty main, so the map never shows a blank page. */
+const KNOWN_VIEWS = new Set<string>(["landing", "changes", "alignment", "configure", "journal", "docs"]);
 
 /** The release-row files are small; their loading phase is an indeterminate
  * bar (never a lie about %). */
@@ -129,11 +136,17 @@ export function App() {
       )
     ) : null;
 
+  // The views that need no extra fetch: the landing, Configure, and the
+  // documents index (T-39 reader pass — the reader's own page: #/docs, and
+  // #/docs?doc=07 for a single document). An unknown route lands on the
+  // landing rather than an empty main.
+  const isLanding = route.view === "landing" || !KNOWN_VIEWS.has(route.view);
   const lightView =
-    route.view === "landing" || route.view === "configure" ? (
+    isLanding || route.view === "configure" || route.view === "docs" ? (
       <Suspense fallback={null}>
-        {route.view === "landing" && <LandingView manifest={manifest} />}
+        {isLanding && <LandingView manifest={manifest} />}
         {route.view === "configure" && <ConfigureView manifest={manifest} params={route.params} />}
+        {route.view === "docs" && <DocsIndexView params={route.params} />}
       </Suspense>
     ) : null;
 

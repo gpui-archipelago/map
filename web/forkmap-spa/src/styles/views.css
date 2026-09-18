@@ -687,4 +687,38 @@
       display: none;
     }
   }
+
+  /* ---------- the documents index (#/docs) ----------
+   * The reader's own page: one row per published document. Not in the nav, so
+   * it owns its styles rather than borrowing a view's. */
+
+  .docs-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-width: 860px;
+  }
+  .docs-row {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 10px 0;
+    border-top: 1px solid var(--border-subtle);
+  }
+  .docs-row:last-child {
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .docs-title {
+    font-weight: 600;
+  }
+  /* The document the reader is showing. */
+  .docs-title[aria-current="true"] {
+    color: var(--color-ocean-deep);
+  }
+  .docs-path {
+    margin-left: auto;
+    font-size: 0.78rem;
+    color: var(--content-muted);
+  }
 }

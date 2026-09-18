@@ -9,8 +9,11 @@ import { parse, stringify } from "./bundle/query";
 import { branchBase } from "./bundle/derive";
 import type { ManifestProvider, ManifestVersionRow } from "./bundle/types";
 
-export type ViewName = "landing" | "changes" | "alignment" | "configure" | "journal";
+export type ViewName = "landing" | "changes" | "alignment" | "configure" | "journal" | "docs";
 
+/** The views the nav offers. `docs` is deliberately not one of them: the
+ * documents index (T-39 reader pass) is reachable at #/docs and from the links
+ * other parts of the suite make to it, and the map's tabs stay five tabs. */
 export const VIEWS: ViewName[] = ["landing", "changes", "alignment", "configure", "journal"];
 
 export interface Route {

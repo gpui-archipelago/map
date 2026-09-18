@@ -118,11 +118,18 @@ describe("renderDocMarkdown (the four rules over marked)", () => {
   });
 
   test("the doc's own H1 is dropped (the dialog title is the only title)", async () => {
-    const html = await renderDocMarkdown(docMarkdown("13"), DOCS["13"].path);
+    // The rule, on synthetic input: the first H1 goes, the rest stays.
+    const html = await renderDocMarkdown(
+      "# 13 — Field note\n\n## The setup\n\nbody\n",
+      DOCS["13"].path,
+    );
     expect(html).not.toContain("<h1");
-    // …and the doc's body is still all there
-    expect(html).toContain("The setup");
-    expect(docMarkdown("13").includes("## The setup")).toBe(true);
+    expect(html).toContain('<h2 id="the-setup">');
+    // …and no published doc leaks an H1 into the reader.
+    for (const num of Object.keys(DOCS)) {
+      const doc = await renderDocMarkdown(docMarkdown(num), DOCS[num].path);
+      expect(doc, `doc ${num} renders no H1`).not.toContain("<h1");
+    }
   });
 
   test("every heading gets a slug id, deduped the GFM way", async () => {
@@ -131,14 +138,46 @@ describe("renderDocMarkdown (the four rules over marked)", () => {
     expect(html).toContain('id="same-1"');
   });
 
-  test("the two truncated in-doc anchors doc 08 ships reach a section", async () => {
-    // The anchors are prefix-truncated, so no renderer can produce an exact
-    // match; the reader follows by prefix (StudyModal.scrollToAnchor) and this
-    // asserts the prefix is there to match.
-    const html = await renderDocMarkdown(docMarkdown("8"), DOCS["8"].path);
+  test("an in-doc anchor whose slug is only a prefix still lands (the reader's fallback)", async () => {
+    // The reader matches an anchor exactly first, then by prefix
+    // (StudyModal.scrollToAnchor) — a safety net for a doc whose anchor is
+    // truncated. Exercised synthetically, so the rule has a test that does not
+    // depend on any one doc's headings (the corpus used to ship two truncated
+    // anchors; the authoring pass removed them).
+    const html = await renderDocMarkdown(
+      "## T-26 resolution (2026-09-07) — item-model v2: methods are checkable\n",
+      DOCS["8"].path,
+    );
     const ids = [...html.matchAll(/id="([^"]+)"/g)].map((m) => m[1]);
-    for (const anchor of ["t-26-resolution-2026-09-07", "t-25-resolution-2026-09-07"]) {
-      expect(ids.some((id) => id.startsWith(anchor)), `an id starting with "${anchor}"`).toBe(true);
+    expect(ids).toEqual(["t-26-resolution-2026-09-07--item-model-v2-methods-are-checkable"]);
+    expect(ids[0]).not.toBe("t-26-resolution-2026-09-07"); // no exact match…
+    expect(ids[0].startsWith("t-26-resolution-2026-09-07")).toBe(true); // …but the prefix matches
+  });
+
+  test("every in-doc anchor in the published docs resolves exactly", async () => {
+    // A guard on the corpus: the prefix fallback above is a safety net, not
+    // something a published doc should need. No doc ships an in-doc anchor
+    // today, so this is silent until one does — and then it has to be exact.
+    for (const num of Object.keys(DOCS)) {
+      const html = await renderDocMarkdown(docMarkdown(num), DOCS[num].path);
+      const ids = new Set([...html.matchAll(/id="([^"]+)"/g)].map((m) => m[1]));
+      for (const anchor of html.matchAll(/data-anchor="([^"]+)"/g)) {
+        expect(ids.has(anchor[1]), `doc ${num}: #${anchor[1]} has an exact heading`).toBe(true);
+      }
+    }
+  });
+
+  test("every relative .md link in the published docs resolves to a published doc", () => {
+    // The other half of the same guard, on the corpus rather than the
+    // renderer: the docs used to ship dead pointers (a task file, an
+    // unpublished doc 14). A dead relative link degrades to plain text in the
+    // reader — silently lost rather than broken — so it is caught here.
+    for (const num of Object.keys(DOCS)) {
+      for (const m of docMarkdown(num).matchAll(/\]\(([^)\s]*\.md)(?:#[^)]*)?\)/g)) {
+        const href = m[1];
+        if (/^[a-z][a-z0-9+.-]*:/i.test(href)) continue; // an external URL
+        expect(classifyDocLink(href, DOCS[num].path).kind, `doc ${num}: ${href}`).toBe("doc");
+      }
     }
   });
 

@@ -93,9 +93,10 @@ describe("the open reader (server render = the pre-fetch state)", () => {
     expect(html).toContain(DOCS["7"].path);
     expect(html).toContain(DOCS["7"].title);
     // the excerpt is the doc's own opening, shown until the fetch lands
-    // (drift parity lives in study.test.ts)
+    // (drift parity lives in study.test.ts). Nothing here pins the doc's prose:
+    // the excerpt assertion IS the content check, and a hardcoded phrase from
+    // the doc would break on every authoring pass.
     expect(html).toContain(STUDY_EXCERPTS["7"]);
-    expect(html).toContain("never compiled");
     expect(html).toContain("Rendered verbatim from the repo markdown");
     // the raw doc keeps the doc's own href; Close is a button
     expect(html).toContain(`href="${DOCS["7"].path}"`);

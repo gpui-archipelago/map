@@ -11,31 +11,31 @@
 
 export const DOCS: Record<string, { title: string; path: string }> = {
   "7": {
-    title: "doc 07 — case study: real hello-world, switched between real forks",
+    title: "doc 07 — Switching a Hello World app between real GPUI forks",
     path: "docs/04-user-docs/07-real-fork-compile-case-study.md",
   },
   "8": {
-    title: "doc 08 — study: is the used-API report meaningful on real GPUI code?",
+    title: "doc 08 — Checking real application code with the compatibility report",
     path: "docs/04-user-docs/08-used-api-report-on-real-code.md",
   },
   "9": {
-    title: "doc 09 — study: do migrate and the facade carry a real app across the 1.17.2 break?",
+    title: "doc 09 — Testing automated migration and compatibility shims on real code",
     path: "docs/04-user-docs/09-migrate-and-facade-on-real-code.md",
   },
   "10": {
-    title: "doc 10 — study: a real kit through the workspace audit; declared toolchain floors",
+    title: "doc 10 — Auditing third-party UI kits and Rust compiler requirements",
     path: "docs/04-user-docs/10-kit-and-toolchain-floors.md",
   },
   "11": {
-    title: "doc 11 — guide: run a kit that binds another fork (the alias shim)",
+    title: "doc 11 — Using third-party UI kits with alternative GPUI forks",
     path: "docs/04-user-docs/11-alias-shim-for-kits.md",
   },
   "12": {
-    title: "doc 12 — study: the alias-shim compile half, run on both real kits",
+    title: "doc 12 — Verifying the alias shim with real UI kits",
     path: "docs/04-user-docs/12-alias-shim-compiled-both-real-kits.md",
   },
   "13": {
-    title: "doc 13 — field note: two kits, one measured generation",
+    title: "doc 13 — Two UI kits running on one underlying engine",
     path: "docs/04-user-docs/13-two-kits-one-generation-field-note.md",
   },
 };

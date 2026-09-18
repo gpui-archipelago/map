@@ -57,6 +57,7 @@ import type {
 } from "../src/bundle/types";
 import { AlignmentView, VariantLegend } from "../src/views/AlignmentView";
 import { ReleasePopover } from "../src/components/ReleasePopover";
+import { DOCS } from "../src/content/docs";
 import { STATIC_RENDERER_IDS } from "./fixtures/static-renderer-ids";
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -469,10 +470,11 @@ describe("Alignment view renders the recorded stories (server render)", () => {
       const about = html.indexOf('id="alignment-about"');
       expect(studies).toBeGreaterThan(0);
       expect(about).toBeGreaterThan(studies);
-      // the rows themselves (08/09/12/13) are inside the fold
+      // the rows themselves (08/09/12/13) are inside the fold, showing the
+      // curated titles — read from DOCS so a retitle never breaks the suite
       expect(html).toContain('id="alignment-docs-body"');
-      expect(html).toContain("doc 08 — study: is the used-API report meaningful on real GPUI code?");
-      expect(html).toContain("doc 13 — field note: two kits, one measured generation");
+      expect(html).toContain(DOCS["8"].title);
+      expect(html).toContain(DOCS["13"].title);
     }
   });
 
