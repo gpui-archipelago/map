@@ -40,6 +40,13 @@ export const DOCS: Record<string, { title: string; path: string }> = {
   },
 };
 
+/** A document's title without its `doc NN — ` label. The titles carry the label
+ * because the documents cite themselves that way; a place that already shows
+ * the number in a column of its own (the index) reads better without it. */
+export function docTopic(num: number | string): string {
+  return DOCS[String(num)].title.replace(/^doc \d+ — /, "");
+}
+
 /** The five study docs the prototype report's study modal names
  * (07/08/09/12/13) — the curated list AboutNote and the doc rows render.
  * DOC_NUMBERS keeps the older name for the same list. This is now a

@@ -689,27 +689,45 @@
   }
 
   /* ---------- the documents index (#/docs) ----------
-   * The reader's own page: one row per published document. Not in the nav, so
-   * it owns its styles rather than borrowing a view's. */
+   * The reader's own page: the published set as one table — doc, topic,
+   * status, and what each establishes. Not in the nav, so it owns its styles
+   * rather than borrowing a view's, and it scrolls in the landing's
+   * .table-scroll container so a phone gets a scroll, never a widened page. */
 
-  .docs-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    max-width: 860px;
+  .docs-index {
+    width: 100%;
+    min-width: 720px;
+    border-collapse: collapse;
+    font-size: 0.9em;
   }
-  .docs-row {
-    display: flex;
-    align-items: baseline;
-    gap: 12px;
-    flex-wrap: wrap;
-    padding: 10px 0;
-    border-top: 1px solid var(--border-subtle);
-  }
-  .docs-row:last-child {
+  .docs-index th {
+    text-align: left;
+    padding: 0 16px 8px 0;
     border-bottom: 1px solid var(--border-subtle);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--content-muted);
+    white-space: nowrap;
+  }
+  .docs-index td {
+    padding: 12px 16px 12px 0;
+    border-bottom: 1px solid #ece2d2;
+    vertical-align: top;
+  }
+  .docs-index tr:last-child td {
+    border-bottom: 0;
+  }
+  .docs-doc {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--content-muted);
+    white-space: nowrap;
   }
   .docs-title {
+    display: block;
     font-weight: 600;
   }
   /* The document the reader is showing. */
@@ -717,8 +735,94 @@
     color: var(--color-ocean-deep);
   }
   .docs-path {
-    margin-left: auto;
-    font-size: 0.78rem;
+    display: block;
+    margin-top: 2px;
+    font-size: 0.72rem;
     color: var(--content-muted);
+    overflow-wrap: anywhere;
+  }
+  .docs-status {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--content-muted);
+    background: #fff;
+    border: 1px solid var(--border-subtle);
+    border-radius: 999px;
+    padding: 1px 9px;
+    white-space: nowrap;
+  }
+  .docs-note {
+    display: block;
+    margin-top: 6px;
+    max-width: 22ch;
+    font-size: 0.76rem;
+    color: var(--content-muted);
+  }
+  .docs-claim {
+    margin: 0;
+    font-weight: 500;
+    line-height: 1.4;
+  }
+  .docs-points {
+    margin: 6px 0 0;
+    padding-left: 1.1em;
+  }
+  .docs-points li {
+    margin: 3px 0;
+    line-height: 1.4;
+  }
+
+  /* The suite-wide claims, under the table. */
+
+  .docs-suite-list {
+    margin: 0;
+    padding-left: 1.2em;
+    max-width: 860px;
+  }
+  .docs-suite-list li {
+    margin: 6px 0;
+    line-height: 1.45;
+  }
+
+  /* Phone width: a four-column table would push the finding — the reason the
+     page exists — off-screen, so each row becomes a block instead (the
+     column headers step aside with the columns). */
+
+  @media (max-width: 640px) {
+    .docs-index {
+      min-width: 0;
+    }
+    .docs-index thead {
+      display: none;
+    }
+    .docs-index tr {
+      display: block;
+      padding: 12px 0;
+      border-bottom: 1px solid #ece2d2;
+    }
+    .docs-index tr:last-child {
+      border-bottom: 0;
+    }
+    .docs-index td {
+      display: block;
+      border: 0;
+      padding: 0;
+    }
+    .docs-index .docs-doc {
+      margin-bottom: 2px;
+    }
+    .docs-index .docs-status {
+      margin-top: 8px;
+    }
+    .docs-index .docs-note {
+      max-width: none;
+    }
+    .docs-index .docs-finding {
+      margin-top: 8px;
+    }
   }
 }
