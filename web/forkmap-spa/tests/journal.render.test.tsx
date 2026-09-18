@@ -13,6 +13,7 @@ import { describe, expect, test } from "bun:test";
 import { renderToString } from "react-dom/server";
 import { createElement } from "react";
 import { JournalView } from "../src/views/JournalView";
+import { DOCS } from "../src/content/docs";
 import { loadCorpusData, loadManifest } from "./fixtures/corpus-fixtures";
 import { STATIC_RENDERER_IDS } from "./fixtures/static-renderer-ids";
 
@@ -122,7 +123,9 @@ describe("Journal view renders the stream feed (server render)", () => {
   test("compile-verified entries render the RULE-5 badge with its evidence link", () => {
     const html = renderJournal({ s: "kael" });
     expect(html).toContain("compile-verified · rustc 1.97.1");
-    expect(html).toContain("docs/04-user-docs/07-real-fork-compile-case-study.md");
+    // The badge links the published doc — not the curated `evidence` string,
+    // which names the tool repo's pre-retitle file.
+    expect(html).toContain(`href="${DOCS["7"].path}"`);
     expect(html).toContain('id="journal-entry-kael-0.4.1"');
     // The badge's evidence link opens the reader (T-39 reader pass): it was the
     // one raw-markdown hop left in the app, bypassing StudyDocLink entirely.

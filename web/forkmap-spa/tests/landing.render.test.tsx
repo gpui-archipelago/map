@@ -11,6 +11,7 @@ import { describe, expect, test } from "bun:test";
 import { renderToString } from "react-dom/server";
 import { createElement } from "react";
 import { LandingView } from "../src/views/LandingView";
+import { DOCS } from "../src/content/docs";
 import type { CorpusData } from "../src/bundle/corpus";
 import { loadCorpusData, loadManifest } from "./fixtures/corpus-fixtures";
 
@@ -138,7 +139,7 @@ describe("the landing renders the forks, the tools and the provenance (server re
     for (const p of manifest.providers) {
       const m = p.compile_verified!;
       expect(html).toContain(`<span class="badge-vers">${m.vers}</span>`);
-      expect(html).toContain(`href="${m.evidence}"`);
+      expect(html).toContain(`href="${DOCS["7"].path}"`);
     }
     for (const kp of manifest.kit_probes) expect(html).toContain(`${kp.kit} ${kp.kit_version}`);
     // the honesty rules are the same collapsed disclosure every view carries

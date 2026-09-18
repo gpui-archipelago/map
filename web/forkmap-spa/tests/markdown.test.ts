@@ -61,19 +61,21 @@ describe("slugify / plainTextFromHtml / escapeHtml (the pure rules)", () => {
   });
 
   test("stripDocTitle drops only a leading H1", () => {
-    expect(stripDocTitle("# 13 — Field note\n\nlead\n")).toBe("\nlead\n");
+    expect(stripDocTitle("# 13 — Two UI kits running on one underlying engine\n\nlead\n")).toBe("\nlead\n");
     expect(stripDocTitle("intro\n\n# a late H1\n")).toBe("intro\n\n# a late H1\n");
   });
 });
 
 describe("classifyDocLink (every link measured against the published set)", () => {
   test("a sibling doc resolves relatively and by its ../04-user-docs/ form", () => {
-    expect(classifyDocLink("11-alias-shim-for-kits.md", DOC_12)).toEqual({
+    expect(classifyDocLink("11-using-third-party-ui-kits-with-alternative-gpui-forks.md", DOC_12)).toEqual({
       kind: "doc",
       num: "11",
       href: DOCS["11"].path,
     });
-    expect(classifyDocLink("../04-user-docs/11-alias-shim-for-kits.md", DOC_12)).toEqual({
+    expect(
+      classifyDocLink("../04-user-docs/11-using-third-party-ui-kits-with-alternative-gpui-forks.md", DOC_12),
+    ).toEqual({
       kind: "doc",
       num: "11",
       href: DOCS["11"].path,
@@ -182,7 +184,10 @@ describe("renderDocMarkdown (the four rules over marked)", () => {
   });
 
   test("a doc-to-doc link becomes an in-reader jump keeping its markdown href", async () => {
-    const html = await renderDocMarkdown("see [doc 11](11-alias-shim-for-kits.md)", DOC_12);
+    const html = await renderDocMarkdown(
+      "see [doc 11](11-using-third-party-ui-kits-with-alternative-gpui-forks.md)",
+      DOC_12,
+    );
     expect(html).toContain(`href="${DOCS["11"].path}"`);
     expect(html).toContain('data-doc="11"');
   });

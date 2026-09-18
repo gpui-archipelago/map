@@ -12,31 +12,31 @@
 export const DOCS: Record<string, { title: string; path: string }> = {
   "7": {
     title: "doc 07 — Switching a Hello World app between real GPUI forks",
-    path: "docs/04-user-docs/07-real-fork-compile-case-study.md",
+    path: "docs/04-user-docs/07-switching-a-hello-world-app-between-real-gpui-forks.md",
   },
   "8": {
     title: "doc 08 — Checking real application code with the compatibility report",
-    path: "docs/04-user-docs/08-used-api-report-on-real-code.md",
+    path: "docs/04-user-docs/08-checking-real-application-code-with-the-compatibility-report.md",
   },
   "9": {
     title: "doc 09 — Testing automated migration and compatibility shims on real code",
-    path: "docs/04-user-docs/09-migrate-and-facade-on-real-code.md",
+    path: "docs/04-user-docs/09-testing-automated-migration-and-compatibility-shims-on-real-code.md",
   },
   "10": {
     title: "doc 10 — Auditing third-party UI kits and Rust compiler requirements",
-    path: "docs/04-user-docs/10-kit-and-toolchain-floors.md",
+    path: "docs/04-user-docs/10-auditing-third-party-ui-kits-and-rust-compiler-requirements.md",
   },
   "11": {
     title: "doc 11 — Using third-party UI kits with alternative GPUI forks",
-    path: "docs/04-user-docs/11-alias-shim-for-kits.md",
+    path: "docs/04-user-docs/11-using-third-party-ui-kits-with-alternative-gpui-forks.md",
   },
   "12": {
     title: "doc 12 — Verifying the alias shim with real UI kits",
-    path: "docs/04-user-docs/12-alias-shim-compiled-both-real-kits.md",
+    path: "docs/04-user-docs/12-verifying-the-alias-shim-with-real-ui-kits.md",
   },
   "13": {
     title: "doc 13 — Two UI kits running on one underlying engine",
-    path: "docs/04-user-docs/13-two-kits-one-generation-field-note.md",
+    path: "docs/04-user-docs/13-two-ui-kits-running-on-one-underlying-engine.md",
   },
 };
 

@@ -26,7 +26,6 @@ import { DocLink } from "../src/components/common";
 import { StudyModal } from "../src/components/StudyModal";
 import { StudyDocLink } from "../src/components/StudyDocLink";
 import { DOCS, STUDY_DOC_NUMBERS } from "../src/content/docs";
-import { resolveConfigured } from "../src/bundle/configure";
 import { STUDY_EXCERPTS } from "../src/study/study-excerpts";
 import { AlignmentView } from "../src/views/AlignmentView";
 import { ConfigureView } from "../src/views/ConfigureView";
@@ -144,7 +143,11 @@ describe("the trigger affordance (study links announce the dialog; others stay p
     expect(study).toContain(DOCS["9"].title);
     expect(study).not.toContain("study-dialog"); // closed: no dialog markup server-side
     const custom = text(renderToString(createElement(StudyDocLink, { num: 7, href: "docs/x.md" })));
-    expect(custom).toContain('href="docs/x.md"');
+    // A published doc links its own published path, never a caller's href —
+    // the curated `evidence` strings are the case in point: they name the tool
+    // repo's file, which is the same study under its pre-retitle name.
+    expect(custom).toContain(`href="${DOCS["7"].path}"`);
+    expect(custom).not.toContain('href="docs/x.md"');
   });
 });
 
@@ -164,7 +167,10 @@ describe("the views render their study triggers over the committed bundle", () =
     for (const p of marked) {
       const m = p.compile_verified!;
       expect(html, `${p.id} badge version`).toContain(`<span class="badge-vers">${m.vers}</span>`);
-      expect(occurrences(html, `href="${m.evidence}"`), `${p.id} evidence link`).toBeGreaterThanOrEqual(1);
+      // RULE-5: the badge links the study that compiled it — the published
+      // doc, not the curated `evidence` string (which names the tool repo's
+      // pre-retitle file).
+      expect(occurrences(html, `href="${DOCS["7"].path}"`), `${p.id} evidence link`).toBeGreaterThanOrEqual(1);
     }
     expect(html).toContain(DOCS["7"].title);
   });
@@ -179,9 +185,8 @@ describe("the views render their study triggers over the committed bundle", () =
   });
 
   test("Configure: the RULE-5 evidence links announce the dialog", () => {
-    const m = resolveConfigured(manifest, {}).provider.compile_verified!;
     const html = text(renderToString(createElement(ConfigureView, { manifest, params: {} })));
-    expect(html).toContain(`href="${m.evidence}"`);
+    expect(html).toContain(`href="${DOCS["7"].path}"`);
     expect(html).toContain(DOCS["7"].title);
     expect(html).toContain('aria-haspopup="dialog"');
   });

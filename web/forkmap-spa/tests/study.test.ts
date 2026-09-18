@@ -83,7 +83,7 @@ describe("the extraction rule (first paragraph under the doc's first ## section)
   });
 
   test("plain-text normalization strips inline markdown and keeps prose", () => {
-    expect(plainText("`cargo gocar lock` **refuses** [doc 11](../04-user-docs/11-alias-shim-for-kits.md) floors")).toBe(
+    expect(plainText("`cargo gocar lock` **refuses** [doc 11](../04-user-docs/11-using-third-party-ui-kits-with-alternative-gpui-forks.md) floors")).toBe(
       "cargo gocar lock refuses doc 11 floors",
     );
     // a code span shields bracket text from link parsing ([patch] stays literal)

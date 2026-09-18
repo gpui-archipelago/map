@@ -29,6 +29,14 @@ export function StudyDocLink({
   const [open, setOpen] = useState(false);
   if (!doc) return null;
 
+  // Where the anchor points: a document this map publishes is linked at its
+  // *published* path; the caller's href is only for a doc the mirror does not
+  // carry. The curated `evidence` fields name the tool repo's file — the same
+  // study under its pre-retitle filename — and emitting those is what used to
+  // put a study's old name in this suite's links (and, once the published
+  // copies were renamed to match their titles, a 404 behind every Ctrl-click).
+  const target = reader ? doc.path : href;
+
   const onClick = (e: MouseEvent<HTMLAnchorElement>) => {
     if (!reader) return;
     // Browser-default navigation wins for anything but a plain left click.
@@ -41,7 +49,7 @@ export function StudyDocLink({
     <>
       <a
         className={className ?? "doc"}
-        href={href ?? doc.path}
+        href={target}
         aria-haspopup={reader ? "dialog" : undefined}
         onClick={onClick}
       >

@@ -423,7 +423,7 @@ def main() -> int:
              "#/alignment", ["<summary>Methodology &amp; studies</summary>", "aria-haspopup=\"dialog\""], []),
             ("documents index (hidden #/docs: the master index, one row each)",
              "#/docs", ["id=\"view-docs\"", "id=\"docs-index\"", "id=\"docs-row-11\"",
-                        "id=\"docs-suite\"", "docs/04-user-docs/11-alias-shim-for-kits.md"], []),
+                        "id=\"docs-suite\"", "docs/04-user-docs/11-using-third-party-ui-kits-with-alternative-gpui-forks.md"], []),
             ("documents index deep link (#/docs?doc=07 opens the reader on that doc)",
              "#/docs?doc=07", ["data-doc-status=\"ready\"", "id=\"study-modal\"", "data-doc=\"7\"", "id=\"docs-index\""], []),
             ("documents index unknown doc param (#/docs?doc=99 opens nothing)",

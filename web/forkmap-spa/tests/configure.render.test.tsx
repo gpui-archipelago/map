@@ -19,6 +19,7 @@ import { compileStatus } from "../src/bundle/derive";
 import { validateManifest } from "../src/bundle/validate";
 import type { ForkmapManifest } from "../src/bundle/types";
 import { ConfigureView, FilesPanel } from "../src/views/ConfigureView";
+import { DOCS } from "../src/content/docs";
 import { STATIC_RENDERER_IDS } from "./fixtures/static-renderer-ids";
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -97,7 +98,8 @@ describe("Configure view renders the recorded stories (server render)", () => {
         "Compile-verified — this exact row through `cargo gocar new` → `lock` → `cargo build --locked`, zero hand edits",
       );
       expect(html).toContain(`rustc ${st.marker!.toolchain}`);
-      expect(html).toContain(`href="${st.marker!.evidence}"`);
+      // the badge links the published doc, not the curated `evidence` string
+      expect(html).toContain(`href="${DOCS["7"].path}"`);
     } else {
       expect(html).toContain('class="status-warn"');
       expect(html).toContain(`Not compile-probed for ${rec.vers}`);
