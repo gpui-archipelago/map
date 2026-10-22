@@ -333,6 +333,18 @@ def main() -> int:
         # bundle's presence + the doc-texts sidecar.
         blur_docs, blur_releases, blur_bare, blur_anchor = doc_story("fn:Window::blur")
         blur_doc = blur_docs[0] if blur_docs else ""
+        # A facade fork measures only its re-export surface, so a core item can
+        # be absent from that stream while every implementation stream carries
+        # it. The T-41 collapse text is the same presence partition as the node.
+        blur_absent = [
+            p for p in bundle_data["providers"]
+            if not any(digests_of(v.get("surface"), "fn:Window::blur") for v in p["versions"])
+        ]
+        blur_absent_rows = sum(len(p["versions"]) for p in blur_absent)
+        blur_absent_text = (
+            f"never measured on {' · '.join(p['id'] for p in blur_absent)}"
+            f" — absent from {blur_absent_rows} release{'' if blur_absent_rows == 1 else 's'}"
+        )
         blur_cap = doc_title_cap(blur_docs, blur_releases, blur_bare, blur_anchor)
         fw_docs, fw_releases, fw_bare, fw_anchor = doc_story("fn:FileWatcher::new")
         fw_cap = doc_title_cap(fw_docs, fw_releases, fw_bare, fw_anchor)
@@ -451,10 +463,13 @@ def main() -> int:
               node_absent_text,
               "class=\"matrix-stage\""],
              ["hide", "id=\"alignment-dock\"", "id=\"release-popover\""]),
-            ("alignment inspector (T-41: a present-everywhere item collapses nothing)",
-             "#/alignment?item=fn:Window::blur",
-             ["class=\"matrix-stage\"", "data-cell-provider=\"gpui-unofficial\""],
-             ["id=\"alignment-absent\"", "id=\"alignment-dock\"", "no cell pinned"]),
+            *([(
+                "alignment inspector (T-41: the facade stream is the only collapse for a core item)",
+                "#/alignment?item=fn:Window::blur",
+                ["class=\"matrix-stage\"", "id=\"alignment-absent\"", blur_absent_text,
+                 "data-cell-provider=\"gpui-unofficial\""],
+                ["id=\"alignment-dock\"", "id=\"release-popover\"", "no cell pinned"],
+            )] if blur_absent else []),
             ("alignment story (uno removal + rule box + T-38 return chip)",
              "#/alignment?item=fn:profiler::record_frame_timing&back=journal%3Fs%3Dgpui-unofficial%26v%3D1.17.2",
              ["Confirmed migration rules", "✕ first removed at ",
@@ -497,7 +512,8 @@ def main() -> int:
               "0 items (empty)"], []),
             ("journal stable-only filter (the previews stand down, the stables stay)",
              "#/journal?st=stable",
-             ["releases across 6 forks · stable only", "id=\"journal-entry-kael-0.2.0\""],
+             [f"releases across {len(bundle_data['providers'])} forks · stable only",
+              "id=\"journal-entry-kael-0.2.0\""],
              ["id=\"journal-entry-gpui-unofficial-1.19.0-pre\""]),
             ("configure route (recommended offer, RULE-5 badge + pickers + scope)",
              "#/configure",
