@@ -135,11 +135,12 @@ describe("the landing renders the forks, the tools and the provenance (server re
     expect(html).toContain('id="landing-link-doc07"');
     expect(html).toContain('id="landing-link-doc12"');
     expect(html).toContain('id="landing-link-doc13"');
-    // every fork's compile evidence, and the two kit checks
+    // every fork has a badge — a marker when the study compiled it, an honest
+    // dash when it did not — and the two kit checks
     for (const p of manifest.providers) {
-      const m = p.compile_verified!;
-      expect(html).toContain(`<span class="badge-vers">${m.vers}</span>`);
-      expect(html).toContain(`href="${DOCS["7"].path}"`);
+      const m = p.compile_verified;
+      expect(html).toContain(`<span class="badge-vers">${m ? m.vers : "—"}</span>`);
+      if (m) expect(html).toContain(`href="${DOCS["7"].path}"`);
     }
     for (const kp of manifest.kit_probes) expect(html).toContain(`${kp.kit} ${kp.kit_version}`);
     // the honesty rules are the same collapsed disclosure every view carries

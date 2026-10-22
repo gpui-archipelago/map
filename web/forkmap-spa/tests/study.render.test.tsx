@@ -158,12 +158,12 @@ describe("the views render their study triggers over the committed bundle", () =
     expect(html).toContain('id="landing-link-doc12"');
     expect(html).toContain('id="landing-link-doc13"');
     expect(occurrences(html, 'aria-haspopup="dialog"')).toBeGreaterThanOrEqual(5);
-    // every compile-verified badge links its doc-07 evidence (RULE-5); the
-    // badge row has its own class, so the count is independent of how many
-    // other study links point at the same doc
+    // every fork gets a badge; the verified ones link their doc-07 evidence
+    // (RULE-5). The badge row has its own class, so the count is independent
+    // of how many other study links point at the same doc.
     const marked = manifest.providers.filter((p) => p.compile_verified);
     expect(marked.length).toBeGreaterThan(0);
-    expect(occurrences(html, 'class="badge"')).toBe(marked.length);
+    expect(occurrences(html, 'class="badge"')).toBe(manifest.providers.length);
     for (const p of marked) {
       const m = p.compile_verified!;
       expect(html, `${p.id} badge version`).toContain(`<span class="badge-vers">${m.vers}</span>`);
