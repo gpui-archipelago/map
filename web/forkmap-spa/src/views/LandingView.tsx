@@ -2,7 +2,7 @@
 //
 // T-54 copy pass: the page earns its tab name. It leads with what the map is
 // (one paragraph, no eyebrow and no quote — the islands line lives in the site
-// footer), then the six forks *as a table*: package, latest stable, releases,
+// footer), then the measured forks *as a table*: package, latest stable, releases,
 // the latest stable's measured item records, architecture, and the two things
 // a reader wants next (diff that fork, configure it). Below that the four
 // tools wear the nav's own names, and the page closes on one provenance card —
@@ -39,7 +39,7 @@ const TOOLS = [
     href: "#/alignment",
     go: "Search a symbol →",
     cls: "c-ocean",
-    sub: "One symbol across all six forks: which releases carry it, where its signature moved, and which hash each fork holds.",
+    sub: "One symbol across all measured forks: which releases carry it, where its signature moved, and which hash each fork holds.",
   },
   {
     num: "03",
@@ -143,16 +143,21 @@ export function LandingView({ manifest, data: injected }: { manifest: ForkmapMan
         <div className="hero">
           <h1>The GPUI fork map</h1>
           <p className="hero-intro">
-            Zed’s UI framework is published on crates.io under six package names — <code>gpui</code>,{" "}
-            <code>gpui-ce</code>, <code>gpui-unofficial</code>, <code>gpui-pre</code>, <code>kael</code>,{" "}
-            <code>gpui-box</code> — with diverging APIs and version numbers that do not line up. This map compares
-            what is actually inside them, measured from the published source.
+            Zed’s UI framework is published on crates.io under several package names —{" "}
+            {manifest.providers.map((p, i) => (
+              <span key={p.id}>
+                <code>{p.id}</code>
+                {i < manifest.providers.length - 1 ? ", " : ""}
+              </span>
+            ))}{" "}
+            — with diverging APIs and version numbers that do not line up. This map compares what is actually
+            inside them, measured from the published source.
           </p>
         </div>
 
         <div className="panel" id="landing-forks">
           <div className="panel-head">
-            <h2>The 6 forks at a glance</h2>
+            <h2>The {manifest.providers.length} forks at a glance</h2>
             <span className="panel-kicker mono">
               {`${manifest.counts.versions} releases · ${preReleases} pre-release · ${yanked} yanked`}
             </span>

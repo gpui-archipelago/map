@@ -46,7 +46,7 @@ function side(p: Provider, vers: string): Side {
 }
 
 describe("sidecar shape + validation", () => {
-  test("the committed sidecar validates and mirrors the six providers", () => {
+  test("the committed sidecar validates and mirrors the measured providers", () => {
     expect(texts.schema).toBe("gocar.forkmap.fntexts.v1");
     expect(texts.dataset_schema).toBe(bundle.dataset_schema);
     expect(texts.providers.map((p) => p.id)).toEqual(bundle.providers.map((p) => p.id));

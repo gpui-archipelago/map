@@ -1,6 +1,6 @@
 // T-54 — the landing / map overview.
 //
-// The page earns the tab's name: the six forks as ONE table (package,
+// The page earns the tab's name: the measured forks as ONE table (package,
 // latest stable, releases, the latest stable's measured records,
 // architecture, and the two actions a reader wants next), the four tools
 // under the nav's own names, and one provenance card. Rendered over the
@@ -50,7 +50,7 @@ describe("the landing renders the forks, the tools and the provenance (server re
     const html = render();
     expect(html).toContain('id="view-landing"');
     expect(html).toContain("<h1>The GPUI fork map</h1>");
-    expect(html).toContain("published on crates.io under six package names");
+    expect(html).toContain("published on crates.io under several package names");
     // the eyebrow, the quote card and the duplicated stats strip are gone
     expect(html).not.toContain("hero-eyebrow");
     expect(html).not.toContain("hero-quote");

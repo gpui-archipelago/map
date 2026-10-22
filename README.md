@@ -1,7 +1,7 @@
 # map
 
 The **gpui fork map** viewer: a static React + Bun + Vite SPA that renders the
-measured contract of the six crates.io GPUI forks (Changes, Alignment,
+measured contract of the crates.io GPUI forks (Changes, Alignment,
 Configure, Journal) from the published `gocar.forkmap.v1` data family.
 
 Source only — the data and the docs are fetched:

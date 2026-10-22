@@ -24,7 +24,7 @@ export interface DocIndexEntry {
 export const DOC_INDEX: Record<string, DocIndexEntry> = {
   "7": {
     status: "Completed study",
-    note: "all six providers",
+    note: "all measured providers",
     finding:
       "Equivalent forks swap without touching Rust, but a modern project is the fork plus its version-locked platform companion — and the shipped scaffold did not compile until that was fixed.",
     points: [

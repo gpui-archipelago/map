@@ -138,7 +138,7 @@ describe("Configure view renders the recorded stories (server render)", () => {
     expect(html).toContain("cargo gocar lock");
     expect(html).toContain("cargo gocar verify-env");
     expect(html).toContain("Kit-rebase alias-shim bundles are not offered here (v2).");
-    expect(html).toContain("every row here is a measured version of the six forks — no other package is offered.");
+    expect(html).toContain("every row here is a measured version of a fork in this map — no other package is offered.");
     for (let n = 1; n <= 7; n++) {
       expect(html, `honest-rule-${n}`).toContain(`id="honest-rule-${n}"`);
     }

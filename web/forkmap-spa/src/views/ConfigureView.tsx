@@ -7,7 +7,7 @@
 // The view renders bundle text only and computes nothing the export did not
 // (T-31 / UC-10): every compile claim is a bundle marker with an evidence
 // link (rule 5), flagged rows are never defaults (rule 6), and the offer
-// never leaves the six measured forks. The (p, v, name) hash params are the
+// never leaves the measured forks. The (p, v, name) hash params are the
 // deep-link state; typing in the project-name field re-renders the name line
 // live and commits the name to the hash on blur/Enter — like app.js.
 //
@@ -274,7 +274,7 @@ function ScopeNotes() {
         )}
       </ul>
       <p className="subnote">
-        {"Every compile claim on this view is a bundle marker with an evidence link (rule 5); every row here is a measured version of the six forks — no other package is offered."}
+        {"Every compile claim on this view is a bundle marker with an evidence link (rule 5); every row here is a measured version of a fork in this map — no other package is offered."}
       </p>
     </>
   );
