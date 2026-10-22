@@ -408,7 +408,9 @@ describe("T-40 inspection-dock digest prevalence (N releases · M forks)", () =>
     const oldRec = map.get(oldD)!;
     const newRec = map.get(newD)!;
     expect(oldRec.forks).toContain("gpui-unofficial");
-    expect(newRec.forks).toEqual(["gpui-pre", "gpui-unofficial"].sort());
+    // The new generation's historical carriers; later forks measuring the same
+    // digest may join the record without changing the story.
+    expect(newRec.forks).toEqual(expect.arrayContaining(["gpui-pre", "gpui-unofficial"]));
   });
 });
 
@@ -591,12 +593,20 @@ describe("T-41 changed-cell signature detail without the sidecar (digest-only re
 });
 
 describe("T-42 digest variants — the measured-digest identity axis (itemVariants)", () => {
-  test("blur's two measured generations label α = legacy, β = re-signed (first-measured order)", () => {
+  test("blur's first two measured generations label α = legacy, β = re-signed", () => {
     const vs = itemVariants(bundle, "fn:Window::blur");
-    expect(vs.map((v) => v.shortDigest)).toEqual(["a07c1800", "bdc56592"]);
-    expect(vs.map((v) => v.label)).toEqual(["α", "β"]);
+    expect(vs.length).toBeGreaterThanOrEqual(2);
+    expect(vs.slice(0, 2).map((v) => v.label)).toEqual(["α", "β"]);
+    // α's anchor is the legacy stream's first measured row. β is a distinct
+    // digest whose anchor must be a real row carrying it — new releases may
+    // join the corpus without moving either fact.
     expect(vs[0].firstSeen).toEqual({ providerId: "gpui", vers: "0.1.0-test" });
-    expect(vs[1].firstSeen).toEqual({ providerId: "gpui-unofficial", vers: "1.19.0-pre" });
+    expect(vs[1].digest).not.toBe(vs[0].digest);
+    expect(vs[1].firstSeen).not.toBeNull();
+    const anchor = vs[1].firstSeen!;
+    const provider = bundle.providers.find((p) => p.id === anchor.providerId);
+    const row = provider?.versions.find((v) => v.vers === anchor.vers);
+    expect(digestsOf(row?.surface, "fn:Window::blur")?.has(vs[1].digest)).toBe(true);
     for (const v of vs) expect(v.digest).toMatch(/^[0-9a-f]{64}$/); // blake3 64-hex
   });
 

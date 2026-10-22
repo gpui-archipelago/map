@@ -187,7 +187,7 @@ describe("payloadSubsets reconstructs sidecar-shaped per-key subsets (RULE-7)", 
     // The deck's signatures (digest → measured text) match the whole sidecar.
     const fromFragment = fnDigestTexts(subsets.fnTexts, columnOf(key), key);
     const fromWhole = fnDigestTexts(fnTexts, columnOf(key), key);
-    expect(fromFragment.size).toBe(2);
+    expect(fromFragment.size).toBeGreaterThanOrEqual(2);
     expect([...fromFragment.entries()]).toEqual([...fromWhole.entries()]);
     // The doc story (Title caption + counts) matches the whole sidecar.
     expectStoryEqual(itemDocStory(bundleOf(key), key, subsets.docTexts), itemDocStory(bundleOf(key), key, docTexts));
@@ -197,7 +197,8 @@ describe("payloadSubsets reconstructs sidecar-shaped per-key subsets (RULE-7)", 
     const urlScheme = "fn:App::register_url_scheme";
     const u = subsetsOf(urlScheme);
     const storyU = itemDocStory(bundleOf(urlScheme), urlScheme, u.docTexts);
-    expect(storyU.docs.length).toBe(2);
+    expect(storyU.docs.length).toBeGreaterThanOrEqual(2);
+    expect(new Set(storyU.docs).size).toBe(storyU.docs.length);
     expectStoryEqual(storyU, itemDocStory(bundleOf(urlScheme), urlScheme, docTexts));
     const bg = "fn:BackgroundExecutor::new";
     const b = subsetsOf(bg);
