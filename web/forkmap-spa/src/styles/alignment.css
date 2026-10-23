@@ -422,6 +422,11 @@
     background: rgba(55, 143, 189, 0.1);
     border: 1px solid rgba(55, 143, 189, 0.32);
   }
+  .arch-tag.facade {
+    color: #7a5410;
+    background: rgba(214, 158, 46, 0.12);
+    border: 1px solid rgba(214, 158, 46, 0.36);
+  }
 
   .sum-chip {
     font-size: 0.76rem;

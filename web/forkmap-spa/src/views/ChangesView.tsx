@@ -91,10 +91,15 @@ function DiffMeta({ data, a, b }: { data: CorpusData; a: Side; b: Side }) {
   });
   const aMeta = metaOf(a);
   const bMeta = metaOf(b);
-  const sideFact = (side: "A" | "B", row: ManifestVersionRow | null, m: number, n: number) =>
-    `${side}: ${m === 0 ? "not measured" : `${n.toLocaleString()} records`}${
-      row?.api_hash ? ` (api: ${row.api_hash.slice(0, 6)}…)` : ""
+  const sideFact = (side: "A" | "B", row: ManifestVersionRow | null, m: number, n: number) => {
+    // A composed facade row is re-hashed at measure time over the composed
+    // surface; label it so the projection digest is never mistaken for the
+    // canonical H_API of a single crate.
+    const label = row?.composed_surface ? "composed api" : "api";
+    return `${side}: ${m === 0 ? "not measured" : `${n.toLocaleString()} records`}${
+      row?.api_hash ? ` (${label}: ${row.api_hash.slice(0, 6)}…)` : ""
     }`;
+  };
   // Only the shims a side actually carries, so a clean release reads "none".
   const facadeText = (row: ManifestVersionRow | null) => {
     const f = row?.facade;

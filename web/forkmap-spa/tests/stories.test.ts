@@ -195,7 +195,9 @@ describe("RULE-1: no cross-fork epoch badge can exist", () => {
     for (const [h, members] of byHash) {
       const pids = new Set(members.map(([pid]) => pid));
       expect(pids.size, `api_hash group ${h.slice(0, 12)}… spans forks`).toBe(1);
-      // within a stream, api_hash equality means surface equality too
+      // Within a stream, api_hash equality means surface equality too. A
+      // composed facade row re-hashes its composed surface at measure time,
+      // so the invariant holds for every row (no facade exemption).
       const pid = members[0][0];
       const prov = providerMap(bundle)[pid];
       const sigs = new Set(
@@ -207,6 +209,14 @@ describe("RULE-1: no cross-fork epoch badge can exist", () => {
         ),
       );
       expect(sigs.size, `${pid}: api_hash-equal rows with differing surfaces`).toBe(1);
+    }
+    // A composed row is never silent: its provider declares the composition.
+    for (const p of bundle.providers) {
+      for (const v of p.versions) {
+        if (v.composed_surface) {
+          expect(p.surface_source, `${p.id} ${v.vers}: composed row needs surface_source`).toBeDefined();
+        }
+      }
     }
   });
 });

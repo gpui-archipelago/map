@@ -139,6 +139,36 @@ export interface SurfaceItem {
   cfg?: string[];
 }
 
+/** A facade's declared surface composition: the measured layer crates its own
+ * `pub use` re-exports are projected through. Present only on facade
+ * providers (a thin aggregator crate, not a single measured fork). */
+export interface SurfaceSource {
+  /** The projection kind; `reexports` is the only v1 kind. */
+  kind: string;
+  /** The facade's direct layer crates, by corpus provider id. */
+  from: string[];
+}
+
+/** One measured layer crate behind a composed facade surface. */
+export interface ComposedSource {
+  package: string;
+  vers: string;
+  /** `glob` (whole surface) · `filtered` (a named subset) · `transitive`
+   * (reached through another layer) · `unreferenced` (measured but not
+   * named by the facade) · `missing` (no measured release). */
+  mode: string;
+}
+
+/** Per-release provenance for a composed facade surface. */
+export interface ComposedSurface {
+  kind: string;
+  sources: ComposedSource[];
+  /** Measured items the composition added to the crate's own surface. */
+  items_added?: number;
+  /** Re-export targets outside the measured item model (never inferred). */
+  unresolved?: string[];
+}
+
 /** A release's facade shim table (`gocar.facade.v1`) as exported: real shims
  * only — a version whose every rule classified skipped carries no facade row
  * (the skipped-with-reason stays a `cargo gocar facade` decision aid). The
@@ -160,9 +190,13 @@ export interface VersionRow {
   rust_version?: string;
   /** The facade shim table of this exact release, when it carries shims. */
   facade?: FacadeShim;
-  /** Whole-surface blake3 hash (measured); the site never renders it and
-   * never compares it across forks (RULE-1) — check.py asserts equality
-   * stays within a stream. */
+  /** Present when `surface` is composed from measured layer crates rather
+   * than the crate's own measured item set. */
+  composed_surface?: ComposedSurface;
+  /** Whole-surface hash (measured); the site never compares it across forks
+   * (RULE-1) — the suite asserts equality stays within a stream. On a
+   * composed row it is a projection digest over the composed surface (not
+   * gocar's canonical single-crate H_API, which cannot be re-derived). */
   api_hash?: string;
 }
 
@@ -212,6 +246,7 @@ export interface Provider {
   description?: string;
   repository?: string;
   platform_companion?: PlatformCompanion | null;
+  surface_source?: SurfaceSource;
   upstream?: GitHubUpstream;
   compile_verified?: CompileMarker;
   versions: VersionRow[];
@@ -305,6 +340,9 @@ export interface ManifestVersionRow {
   toolchain_floor?: string;
   /** The facade shim table of this exact release, when it carries shims. */
   facade?: FacadeShim;
+  /** Present when this release's published surface is composed from its
+   * measured layer crates. */
+  composed_surface?: ComposedSurface;
 }
 
 /** A fork as the boot manifest carries it (version rows without surfaces). */
@@ -316,6 +354,7 @@ export interface ManifestProvider {
   description?: string;
   repository?: string;
   platform_companion?: PlatformCompanion | null;
+  surface_source?: SurfaceSource;
   upstream?: GitHubUpstream;
   compile_verified?: CompileMarker;
   versions: ManifestVersionRow[];

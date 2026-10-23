@@ -70,10 +70,17 @@ describe("the landing renders the forks, the tools and the provenance (server re
       // the measured items column reads the facts (RULE-7), never a guess
       const f = latestFacts(p.id);
       expect(html).toContain(`<td title="item records measured in ${p.latest_stable}">${num(f.n)}</td>`);
-      // architecture: the dataset's own split marker + the companion package
-      const c = p.platform_companion ?? null;
-      expect(html).toContain(`<span class="arch-tag ${c ? "post" : "pre"} mono">${c ? "post-split" : "pre-split"}</span>`);
-      if (c) expect(html).toContain(`<span class="fork-note mono">${c.package}</span>`);
+      // architecture: the dataset's own composition/split marker
+      if (p.surface_source) {
+        expect(html).toContain('<span class="arch-tag facade mono">facade</span>');
+        expect(html).toContain(
+          `<span class="fork-note mono">${p.surface_source.from.join(" + ")}</span>`,
+        );
+      } else {
+        const c = p.platform_companion ?? null;
+        expect(html).toContain(`<span class="arch-tag ${c ? "post" : "pre"} mono">${c ? "post-split" : "pre-split"}</span>`);
+        if (c) expect(html).toContain(`<span class="fork-note mono">${c.package}</span>`);
+      }
       // both actions, pointed at this fork
       expect(html).toContain(`href="#/changes?p=${p.id}"`);
       expect(html).toContain(`href="#/configure?p=${p.id}"`);

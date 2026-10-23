@@ -306,6 +306,7 @@ export function rowFromRelease(metaRow: ManifestVersionRow, file: ReleaseFile): 
     rust_version: metaRow.rust_version,
     api_hash: metaRow.api_hash,
     facade: metaRow.facade,
+    composed_surface: metaRow.composed_surface,
     surface: file.s.map(([key, digest, ...cfg]) =>
       cfg.length > 0 ? { key, digest, cfg } : { key, digest },
     ),

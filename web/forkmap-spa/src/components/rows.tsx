@@ -38,7 +38,14 @@ export function ProviderLine({ provider }: { provider: ManifestProvider }) {
           {" repository"}
         </a>
       )}
-      {provider.platform_companion ? (
+      {provider.surface_source ? (
+        <span
+          className="muted"
+          title="the published surface is composed from these measured layer crates' re-exports; deeper external re-exports stay outside the measured item model"
+        >
+          {` · facade: surface composed from ${provider.surface_source.from.join(", ")}`}
+        </span>
+      ) : provider.platform_companion ? (
         <span className="muted">
           {` · post-split: bind with platform companion ${provider.platform_companion.package} (features ${provider.platform_companion.features?.join(", ")})`}
         </span>

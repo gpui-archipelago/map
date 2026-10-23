@@ -40,6 +40,45 @@ function requireString(v: unknown, where: string): void {
   }
 }
 
+/** A facade provider's declared composition (optional on ordinary forks). */
+function requireSurfaceSource(v: unknown, where: string): void {
+  if (v === undefined || v === null) return;
+  if (typeof v !== "object") throw new BundleError(`${where}: surface_source must be an object`);
+  const obj = v as Record<string, unknown>;
+  requireString(obj.kind, `${where}.surface_source.kind`);
+  if (!Array.isArray(obj.from) || (obj.from as unknown[]).length === 0) {
+    throw new BundleError(`${where}.surface_source.from must be a non-empty array`);
+  }
+  for (const source of obj.from as unknown[]) requireString(source, `${where}.surface_source.from[]`);
+}
+
+/** A composed release's per-layer provenance (optional on ordinary rows). */
+function requireComposedSurface(v: unknown, where: string): void {
+  if (v === undefined || v === null) return;
+  if (typeof v !== "object") throw new BundleError(`${where}: composed_surface must be an object`);
+  const obj = v as Record<string, unknown>;
+  requireString(obj.kind, `${where}.composed_surface.kind`);
+  if (!Array.isArray(obj.sources)) {
+    throw new BundleError(`${where}.composed_surface.sources must be an array`);
+  }
+  for (const source of obj.sources as Record<string, unknown>[]) {
+    requireString(source?.package, `${where}.composed_surface.sources[].package`);
+    requireString(source?.vers, `${where}.composed_surface.sources[].vers`);
+    requireString(source?.mode, `${where}.composed_surface.sources[].mode`);
+  }
+  if (obj.items_added !== undefined && typeof obj.items_added !== "number") {
+    throw new BundleError(`${where}.composed_surface.items_added must be a number`);
+  }
+  if (obj.unresolved !== undefined) {
+    if (!Array.isArray(obj.unresolved)) {
+      throw new BundleError(`${where}.composed_surface.unresolved must be an array`);
+    }
+    for (const boundary of obj.unresolved as unknown[]) {
+      requireString(boundary, `${where}.composed_surface.unresolved[]`);
+    }
+  }
+}
+
 /** Throws BundleError with every problem joined when the fn-texts sidecar is
  * invalid. Shape-strict like validateBundle: a stale or truncated file must
  * fail visibly rather than render half-truths next to resolved signatures. */
@@ -251,9 +290,11 @@ export function validateBundle(raw: unknown): ForkmapBundle {
       requireString(p.id, `provider.id`);
       requireString(p.package, `${p.id}.package`);
       requireString(p.lib_name, `${p.id}.lib_name`);
+      requireSurfaceSource(p.surface_source, `${p.id}`);
       if (!Array.isArray(p.versions) || (p.versions as unknown[]).length === 0) fail(`${p.id}.versions must be non-empty`);
       for (const v of p.versions as Record<string, unknown>[]) {
         requireString(v.vers, `${p.id} version.vers`);
+        requireComposedSurface(v.composed_surface, `${p.id} ${v.vers}`);
         if (typeof v.yanked !== "boolean") fail(`${p.id} ${v.vers}: yanked must be boolean`);
         if (typeof v.prerelease !== "boolean") fail(`${p.id} ${v.vers}: prerelease must be boolean`);
         if (v.surface !== null && v.surface !== undefined) {
@@ -341,11 +382,13 @@ export function validateManifest(raw: unknown): ForkmapManifest {
       requireString(p.id, "manifest provider.id");
       requireString(p.package, `${p.id}.package`);
       requireString(p.lib_name, `${p.id}.lib_name`);
+      requireSurfaceSource(p.surface_source, `${p.id}`);
       if (!Array.isArray(p.versions) || (p.versions as unknown[]).length === 0) {
         fail(`${p.id}.versions must be non-empty`);
       }
       for (const v of p.versions as Record<string, unknown>[]) {
         requireString(v.vers, `${p.id} manifest version.vers`);
+        requireComposedSurface(v.composed_surface, `${p.id} ${v.vers}`);
         if (typeof v.yanked !== "boolean") fail(`${p.id} ${v.vers}: yanked must be boolean`);
         if (typeof v.prerelease !== "boolean") fail(`${p.id} ${v.vers}: prerelease must be boolean`);
         if (v.surface !== undefined) {

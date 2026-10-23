@@ -59,9 +59,13 @@ const TOOLS = [
   },
 ];
 
-/** A fork's architecture, as the dataset marks it: a companion package means
- * the fork shipped no platform layer of its own after the split. */
+/** A fork's architecture, as the dataset marks it: a facade composes its
+ * surface from measured layer crates; a companion package means the fork
+ * shipped no platform layer of its own after the split. */
 function architecture(p: ManifestProvider): { label: string; cls: string; note: string | null } {
+  if (p.surface_source) {
+    return { label: "facade", cls: "facade", note: p.surface_source.from.join(" + ") };
+  }
   const c = p.platform_companion ?? null;
   return c
     ? { label: "post-split", cls: "post", note: c.package }

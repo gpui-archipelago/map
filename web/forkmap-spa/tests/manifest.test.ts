@@ -100,4 +100,22 @@ describe("validateManifest is shape-strict (T-33)", () => {
     const wrongSchema = { ...m, schema: "gocar.forkmap.v1" };
     expect(() => validateManifest(wrongSchema)).toThrow(/manifest schema must be/);
   });
+
+  test("malformed facade provenance fails loudly (data-agnostic)", () => {
+    const raw = JSON.parse(readFileSync(MANIFEST_PATH, "utf8")) as Record<string, any>;
+    const facade = (raw.providers as Record<string, any>[]).find((p) => p.surface_source);
+    if (!facade) return; // this bundle carries no facade; nothing to pin
+    facade.surface_source.from = [];
+    expect(() => validateManifest(raw)).toThrow(/surface_source.from/);
+
+    const raw2 = JSON.parse(readFileSync(MANIFEST_PATH, "utf8")) as Record<string, any>;
+    const composed = (raw2.providers as Record<string, any>[]).find((p) =>
+      (p.versions as Record<string, any>[]).some((v) => v.composed_surface),
+    );
+    if (!composed) return;
+    const row = (composed.versions as Record<string, any>[]).find((v) => v.composed_surface);
+    if (!row) return;
+    row.composed_surface.sources[0].mode = 7;
+    expect(() => validateManifest(raw2)).toThrow(/composed_surface.sources/);
+  });
 });

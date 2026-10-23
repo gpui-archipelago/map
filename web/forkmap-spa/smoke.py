@@ -395,6 +395,20 @@ def main() -> int:
             f" across all {len(bundle_data['providers'])} forks."
         )
 
+        # A composed facade declares its layer crates; the Landing architecture
+        # column must say so instead of the pre/post-split label (T-29's
+        # honest-display rule: never present a composed surface as one crate's).
+        facade_checks = [
+            (
+                f"landing facade architecture ({p['id']})",
+                "#/",
+                ["class=\"arch-tag facade mono\"", *p["surface_source"]["from"]],
+                [],
+            )
+            for p in bundle_data["providers"]
+            if p.get("surface_source")
+        ]
+
         checks = [
             ("landing overview (fork table + tools + provenance)",
              "#/", ["The GPUI fork map", "id=\"fork-table\"", "Latest stable", "Measured items",
@@ -402,6 +416,7 @@ def main() -> int:
                      "id=\"landing-about\"",
                      "id=\"honest-rule-1\"", "id=\"honest-rule-7\""],
              ["id=\"data-facts\"", "hero-quote"]),
+            *facade_checks,
             ("nav chrome (the suite breadcrumb, the tabs, the counts, the repo link)",
              "#/", ["gpui-archipelago", "Fork Map", "Overview", "Changes", "Alignment", "Configure", "Journal",
                      "href=\"https://gpui-archipelago.github.io/\"",

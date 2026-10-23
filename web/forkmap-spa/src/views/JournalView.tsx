@@ -262,8 +262,15 @@ function EntryEl({
             {recordsLabel(facts)}
           </span>
           {metaRow.api_hash && (
-            <span className="je-api" title="the release's whole-surface API hash: every measured item's signature">
-              {`api: ${metaRow.api_hash.slice(0, 12)}…`}
+            <span
+              className="je-api"
+              title={
+                metaRow.composed_surface
+                  ? "the composed surface's projection digest (re-hashed from the measured surface; it is not gocar's canonical single-crate H_API)"
+                  : "the release's whole-surface API hash: every measured item's signature"
+              }
+            >
+              {`${metaRow.composed_surface ? "composed api" : "api"}: ${metaRow.api_hash.slice(0, 12)}…`}
             </span>
           )}
           {metaRow.rust_version && (
